@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { AppShellComponent } from './shared/layout/app-shell/app-shell.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [AppShellComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

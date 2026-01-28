@@ -400,7 +400,7 @@ Also create:
 
 ---
 
-### [ ] T2.6 Implement UI shell + routing + navigation
+### [x] T2.6 Implement UI shell + routing + navigation
 **Objective:** Create a usable navigation for MVP: cases list, case detail, timeline.
 **Files to touch:**
 - `frontend/src/app/app.component.*`

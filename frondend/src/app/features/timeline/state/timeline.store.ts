@@ -39,5 +39,5 @@ export class TimelineStore {
 
 const missingCaseIdError = (): StoreError => ({
   code: 'MISSING_CASE_ID',
-  message: 'CaseId fehlt'
+  message: 'Prozess-ID fehlt'
 });

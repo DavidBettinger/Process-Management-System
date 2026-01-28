@@ -59,13 +59,14 @@ For each task: objective, files to touch, definition of done, how to test.
 **DoD:** When creating/assigning/resolving tasks, an outbox row is written.
 **Test:** Integration test verifies outbox row exists.
 
-### [ ] T1.6 Implement application services + REST controllers for P0 endpoints
+### [x] T1.6 Implement application services + REST controllers for P0 endpoints
 **Objective:** Implement endpoints for cases, stakeholders, meetings hold, tasks operations, timeline.
 **Files:** `backend/.../api/*`, `backend/.../application/*`
 **DoD:** Controller tests:
 - invalid payload returns 400
 - not found returns 404
 - unauthorized returns 401 (or dev auth rule)
+**TODOs noted (this task):** Create tasks from action items (and persist created task IDs).
   **Test:** `./gradlew test`
 
 ### [ ] T1.7 Timeline projection (MVP)

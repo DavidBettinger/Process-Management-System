@@ -34,7 +34,7 @@ public class Task {
 
 	public static Task rehydrate(UUID id, UUID caseId, String title, String description, TaskState state, String assigneeId,
 			TaskResolutionKind resolutionKind, String resolutionReason, String resolvedBy, Instant resolvedAt,
-			Instant createdAt) {
+			String lastDeclineReason, String lastSuggestedAssigneeId, Instant createdAt) {
 		Task task = new Task(id, caseId, title, description, createdAt);
 		task.state = Objects.requireNonNull(state, "state");
 		task.assigneeId = assigneeId;
@@ -42,6 +42,8 @@ public class Task {
 		task.resolutionReason = resolutionReason;
 		task.resolvedBy = resolvedBy;
 		task.resolvedAt = resolvedAt;
+		task.lastDeclineReason = lastDeclineReason;
+		task.lastSuggestedAssigneeId = lastSuggestedAssigneeId;
 		return task;
 	}
 

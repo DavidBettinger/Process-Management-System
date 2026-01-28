@@ -60,7 +60,7 @@ infrastructure/
 
 src/test/java/…
 ### Frontend (`/frontend`)
-processmgmt-frontend/
+frontend/
 
 src/app/
 
@@ -167,6 +167,10 @@ Request:
 ```json
 { "scheduledAt": "2026-02-01T10:00:00Z", "participantIds": ["u-101","u-201"] }
 ```
+Response 201:
+```json
+{ "id": "uuid", "status": "SCHEDULED" }
+```
 
 #### Hold meeting (store minutes + create tasks)
 POST /api/cases/{caseId}/meetings/{meetingId}/hold
@@ -186,6 +190,7 @@ Response 200:
 ```json
 { "meetingId": "uuid", "createdTaskIds": ["uuid1","uuid2"] }
 ```
+TODO: Persist participants/action items and create tasks from action items.
 Idempotency rule:
 •	actionItems[].key must be stable per meeting. If repeated, do not create duplicates.
 
@@ -197,14 +202,26 @@ Request:
 ```json
 { "title": "Prepare checklist", "description": "", "dueDate": "2026-02-10" }
 ```
+Response 201:
+```json
+{ "id": "uuid", "state": "OPEN" }
+```
 Assign task
 POST /api/tasks/{taskId}/assign
 Request:
 ```json
 { "assigneeId": "u-201" }
 ```
+Response 200:
+```json
+{ "id": "uuid", "state": "ASSIGNED", "assigneeId": "u-201" }
+```
 Start work
 POST /api/tasks/{taskId}/start
+Response 200:
+```json
+{ "id": "uuid", "state": "IN_PROGRESS", "assigneeId": "u-201" }
+```
 
 Block/unblock
 POST /api/tasks/{taskId}/block
@@ -213,6 +230,10 @@ Request:
 { "reason": "Waiting for external input" }
 ```
 POST /api/tasks/{taskId}/unblock
+Response 200:
+```json
+{ "id": "uuid", "state": "IN_PROGRESS", "assigneeId": "u-201" }
+```
 
 Decline assignment (not responsible)
 POST /api/tasks/{taskId}/decline
@@ -220,11 +241,19 @@ Request:
 ```json
 { "reason": "Not responsible", "suggestedAssigneeId": "u-101" }
 ```
+Response 200:
+```json
+{ "id": "uuid", "state": "OPEN", "assigneeId": null }
+```
 Resolve task
 POST /api/tasks/{taskId}/resolve
 Request:
 ```json
 { "kind": "COMPLETED", "reason": "Done", "evidenceRefs": [] }
+```
+Response 200:
+```json
+{ "id": "uuid", "state": "RESOLVED", "assigneeId": "u-201" }
 ```
 Analytics
 
@@ -244,8 +273,8 @@ Response:
 6) Auth Strategy (MVP)
    •	Target: OIDC with Keycloak.
    •	MVP approach:
-   •	Dev mode can use a fixed user header (e.g., X-Dev-UserId) behind a dev profile.
-   •	Always include tenantId (e.g., header X-Tenant-Id) in dev mode.
+   •	Dev mode uses fixed headers: X-Dev-UserId and X-Tenant-Id.
+   •	Missing dev headers return 401 with the standard error envelope.
    TODO:
    •	Add proper JWT validation and mapping to userId + tenantId.
 

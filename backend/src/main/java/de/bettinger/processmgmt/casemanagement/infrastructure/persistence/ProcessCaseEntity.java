@@ -8,6 +8,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -42,7 +43,7 @@ public class ProcessCaseEntity {
 	@Column(name = "created_at", nullable = false)
 	private Instant createdAt;
 
-	@OneToMany(mappedBy = "processCase", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "processCase", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<CaseStakeholderEntity> stakeholders = new ArrayList<>();
 
 	protected ProcessCaseEntity() {
@@ -60,6 +61,10 @@ public class ProcessCaseEntity {
 
 	public void addStakeholder(String userId, StakeholderRole role) {
 		stakeholders.add(new CaseStakeholderEntity(this, userId, role));
+	}
+
+	public void setStatus(ProcessCaseStatus status) {
+		this.status = status;
 	}
 
 }

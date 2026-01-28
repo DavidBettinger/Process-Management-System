@@ -58,6 +58,12 @@ public class TaskEntity {
 	@Column(name = "resolved_at")
 	private Instant resolvedAt;
 
+	@Column(name = "last_decline_reason")
+	private String lastDeclineReason;
+
+	@Column(name = "last_suggested_assignee_id")
+	private String lastSuggestedAssigneeId;
+
 	@Column(name = "created_at", nullable = false)
 	private Instant createdAt;
 
@@ -78,6 +84,8 @@ public class TaskEntity {
 				task.getResolutionReason(),
 				task.getResolvedBy(),
 				task.getResolvedAt(),
+				task.getLastDeclineReason(),
+				task.getLastSuggestedAssigneeId(),
 				task.getCreatedAt()
 		);
 	}
@@ -94,6 +102,8 @@ public class TaskEntity {
 				resolutionReason,
 				resolvedBy,
 				resolvedAt,
+				lastDeclineReason,
+				lastSuggestedAssigneeId,
 				createdAt
 		);
 	}
@@ -108,11 +118,18 @@ public class TaskEntity {
 		this.resolutionReason = task.getResolutionReason();
 		this.resolvedBy = task.getResolvedBy();
 		this.resolvedAt = task.getResolvedAt();
+		this.lastDeclineReason = task.getLastDeclineReason();
+		this.lastSuggestedAssigneeId = task.getLastSuggestedAssigneeId();
+	}
+
+	public void setDueDate(LocalDate dueDate) {
+		this.dueDate = dueDate;
 	}
 
 	public TaskEntity(UUID id, UUID caseId, UUID originMeetingId, String title, String description, LocalDate dueDate,
 					 String assigneeId, TaskState state, TaskResolutionKind resolutionKind, String resolutionReason,
-					 String resolvedBy, Instant resolvedAt, Instant createdAt) {
+					 String resolvedBy, Instant resolvedAt, String lastDeclineReason, String lastSuggestedAssigneeId,
+					 Instant createdAt) {
 		this.id = id;
 		this.caseId = caseId;
 		this.originMeetingId = originMeetingId;
@@ -125,6 +142,8 @@ public class TaskEntity {
 		this.resolutionReason = resolutionReason;
 		this.resolvedBy = resolvedBy;
 		this.resolvedAt = resolvedAt;
+		this.lastDeclineReason = lastDeclineReason;
+		this.lastSuggestedAssigneeId = lastSuggestedAssigneeId;
 		this.createdAt = createdAt;
 	}
 

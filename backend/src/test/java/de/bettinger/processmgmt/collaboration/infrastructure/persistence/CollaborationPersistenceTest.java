@@ -53,6 +53,8 @@ class CollaborationPersistenceTest {
 				"Done",
 				"u-1",
 				Instant.now(),
+				"Declined",
+				"u-2",
 				Instant.now()
 		);
 
@@ -61,5 +63,7 @@ class CollaborationPersistenceTest {
 		TaskEntity saved = taskRepository.findById(task.getId()).orElseThrow();
 		assertThat(saved.getResolutionKind()).isEqualTo(TaskResolutionKind.COMPLETED);
 		assertThat(saved.getAssigneeId()).isEqualTo("u-1");
+		assertThat(saved.getLastDeclineReason()).isEqualTo("Declined");
+		assertThat(saved.getLastSuggestedAssigneeId()).isEqualTo("u-2");
 	}
 }

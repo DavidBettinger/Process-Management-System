@@ -5,11 +5,15 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -37,6 +41,14 @@ public class MeetingEntity {
 	@Column(name = "minutes_text")
 	private String minutesText;
 
+	@OneToMany(mappedBy = "meeting", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true,
+			fetch = FetchType.EAGER)
+	private List<MeetingParticipantEntity> participants = new ArrayList<>();
+
+	@OneToMany(mappedBy = "meeting", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true,
+			fetch = FetchType.EAGER)
+	private List<MeetingActionItemEntity> actionItems = new ArrayList<>();
+
 	protected MeetingEntity() {
 	}
 
@@ -48,6 +60,30 @@ public class MeetingEntity {
 		this.scheduledAt = scheduledAt;
 		this.heldAt = heldAt;
 		this.minutesText = minutesText;
+	}
+
+	public void setStatus(MeetingStatus status) {
+		this.status = status;
+	}
+
+	public void setHeldAt(Instant heldAt) {
+		this.heldAt = heldAt;
+	}
+
+	public void setMinutesText(String minutesText) {
+		this.minutesText = minutesText;
+	}
+
+	public void replaceParticipants(List<String> participantIds) {
+		participants.clear();
+		for (String userId : participantIds) {
+			participants.add(new MeetingParticipantEntity(this, userId));
+		}
+	}
+
+	public void replaceActionItems(List<MeetingActionItemEntity> newItems) {
+		actionItems.clear();
+		actionItems.addAll(newItems);
 	}
 
 }

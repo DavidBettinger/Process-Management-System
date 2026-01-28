@@ -68,7 +68,7 @@ For each task: objective, files to touch, definition of done, how to test.
 - unauthorized returns 401 (or dev auth rule)
   **Test:** `./gradlew test`
 
-### [ ] T1.7 Timeline projection (MVP)
+### [x] T1.7 Timeline projection (MVP)
 **Objective:** Return ordered timeline entries for a case.
 **Approach:** Start by querying outbox_events filtered by caseId and sorting by occurredAt.
 **Files:** `backend/.../analytics/*`

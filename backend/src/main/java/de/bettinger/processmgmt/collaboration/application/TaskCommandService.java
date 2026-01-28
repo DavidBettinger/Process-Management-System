@@ -45,7 +45,8 @@ public class TaskCommandService {
 		entity.applyFrom(task);
 		taskRepository.save(entity);
 		outboxEventRepository.save(outboxEvent(taskId, "TaskAssigned",
-				"{\"taskId\":\"" + taskId + "\",\"assigneeId\":\"" + assigneeId + "\"}"));
+				"{\"taskId\":\"" + taskId + "\",\"caseId\":\"" + entity.getCaseId() + "\",\"assigneeId\":\""
+						+ assigneeId + "\"}"));
 		return entity;
 	}
 
@@ -58,7 +59,7 @@ public class TaskCommandService {
 		entity.applyFrom(task);
 		taskRepository.save(entity);
 		outboxEventRepository.save(outboxEvent(taskId, "TaskResolved",
-				"{\"taskId\":\"" + taskId + "\",\"kind\":\"" + kind + "\"}"));
+				"{\"taskId\":\"" + taskId + "\",\"caseId\":\"" + entity.getCaseId() + "\",\"kind\":\"" + kind + "\"}"));
 		return entity;
 	}
 

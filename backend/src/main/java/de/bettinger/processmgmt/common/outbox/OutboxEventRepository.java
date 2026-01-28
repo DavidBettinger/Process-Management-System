@@ -4,4 +4,5 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface OutboxEventRepository extends JpaRepository<OutboxEventEntity, UUID> {
+	java.util.List<OutboxEventEntity> findAllByPayloadContainingOrderByOccurredAtAsc(String payload);
 }

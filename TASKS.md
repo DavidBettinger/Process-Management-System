@@ -384,7 +384,7 @@ Also create:
 
 ---
 
-### [ ] T2.5 Add authentication/tenant dev strategy (frontend)
+### [x] T2.5 Add authentication/tenant dev strategy (frontend)
 **Objective:** Support MVP dev auth with headers (until Keycloak is integrated).
 **Files to touch:**
 - `frontend/src/app/core/auth/dev-auth.service.ts`

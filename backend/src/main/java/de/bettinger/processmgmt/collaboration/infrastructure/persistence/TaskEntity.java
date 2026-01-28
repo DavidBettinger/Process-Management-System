@@ -64,6 +64,52 @@ public class TaskEntity {
 	protected TaskEntity() {
 	}
 
+	public static TaskEntity fromDomain(de.bettinger.processmgmt.collaboration.domain.task.Task task) {
+		return new TaskEntity(
+				task.getId(),
+				task.getCaseId(),
+				null,
+				task.getTitle(),
+				task.getDescription(),
+				null,
+				task.getAssigneeId(),
+				task.getState(),
+				task.getResolutionKind(),
+				task.getResolutionReason(),
+				task.getResolvedBy(),
+				task.getResolvedAt(),
+				task.getCreatedAt()
+		);
+	}
+
+	public de.bettinger.processmgmt.collaboration.domain.task.Task toDomain() {
+		return de.bettinger.processmgmt.collaboration.domain.task.Task.rehydrate(
+				id,
+				caseId,
+				title,
+				description,
+				state,
+				assigneeId,
+				resolutionKind,
+				resolutionReason,
+				resolvedBy,
+				resolvedAt,
+				createdAt
+		);
+	}
+
+	public void applyFrom(de.bettinger.processmgmt.collaboration.domain.task.Task task) {
+		if (!id.equals(task.getId())) {
+			throw new IllegalArgumentException("Task identity mismatch");
+		}
+		this.assigneeId = task.getAssigneeId();
+		this.state = task.getState();
+		this.resolutionKind = task.getResolutionKind();
+		this.resolutionReason = task.getResolutionReason();
+		this.resolvedBy = task.getResolvedBy();
+		this.resolvedAt = task.getResolvedAt();
+	}
+
 	public TaskEntity(UUID id, UUID caseId, UUID originMeetingId, String title, String description, LocalDate dueDate,
 					 String assigneeId, TaskState state, TaskResolutionKind resolutionKind, String resolutionReason,
 					 String resolvedBy, Instant resolvedAt, Instant createdAt) {

@@ -32,6 +32,19 @@ public class Task {
 		this.state = TaskState.OPEN;
 	}
 
+	public static Task rehydrate(UUID id, UUID caseId, String title, String description, TaskState state, String assigneeId,
+			TaskResolutionKind resolutionKind, String resolutionReason, String resolvedBy, Instant resolvedAt,
+			Instant createdAt) {
+		Task task = new Task(id, caseId, title, description, createdAt);
+		task.state = Objects.requireNonNull(state, "state");
+		task.assigneeId = assigneeId;
+		task.resolutionKind = resolutionKind;
+		task.resolutionReason = resolutionReason;
+		task.resolvedBy = resolvedBy;
+		task.resolvedAt = resolvedAt;
+		return task;
+	}
+
 	public static Task create(UUID caseId, String title, String description) {
 		return new Task(UUID.randomUUID(), caseId, title, description == null ? "" : description, Instant.now());
 	}

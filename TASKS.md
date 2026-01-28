@@ -53,7 +53,7 @@ For each task: objective, files to touch, definition of done, how to test.
 **DoD:** App starts, basic repository operations tested with H2
 **Test:** `./gradlew test`
 
-### [ ] T1.5 Implement Outbox events (minimal)
+### [x] T1.5 Implement Outbox events (minimal)
 **Objective:** Persist domain events on writes in same transaction.
 **Files:** `backend/.../common/outbox/*`
 **DoD:** When creating/assigning/resolving tasks, an outbox row is written.

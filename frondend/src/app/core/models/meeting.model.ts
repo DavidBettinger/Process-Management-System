@@ -10,6 +10,11 @@ export interface ScheduleMeetingResponse {
   status: MeetingStatus;
 }
 
+export interface Meeting {
+  id: string;
+  status: MeetingStatus;
+}
+
 export interface ActionItemRequest {
   key: string;
   title: string;

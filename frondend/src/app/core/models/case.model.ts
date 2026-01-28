@@ -26,3 +26,5 @@ export interface CaseDetailsResponse {
   stakeholders: StakeholderResponse[];
   createdAt: string;
 }
+
+export type ProcessCase = CaseDetailsResponse;

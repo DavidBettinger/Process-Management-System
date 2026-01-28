@@ -12,3 +12,5 @@ export interface TimelineResponse {
   caseId: string;
   entries: TimelineEntry[];
 }
+
+export type CaseTimeline = TimelineResponse;

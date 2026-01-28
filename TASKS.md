@@ -30,7 +30,7 @@ For each task: objective, files to touch, definition of done, how to test.
 **TODO:** Add Checkstyle/Spotless configuration for the backend build.
 **Test:** Run backend tests.
 
-### [ ] T1.2 Implement domain model for ProcessCase
+### [x] T1.2 Implement domain model for ProcessCase
 **Objective:** Add `ProcessCase` aggregate, statuses, stakeholder roles, invariants.
 **Files:** `backend/.../casemanagement/domain/*`
 **DoD:** Unit tests cover:
@@ -38,7 +38,7 @@ For each task: objective, files to touch, definition of done, how to test.
 - adding stakeholders stores role
   **Test:** `./gradlew test`
 
-### [ ] T1.3 Implement domain model for Task state machine
+### [x] T1.3 Implement domain model for Task state machine
 **Objective:** Add `Task` aggregate with states + resolution kinds + transitions.
 **Files:** `backend/.../collaboration/domain/task/*`
 **DoD:** Unit tests cover:
@@ -47,10 +47,10 @@ For each task: objective, files to touch, definition of done, how to test.
 - declining assignment clears assignee and returns to OPEN
   **Test:** `./gradlew test`
 
-### [ ] T1.4 Add persistence (JPA) for cases, meetings, tasks
+### [x] T1.4 Add persistence (JPA) for cases, meetings, tasks
 **Objective:** Map aggregates to tables.
 **Files:** `backend/.../infrastructure/persistence/*`
-**DoD:** App starts, basic repository operations tested with H2 or Testcontainers (choose one).
+**DoD:** App starts, basic repository operations tested with H2
 **Test:** `./gradlew test`
 
 ### [ ] T1.5 Implement Outbox events (minimal)

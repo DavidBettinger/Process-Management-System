@@ -120,6 +120,13 @@ We are NOT doing full event sourcing in MVP 1.
 
 Base path: `/api`
 
+### Health
+GET `/api/health`
+Response 200:
+```json
+{ "status": "ok" }
+```
+
 ### Cases
 #### Create case
 POST `/api/cases`

@@ -50,6 +50,7 @@ A process management app for **Kita consulting** (Fachberatung) to document and 
 - Meetings (scheduled/held/cancelled) with minutes
 - Tasks with lifecycle and resolution types:
     - completed, not completed, not applicable, cancelled
+- Health check endpoint (`GET /api/health`)
 - Basic read models for:
     - timeline
     - stakeholder contribution (minimal)

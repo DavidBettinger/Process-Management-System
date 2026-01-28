@@ -158,6 +158,7 @@ Response 200:
 #### Get case details
 GET /api/cases/{caseId}
 Response 200: (includes stakeholders)
+TODO: Add GET /api/cases for listing processes in the frontend.
 
 Meetings
 
@@ -322,3 +323,337 @@ Timeline
 2026-02-01 10:05  Task created: Draft concept v1
 2026-02-01 10:06  Task assigned to u-201
 ```
+
+## Frontend
+
+Frontend State Management (Angular Signals) — Concrete Store API
+
+Principles
+•	One store per feature (cases list, case detail, tasks, timeline, meetings).
+•	Stores own:
+•	state signals
+•	computed selectors
+•	async methods calling typed API clients
+•	Components are mostly “dumb”: they call store methods and read signals/computed.
+•	Each store exposes the same base signals: loading, error, lastUpdatedAt.
+
+⸻
+
+Shared State Types
+
+File: frontend/src/app/core/state/state.types.ts
+```
+export type LoadStatus = 'idle' | 'loading' | 'success' | 'error';
+
+export interface StoreError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+  traceId?: string;
+}
+
+export interface EntityState<T> {
+  status: LoadStatus;
+  data: T | null;
+  error: StoreError | null;
+  lastUpdatedAt: string | null; // ISO
+}
+
+export interface ListState<T> {
+  status: LoadStatus;
+  items: T[];
+  error: StoreError | null;
+  lastUpdatedAt: string | null; // ISO
+}
+```
+
+Standard Store Conventions
+
+Store method naming
+•	loadX() for GET requests
+•	createX() for POST create
+•	updateX() for updates (if needed)
+•	performXAction() for command endpoints (assign/resolve/decline/etc.)
+•	Always return Promise<void> (store updates are in signals)
+
+Store signals
+
+Every store should expose:
+•	status (or state().status)
+•	error
+•	isLoading computed
+•	hasError computed
+
+⸻
+
+Store 1: CasesStore (Case List)
+
+File: frontend/src/app/features/cases/state/cases.store.ts
+
+State
+•	list of cases
+•	optional “creating” flag (or reuse status)
+
+API
+```
+export class CasesStore {
+  // signals
+  readonly state = signal<ListState<ProcessCase>>({
+    status: 'idle',
+    items: [],
+    error: null,
+    lastUpdatedAt: null,
+  });
+
+  // selectors
+  readonly cases = computed(() => this.state().items);
+  readonly status = computed(() => this.state().status);
+  readonly error = computed(() => this.state().error);
+  readonly isLoading = computed(() => this.state().status === 'loading');
+  readonly isEmpty = computed(() => this.state().status === 'success' && this.state().items.length === 0);
+
+  // methods
+  loadCases(): Promise<void>;
+
+  createCase(req: CreateCaseRequest): Promise<void>;
+}
+```
+
+Behavior rules
+•	loadCases() sets status=loading, clears error, fills items on success.
+•	createCase():
+•	calls API
+•	on success either:
+•	Option A (simple): re-call loadCases()
+•	Option B (faster): append created case and set status success
+•	show toast in component (or in store if you centralize UI side effects)
+
+⸻
+
+Store 2: CaseDetailStore (Case Header + Stakeholders + Status)
+
+File: frontend/src/app/features/case-detail/state/case-detail.store.ts
+
+State
+•	selected case details (includes stakeholders)
+•	selected caseId
+
+API
+```
+export class CaseDetailStore {
+  readonly caseId = signal<string | null>(null);
+
+  readonly state = signal<EntityState<ProcessCase>>({
+    status: 'idle',
+    data: null,
+    error: null,
+    lastUpdatedAt: null,
+  });
+
+  readonly caseData = computed(() => this.state().data);
+  readonly status = computed(() => this.state().status);
+  readonly error = computed(() => this.state().error);
+  readonly isLoading = computed(() => this.state().status === 'loading');
+
+  // convenience selectors
+  readonly stakeholders = computed(() => this.state().data?.stakeholders ?? []);
+  readonly caseStatus = computed(() => this.state().data?.status ?? null);
+  readonly canActivate = computed(() => {
+    const c = this.state().data;
+    if (!c) return false;
+    const hasConsultant = (c.stakeholders ?? []).some(s => s.role === 'CONSULTANT');
+    return c.status === 'DRAFT' || c.status === 'PAUSED' ? hasConsultant : false;
+  });
+
+  // methods
+  setCaseId(caseId: string): void;
+
+  loadCase(): Promise<void>; // uses caseId()
+  addStakeholder(req: AddStakeholderRequest): Promise<void>;
+  activateCase(): Promise<void>;
+}
+```
+Behavior rules
+•	setCaseId() sets caseId and resets state to idle (optional).
+•	loadCase() requires caseId not null; otherwise set error with code MISSING_CASE_ID.
+•	After addStakeholder() and activateCase():
+•	simplest is await loadCase() to refresh canonical state.
+
+⸻
+
+Store 3: TasksStore (Tasks Tab)
+
+File: frontend/src/app/features/tasks/state/tasks.store.ts
+
+State
+•	caseId
+•	list of tasks for that case
+•	optional busyTaskIds set to disable buttons per task while a request is running
+
+API
+```
+export class TasksStore {
+  readonly caseId = signal<string | null>(null);
+
+  readonly state = signal<ListState<Task>>({
+    status: 'idle',
+    items: [],
+    error: null,
+    lastUpdatedAt: null,
+  });
+
+  // Track per-task busy state to avoid double clicks
+  readonly busyTaskIds = signal<Set<string>>(new Set());
+
+  readonly tasks = computed(() => this.state().items);
+  readonly status = computed(() => this.state().status);
+  readonly error = computed(() => this.state().error);
+  readonly isLoading = computed(() => this.state().status === 'loading');
+
+  setCaseId(caseId: string): void;
+
+  loadTasks(): Promise<void>; // GET tasks by case (you may need an endpoint; TODO if missing)
+
+  createTask(req: CreateTaskRequest): Promise<void>;
+
+  assignTask(taskId: string, req: AssignTaskRequest): Promise<void>;
+  startTask(taskId: string): Promise<void>;
+  blockTask(taskId: string, reason: string): Promise<void>;
+  unblockTask(taskId: string): Promise<void>;
+  declineTask(taskId: string, req: DeclineTaskRequest): Promise<void>;
+  resolveTask(taskId: string, req: ResolveTaskRequest): Promise<void>;
+
+  // helpers
+  isBusy(taskId: string): boolean;
+}
+```
+
+Action enablement helpers (recommended)
+
+Add pure helpers in task.model.ts:
+•	canAssign(task)
+•	canStart(task)
+•	canBlock(task)
+•	canUnblock(task)
+•	canDecline(task) (only if user is assignee; in MVP dev, use dev userId)
+•	canResolve(task) (not resolved)
+
+Behavior rules
+•	Every action method:
+1.	marks task busy (busyTaskIds.add(taskId))
+2.	calls API
+3.	on success refreshes tasks (await loadTasks()) or patch updates locally
+4.	clears busy in finally block
+•	On invalid transition:
+•	API returns 400/409 → show toast via component using errorMapper.
+
+Note: If your backend doesn’t have GET /cases/{caseId}/tasks yet, mark it as TODO in ARCHITECTURE.md + implement a temporary workaround (e.g., fetch via timeline projection) only if absolutely needed. Prefer adding the endpoint.
+
+⸻
+
+Store 4: MeetingsStore (Meetings Tab + Hold Meeting)
+
+File: frontend/src/app/features/meetings/state/meetings.store.ts
+
+State
+•	caseId
+•	list of meetings (if endpoint exists)
+•	last hold result (created task IDs)
+
+API
+```
+export class MeetingsStore {
+  readonly caseId = signal<string | null>(null);
+
+  readonly meetingsState = signal<ListState<Meeting>>({
+    status: 'idle',
+    items: [],
+    error: null,
+    lastUpdatedAt: null,
+  });
+
+  readonly holdResult = signal<HoldMeetingResponse | null>(null);
+
+  readonly meetings = computed(() => this.meetingsState().items);
+  readonly status = computed(() => this.meetingsState().status);
+  readonly error = computed(() => this.meetingsState().error);
+  readonly isLoading = computed(() => this.meetingsState().status === 'loading');
+
+  setCaseId(caseId: string): void;
+
+  loadMeetings(): Promise<void>; // TODO if endpoint not ready
+  scheduleMeeting(req: ScheduleMeetingRequest): Promise<void>; // TODO if endpoint not ready
+
+  holdMeeting(meetingId: string, req: HoldMeetingRequest): Promise<void>;
+  clearHoldResult(): void;
+}
+```
+Hold meeting: stable action item keys
+•	In UI, when adding action items, generate key with crypto.randomUUID().
+•	Ensure keys persist while editing, so retries don’t duplicate tasks.
+
+⸻
+
+Store 5: TimelineStore (Timeline Tab)
+
+File: frontend/src/app/features/timeline/state/timeline.store.ts
+
+State
+•	caseId
+•	entries list
+
+API
+```
+export class TimelineStore {
+  readonly caseId = signal<string | null>(null);
+
+  readonly state = signal<EntityState<CaseTimeline>>({
+    status: 'idle',
+    data: null,
+    error: null,
+    lastUpdatedAt: null,
+  });
+
+  readonly timeline = computed(() => this.state().data?.entries ?? []);
+  readonly status = computed(() => this.state().status);
+  readonly error = computed(() => this.state().error);
+  readonly isLoading = computed(() => this.state().status === 'loading');
+  readonly isEmpty = computed(() => this.state().status === 'success' && (this.state().data?.entries?.length ?? 0) === 0);
+
+  setCaseId(caseId: string): void;
+  loadTimeline(): Promise<void>;
+}
+```
+
+Cross-Store Coordination (Case Detail Page)
+
+On the Case Detail route (/cases/:caseId), do:
+•	caseDetailStore.setCaseId(id); caseDetailStore.loadCase();
+•	tasksStore.setCaseId(id); tasksStore.loadTasks();
+•	meetingsStore.setCaseId(id); meetingsStore.loadMeetings(); (if supported)
+•	timelineStore.setCaseId(id); timelineStore.loadTimeline();
+
+When holding a meeting:
+•	await meetingsStore.holdMeeting(...)
+•	then refresh:
+•	await tasksStore.loadTasks()
+•	await timelineStore.loadTimeline()
+
+⸻
+
+Minimal Dev User Identity (for actions like decline)
+
+Add a DevSessionStore (or service) that exposes:
+•	userId (from env or local storage)
+•	tenantId
+
+Stores can use it to decide whether “Decline” button is visible.
+
+File: frontend/src/app/core/auth/dev-session.service.ts
+```
+export class DevSessionService {
+  readonly userId = signal<string>('u-101');
+  readonly tenantId = signal<string>('tenant-001');
+}
+```
+

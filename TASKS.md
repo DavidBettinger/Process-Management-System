@@ -95,6 +95,7 @@ Cases should be named process in the ui and the text of the UI must be in German
 But only the text that the user sees, the rest stays in english.
 Readmes should also be in english.
 Always make sure that the frontend matches the backend (API calls and DTOs)
+Make sure that you don't use deprecated features!
 
 ## Frontend — Angular MVP (Codex Tasks)
 
@@ -165,7 +166,7 @@ Always make sure that the frontend matches the backend (API calls and DTOs)
 
 ---
 
-### [ ] T2.3 Implement global error handling + standard API error mapping
+### [x] T2.3 Implement global error handling + standard API error mapping
 **Objective:** Convert backend error envelope into user-friendly UI errors and dev-friendly logs.
 **Files to touch:**
 - `frontend/src/app/core/http/api-error.interceptor.ts`
@@ -179,31 +180,207 @@ Always make sure that the frontend matches the backend (API calls and DTOs)
 
 ---
 
-### [ ] T2.4 Create state management service (simple store) for MVP
-**Objective:** Add a lightweight state management layer to avoid scattered component state.
-**Approach (recommended for MVP):**
-- Use an Angular service per feature with:
-  - `signal()` or `BehaviorSubject` state
-  - `computed` selectors
-  - `methods` that call API + update state
-    **Files to touch:**
-- `frontend/src/app/core/state/`:
-  - `state.types.ts` (loading/error helpers)
+### [x] T2.4 Implement Angular Signals State Management Stores (MVP standard)
+
+**Objective:** Implement a consistent, signal-based state management layer (stores) for the MVP, aligned with the backend API and the typed API client services.
+
+---
+
+## Scope (what to build in this task)
+
+Create:
+1) Shared state types (`LoadStatus`, `StoreError`, `EntityState`, `ListState`)
+2) Feature stores using Angular Signals:
+  - `CasesStore` (case list + create)
+  - `CaseDetailStore` (case detail + add stakeholder + activate)
+  - `TasksStore` (tasks list + task actions)
+  - `TimelineStore` (timeline load)
+  - `MeetingsStore` (hold meeting + optional meeting list)
+
+Also create:
+- Minimal `DevSessionService` that exposes `userId` and `tenantId` as signals for dev-only UI and action rules.
+
+---
+
+## Files to touch / create
+
+### Shared state
+- `frontend/src/app/core/state/state.types.ts`
+
+### Dev session (dev-only identity)
+- `frontend/src/app/core/auth/dev-session.service.ts`
+
+### Stores
 - `frontend/src/app/features/cases/state/cases.store.ts`
 - `frontend/src/app/features/case-detail/state/case-detail.store.ts`
+- `frontend/src/app/features/tasks/state/tasks.store.ts`
 - `frontend/src/app/features/timeline/state/timeline.store.ts`
-- `frontend/src/app/features/tasks/state/tasks.store.ts` (optional if separated)
-  **State shape (example):**
-- `items`, `selected`, `loading`, `error`
-  **Definition of done:**
-- Stores expose:
-  - `loadCases()`, `createCase()`
-  - `loadCase(caseId)`, `addStakeholder()`, `activateCase()`
-  - `loadTimeline(caseId)`
-  - `assignTask()`, `declineTask()`, `resolveTask()`, etc.
-- Components become mostly “dumb” and subscribe to store state.
-  **How to test:**
-- Unit tests with mocked API services (happy path + error path).
+- `frontend/src/app/features/meetings/state/meetings.store.ts`
+
+### Store tests
+- `frontend/src/app/features/cases/state/cases.store.spec.ts`
+- `frontend/src/app/features/case-detail/state/case-detail.store.spec.ts`
+- `frontend/src/app/features/tasks/state/tasks.store.spec.ts`
+- `frontend/src/app/features/timeline/state/timeline.store.spec.ts`
+- `frontend/src/app/features/meetings/state/meetings.store.spec.ts`
+
+> Note: Stores depend on typed API client services:
+> - `CasesApi`, `TasksApi`, `MeetingsApi`, `AnalyticsApi`
+    > If they do not exist yet, add `TODO:` markers and minimal stubs, but do not invent endpoints beyond `ARCHITECTURE.md`.
+
+---
+
+## Required Store APIs (must match exactly)
+
+### 1) `CasesStore`
+**State signal**
+- `state: ListState<ProcessCase>`
+
+**Selectors (computed)**
+- `cases`, `status`, `error`, `isLoading`, `isEmpty`
+
+**Methods**
+- `loadCases(): Promise<void>`
+- `createCase(req: CreateCaseRequest): Promise<void>`
+
+**Behavior**
+- `loadCases()` sets status to `loading`, clears error, fills items on success.
+- `createCase()` calls API, then refreshes list via `loadCases()` (simple & canonical).
+
+---
+
+### 2) `CaseDetailStore`
+**Signals**
+- `caseId: signal<string | null>`
+- `state: EntityState<ProcessCase>`
+
+**Computed**
+- `caseData`, `status`, `error`, `isLoading`
+- `stakeholders`
+- `caseStatus`
+- `canActivate` (true if case is DRAFT/PAUSED AND at least one stakeholder has role `CONSULTANT`)
+
+**Methods**
+- `setCaseId(caseId: string): void`
+- `loadCase(): Promise<void>`
+- `addStakeholder(req: AddStakeholderRequest): Promise<void>`
+- `activateCase(): Promise<void>`
+
+**Behavior**
+- `loadCase()` requires caseId; otherwise set error `{code:'MISSING_CASE_ID',...}`.
+- After `addStakeholder()` and `activateCase()`, call `loadCase()` to refresh.
+
+---
+
+### 3) `TasksStore`
+**Signals**
+- `caseId: signal<string | null>`
+- `state: ListState<Task>`
+- `busyTaskIds: signal<Set<string>>`
+
+**Computed**
+- `tasks`, `status`, `error`, `isLoading`
+
+**Methods**
+- `setCaseId(caseId: string): void`
+- `loadTasks(): Promise<void>` (**TODO** if endpoint not present; must be clearly marked)
+- `createTask(req: CreateTaskRequest): Promise<void>`
+- `assignTask(taskId: string, req: AssignTaskRequest): Promise<void>`
+- `startTask(taskId: string): Promise<void>`
+- `blockTask(taskId: string, reason: string): Promise<void>`
+- `unblockTask(taskId: string): Promise<void>`
+- `declineTask(taskId: string, req: DeclineTaskRequest): Promise<void>`
+- `resolveTask(taskId: string, req: ResolveTaskRequest): Promise<void>`
+- `isBusy(taskId: string): boolean`
+
+**Behavior**
+- All action methods:
+  - add taskId to busy set
+  - call API
+  - refresh via `loadTasks()` on success
+  - remove taskId from busy set in `finally`
+- If `loadTasks()` endpoint is missing:
+  - Add `TODO` and implement a safe fallback only if an existing endpoint can provide tasks without inventing new contracts.
+  - Otherwise, keep as `throw new Error('TODO: Implement GET tasks for case')` with TODO note.
+
+---
+
+### 4) `TimelineStore`
+**Signals**
+- `caseId: signal<string | null>`
+- `state: EntityState<CaseTimeline>`
+
+**Computed**
+- `timeline`, `status`, `error`, `isLoading`, `isEmpty`
+
+**Methods**
+- `setCaseId(caseId: string): void`
+- `loadTimeline(): Promise<void>`
+
+**Behavior**
+- Loads timeline via `AnalyticsApi.getTimeline(caseId)` and stores it in `state.data`.
+
+---
+
+### 5) `MeetingsStore`
+**Signals**
+- `caseId: signal<string | null>`
+- `meetingsState: ListState<Meeting>` (list can be TODO if not supported yet)
+- `holdResult: signal<HoldMeetingResponse | null>`
+
+**Computed**
+- `meetings`, `status`, `error`, `isLoading`
+
+**Methods**
+- `setCaseId(caseId: string): void`
+- `loadMeetings(): Promise<void>` (**TODO** if endpoint missing)
+- `scheduleMeeting(req: ScheduleMeetingRequest): Promise<void>` (**TODO** if endpoint missing)
+- `holdMeeting(meetingId: string, req: HoldMeetingRequest): Promise<void>`
+- `clearHoldResult(): void`
+
+**Behavior**
+- `holdMeeting()` sets `holdResult` on success.
+- Must not create action item keys in store; UI must provide stable keys.
+
+---
+
+### 6) `DevSessionService`
+**Signals**
+- `userId: signal<string>`
+- `tenantId: signal<string>`
+
+**Behavior**
+- Default values:
+  - `userId = 'u-101'`
+  - `tenantId = 'tenant-001'`
+- Later can be replaced by real auth.
+
+---
+
+## Definition of Done (DoD)
+
+- All files compile with strict TypeScript.
+- All stores exist with the required API methods and signals/computed selectors.
+- Store unit tests exist and cover:
+  - Happy path updates `status`, `error`, and data
+  - Error path sets `status='error'` and populates `StoreError`
+  - `TasksStore` busy set adds/removes taskId around actions
+  - `CaseDetailStore.loadCase()` sets error when caseId is missing
+- No endpoints are invented. Missing endpoints are explicitly marked with `TODO:` and do not silently fake data.
+
+---
+
+## How to Test
+
+1) Frontend unit tests:
+- `cd frontend && npm test`
+
+2) Type check / build (if available):
+- `cd frontend && npm run build`
+
+3) Optional quick manual check:
+- Start dev server and ensure no runtime injection errors:
+  - `cd frontend && npm start`
 
 ---
 

@@ -66,4 +66,50 @@ class CollaborationPersistenceTest {
 		assertThat(saved.getLastDeclineReason()).isEqualTo("Declined");
 		assertThat(saved.getLastSuggestedAssigneeId()).isEqualTo("u-2");
 	}
+
+	@Test
+	void findsTasksByOriginMeetingId() {
+		UUID meetingId = UUID.randomUUID();
+		TaskEntity taskFromMeeting = new TaskEntity(
+				UUID.randomUUID(),
+				UUID.randomUUID(),
+				meetingId,
+				"Title",
+				"Description",
+				LocalDate.now(),
+				"u-1",
+				TaskState.ASSIGNED,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				Instant.now()
+		);
+		TaskEntity otherTask = new TaskEntity(
+				UUID.randomUUID(),
+				UUID.randomUUID(),
+				null,
+				"Other",
+				"Description",
+				LocalDate.now(),
+				null,
+				TaskState.OPEN,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				Instant.now()
+		);
+
+		taskRepository.save(taskFromMeeting);
+		taskRepository.save(otherTask);
+
+		assertThat(taskRepository.findAllByOriginMeetingId(meetingId))
+				.extracting(TaskEntity::getId)
+				.containsExactly(taskFromMeeting.getId());
+	}
 }

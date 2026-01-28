@@ -81,7 +81,7 @@ For each task: objective, files to touch, definition of done, how to test.
 **DoD:** Outbox rows are written for meeting held and meeting task creation; integration tests verify rows.
 **Test:** `./gradlew test`
 
-### [ ] T1.9 Add repository queries for meeting tasks by meeting ID
+### [x] T1.9 Add repository queries for meeting tasks by meeting ID
 **Objective:** Query tasks created from a meeting via originMeetingId.
 **Files:** `backend/.../collaboration/infrastructure/persistence/*`
 **DoD:** Repository method returns tasks for a meeting; integration test verifies.

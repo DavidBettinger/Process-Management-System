@@ -6,10 +6,11 @@ import de.bettinger.processmgmt.collaboration.api.MeetingDtos.ScheduleMeetingReq
 import de.bettinger.processmgmt.collaboration.api.MeetingDtos.ScheduleMeetingResponse;
 import de.bettinger.processmgmt.collaboration.application.MeetingActionItemCommand;
 import de.bettinger.processmgmt.collaboration.application.MeetingCommandService;
+import de.bettinger.processmgmt.collaboration.infrastructure.persistence.MeetingActionItemEntity;
 import de.bettinger.processmgmt.collaboration.infrastructure.persistence.MeetingEntity;
 import jakarta.validation.Valid;
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,12 +48,16 @@ public class MeetingController {
 		List<MeetingActionItemCommand> actionItems = toCommands(request.actionItems());
 		MeetingEntity meeting = meetingCommandService.holdMeeting(meetingId, request.heldAt(), request.minutesText(),
 				request.participantIds(), actionItems);
-		return new HoldMeetingResponse(meeting.getId(), Collections.emptyList());
+		List<UUID> createdTaskIds = meeting.getActionItems().stream()
+				.map(MeetingActionItemEntity::getCreatedTaskId)
+				.filter(Objects::nonNull)
+				.toList();
+		return new HoldMeetingResponse(meeting.getId(), createdTaskIds);
 	}
 
 	private List<MeetingActionItemCommand> toCommands(List<MeetingDtos.ActionItemRequest> actionItems) {
 		if (actionItems == null) {
-			return Collections.emptyList();
+			return List.of();
 		}
 		return actionItems.stream()
 				.map(item -> new MeetingActionItemCommand(item.key(), item.title(), item.assigneeId(), item.dueDate()))

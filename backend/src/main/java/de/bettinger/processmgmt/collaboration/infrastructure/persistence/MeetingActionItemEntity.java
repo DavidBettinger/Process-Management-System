@@ -8,6 +8,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
+import lombok.Getter;
+
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -15,7 +17,8 @@ import java.util.UUID;
 @Table(name = "meeting_action_items")
 public class MeetingActionItemEntity {
 
-	@EmbeddedId
+	@Getter
+    @EmbeddedId
 	private MeetingActionItemId id;
 
 	@MapsId("meetingId")
@@ -23,16 +26,20 @@ public class MeetingActionItemEntity {
 	@JoinColumn(name = "meeting_id", nullable = false)
 	private MeetingEntity meeting;
 
-	@Column(name = "title", nullable = false)
+	@Getter
+    @Column(name = "title", nullable = false)
 	private String title;
 
-	@Column(name = "assignee_id")
+	@Getter
+    @Column(name = "assignee_id")
 	private String assigneeId;
 
-	@Column(name = "due_date")
+	@Getter
+    @Column(name = "due_date")
 	private LocalDate dueDate;
 
-	@Column(name = "created_task_id")
+	@Getter
+    @Column(name = "created_task_id")
 	private UUID createdTaskId;
 
 	protected MeetingActionItemEntity() {
@@ -48,23 +55,8 @@ public class MeetingActionItemEntity {
 		this.createdTaskId = createdTaskId;
 	}
 
-	public MeetingActionItemId getId() {
-		return id;
+    public String getItemKey() {
+		return id.getItemKey();
 	}
 
-	public String getTitle() {
-		return title;
-	}
-
-	public String getAssigneeId() {
-		return assigneeId;
-	}
-
-	public LocalDate getDueDate() {
-		return dueDate;
-	}
-
-	public UUID getCreatedTaskId() {
-		return createdTaskId;
-	}
 }

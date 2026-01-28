@@ -190,7 +190,6 @@ Response 200:
 ```json
 { "meetingId": "uuid", "createdTaskIds": ["uuid1","uuid2"] }
 ```
-TODO: Persist participants/action items and create tasks from action items.
 Idempotency rule:
 •	actionItems[].key must be stable per meeting. If repeated, do not create duplicates.
 

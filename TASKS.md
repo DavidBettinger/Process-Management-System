@@ -66,7 +66,6 @@ For each task: objective, files to touch, definition of done, how to test.
 - invalid payload returns 400
 - not found returns 404
 - unauthorized returns 401 (or dev auth rule)
-**TODOs noted (this task):** Create tasks from action items (and persist created task IDs).
   **Test:** `./gradlew test`
 
 ### [ ] T1.7 Timeline projection (MVP)
@@ -75,6 +74,18 @@ For each task: objective, files to touch, definition of done, how to test.
 **Files:** `backend/.../analytics/*`
 **DoD:** GET timeline returns entries in correct order and types.
 **Test:** Integration test for timeline endpoint.
+
+### [ ] T1.8 Add outbox events for meeting-held and meeting-created tasks
+**Objective:** Emit outbox events when a meeting is held and when tasks are created from action items.
+**Files:** `backend/.../collaboration/application/*`, `backend/.../common/outbox/*`
+**DoD:** Outbox rows are written for meeting held and meeting task creation; integration tests verify rows.
+**Test:** `./gradlew test`
+
+### [ ] T1.9 Add repository queries for meeting tasks by meeting ID
+**Objective:** Query tasks created from a meeting via originMeetingId.
+**Files:** `backend/.../collaboration/infrastructure/persistence/*`
+**DoD:** Repository method returns tasks for a meeting; integration test verifies.
+**Test:** `./gradlew test`
 
 ---
 

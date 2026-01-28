@@ -6,6 +6,7 @@ import de.bettinger.processmgmt.casemanagement.application.CaseQueryService;
 import de.bettinger.processmgmt.casemanagement.api.CaseDtos.AddStakeholderRequest;
 import de.bettinger.processmgmt.casemanagement.api.CaseDtos.ActivateCaseResponse;
 import de.bettinger.processmgmt.casemanagement.api.CaseDtos.CaseDetailsResponse;
+import de.bettinger.processmgmt.casemanagement.api.CaseDtos.CasesResponse;
 import de.bettinger.processmgmt.casemanagement.api.CaseDtos.CreateCaseRequest;
 import de.bettinger.processmgmt.casemanagement.api.CaseDtos.CreateCaseResponse;
 import de.bettinger.processmgmt.casemanagement.api.CaseDtos.StakeholderResponse;
@@ -64,6 +65,24 @@ public class CaseController {
 	@GetMapping("/{caseId}")
 	public CaseDetailsResponse getCase(@PathVariable UUID caseId) {
 		ProcessCaseEntity entity = caseQueryService.getCase(caseId);
+		return toDetails(entity);
+	}
+
+	@GetMapping
+	public CasesResponse listCases(@RequestHeader(DevAuthFilter.TENANT_HEADER) String tenantId) {
+		List<CaseDetailsResponse> items = caseQueryService.listCases(tenantId).stream()
+				.map(this::toDetails)
+				.toList();
+		return new CasesResponse(items);
+	}
+
+	private List<StakeholderResponse> toStakeholders(ProcessCaseEntity entity) {
+		return entity.getStakeholders().stream()
+				.map(stakeholder -> new StakeholderResponse(stakeholder.getId().getUserId(), stakeholder.getRole()))
+				.toList();
+	}
+
+	private CaseDetailsResponse toDetails(ProcessCaseEntity entity) {
 		return new CaseDetailsResponse(
 				entity.getId(),
 				entity.getTenantId(),
@@ -73,11 +92,5 @@ public class CaseController {
 				toStakeholders(entity),
 				entity.getCreatedAt()
 		);
-	}
-
-	private List<StakeholderResponse> toStakeholders(ProcessCaseEntity entity) {
-		return entity.getStakeholders().stream()
-				.map(stakeholder -> new StakeholderResponse(stakeholder.getId().getUserId(), stakeholder.getRole()))
-				.toList();
 	}
 }

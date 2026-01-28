@@ -1,0 +1,42 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Prozesse</p>
+      <h1>Alle Prozesse</h1>
+      <p class="subtitle">Erstelle neue Prozesse und behalte Status sowie Details im Blick.</p>
+    </div>
+  </header>
+
+  <div class="content-grid">
+    <app-case-create-dialog (create)="handleCreate($event)" />
+
+    <div class="list-panel">
+      <div class="state" *ngIf="isLoading()">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+      </div>
+
+      <div class="state" *ngIf="status() === 'error'">
+        <p class="state-title">Daten konnten nicht geladen werden</p>
+        <p class="state-text">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
+        <button class="ghost-button" type="button" (click)="casesStore.loadCases()">Erneut versuchen</button>
+      </div>
+
+      <div class="state" *ngIf="isEmpty()">
+        <p class="state-title">Keine Prozesse vorhanden</p>
+        <p class="state-text">Lege den ersten Prozess an, um zu starten.</p>
+      </div>
+
+      <ul class="case-list" *ngIf="status() === 'success' && cases().length > 0">
+        <li class="case-card" *ngFor="let item of cases()">
+          <div class="case-meta">
+            <span class="status">{{ statusLabel(item.status) }}</span>
+            <span class="time">Kita: {{ item.kitaName }}</span>
+          </div>
+          <h2>{{ item.title }}</h2>
+          <a class="link" [routerLink]="['/cases', item.id]">Prozess oeffnen</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>

@@ -415,7 +415,7 @@ Also create:
 
 ---
 
-### [ ] T2.7 Build Cases List page (empty/loading/error states)
+### [x] T2.7 Build Cases List page (empty/loading/error states)
 **Objective:** Users can list cases and create a new case.
 **Files to touch:**
 - `frontend/src/app/features/cases/pages/case-list/*`

@@ -1,0 +1,21 @@
+<form class="case-form" [formGroup]="form" (ngSubmit)="submit()">
+  <div class="field">
+    <label for="title">Prozess-Titel</label>
+    <input id="title" type="text" formControlName="title" placeholder="Titel eingeben" />
+    <span class="error" *ngIf="form.controls.title.touched && form.controls.title.invalid">
+      Titel ist erforderlich.
+    </span>
+  </div>
+
+  <div class="field">
+    <label for="kitaName">Kita-Name</label>
+    <input id="kitaName" type="text" formControlName="kitaName" placeholder="Kita-Name eingeben" />
+    <span class="error" *ngIf="form.controls.kitaName.touched && form.controls.kitaName.invalid">
+      Kita-Name ist erforderlich.
+    </span>
+  </div>
+
+  <button class="primary-button" type="submit" [disabled]="submitting()">
+    Prozess anlegen
+  </button>
+</form>

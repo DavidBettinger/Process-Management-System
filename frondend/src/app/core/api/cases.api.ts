@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import {
   ActivateCaseResponse,
   CaseDetailsResponse,
+  CasesResponse,
   CreateCaseRequest,
   CreateCaseResponse
 } from '../models/case.model';
@@ -16,6 +17,10 @@ export class CasesApi {
 
   createCase(request: CreateCaseRequest): Observable<CreateCaseResponse> {
     return this.http.post<CreateCaseResponse>(buildApiUrl('/cases'), request);
+  }
+
+  getCases(): Observable<CasesResponse> {
+    return this.http.get<CasesResponse>(buildApiUrl('/cases'));
   }
 
   getCase(caseId: string): Observable<CaseDetailsResponse> {

@@ -34,4 +34,7 @@ public final class CaseDtos {
 	public record CaseDetailsResponse(UUID id, String tenantId, String title, String kitaName, ProcessCaseStatus status,
 									 List<StakeholderResponse> stakeholders, Instant createdAt) {
 	}
+
+	public record CasesResponse(List<CaseDetailsResponse> items) {
+	}
 }

@@ -31,6 +31,14 @@ describe('CasesApi', () => {
     req.flush({ id: 'case-1', status: 'DRAFT' });
   });
 
+  it('gets cases list', () => {
+    api.getCases().subscribe();
+
+    const req = httpMock.expectOne('/api/cases');
+    expect(req.request.method).toBe('GET');
+    req.flush({ items: [] });
+  });
+
   it('gets a case by id', () => {
     api.getCase('case-1').subscribe();
 

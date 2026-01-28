@@ -46,6 +46,7 @@ A process management app for **Kita consulting** (Fachberatung) to document and 
 ### Included (MVP 1)
 - Tenant-aware backend skeleton
 - Process cases
+- Process case list endpoint (`GET /api/cases`)
 - Case stakeholders and roles
 - Meetings (scheduled/held/cancelled) with minutes
 - Tasks with lifecycle and resolution types:
@@ -195,6 +196,11 @@ A process management app for **Kita consulting** (Fachberatung) to document and 
 •	When I GET /cases/{id}/timeline
 •	Then I receive events or projected entries ordered by occurredAt
 •	And entries include meeting/task creation/assignment/resolution
+
+#### P0-9 View case list
+•	Given I am authenticated
+•	When I GET /cases
+•	Then I receive 200 and a list of cases for my tenant
 
 ### Constraints
 

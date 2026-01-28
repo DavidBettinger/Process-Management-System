@@ -27,4 +27,8 @@ export interface CaseDetailsResponse {
   createdAt: string;
 }
 
+export interface CasesResponse {
+  items: CaseDetailsResponse[];
+}
+
 export type ProcessCase = CaseDetailsResponse;

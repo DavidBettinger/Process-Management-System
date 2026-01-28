@@ -138,6 +138,24 @@ Response 201:
 ```json
 { "id": "uuid", "status": "DRAFT" }
 ```
+#### List cases
+GET `/api/cases`
+Response 200:
+```json
+{
+  "items": [
+    {
+      "id": "uuid",
+      "tenantId": "tenant-1",
+      "title": "Introduce Child Protection Concept",
+      "kitaName": "Kita Sonnenblume",
+      "status": "DRAFT",
+      "stakeholders": [],
+      "createdAt": "2026-01-28T10:00:00Z"
+    }
+  ]
+}
+```
 #### Add stakeholder
 POST /api/cases/{caseId}/stakeholders
 Request:
@@ -158,7 +176,6 @@ Response 200:
 #### Get case details
 GET /api/cases/{caseId}
 Response 200: (includes stakeholders)
-TODO: Add GET /api/cases for listing processes in the frontend.
 
 Meetings
 
@@ -656,4 +673,3 @@ export class DevSessionService {
   readonly tenantId = signal<string>('tenant-001');
 }
 ```
-

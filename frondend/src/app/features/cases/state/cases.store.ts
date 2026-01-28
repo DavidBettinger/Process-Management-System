@@ -7,6 +7,7 @@ import { initialListState, ListState, toStoreError } from '../../../core/state/s
 @Injectable({ providedIn: 'root' })
 export class CasesStore {
   readonly state = signal<ListState<ProcessCase>>(initialListState());
+  readonly lastCreatedId = signal<string | null>(null);
 
   readonly cases = computed(() => this.state().items);
   readonly status = computed(() => this.state().status);
@@ -17,20 +18,28 @@ export class CasesStore {
   constructor(private readonly casesApi: CasesApi) {}
 
   async loadCases(): Promise<void> {
-    // TODO: Implement GET /api/cases when backend supports listing cases.
     this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
-    const error = toStoreError({ message: 'TODO: /api/cases Liste fehlt' });
-    this.state.update((current) => ({
-      ...current,
-      status: 'error',
-      error
-    }));
+    try {
+      const response = await firstValueFrom(this.casesApi.getCases());
+      this.state.update(() => ({
+        items: response.items,
+        status: 'success',
+        error: undefined
+      }));
+    } catch (error) {
+      this.state.update((current) => ({
+        ...current,
+        status: 'error',
+        error: toStoreError(error)
+      }));
+    }
   }
 
   async createCase(request: CreateCaseRequest): Promise<void> {
     this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
     try {
-      await firstValueFrom(this.casesApi.createCase(request));
+      const created = await firstValueFrom(this.casesApi.createCase(request));
+      this.lastCreatedId.set(created.id);
       await this.loadCases();
     } catch (error) {
       this.state.update((current) => ({
@@ -39,5 +48,9 @@ export class CasesStore {
         error: toStoreError(error)
       }));
     }
+  }
+
+  clearCreatedId(): void {
+    this.lastCreatedId.set(null);
   }
 }

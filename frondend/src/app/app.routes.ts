@@ -3,12 +3,12 @@ import { CaseDetailComponent } from './features/cases/case-detail/case-detail.co
 import { CaseMeetingsComponent } from './features/cases/case-meetings/case-meetings.component';
 import { CaseTasksComponent } from './features/cases/case-tasks/case-tasks.component';
 import { CaseTimelineComponent } from './features/cases/case-timeline/case-timeline.component';
-import { CasesPageComponent } from './features/cases/cases-page/cases-page.component';
+import { CaseListPageComponent } from './features/cases/pages/case-list/case-list.page';
 import { MeetingsPageComponent } from './features/meetings/meetings-page/meetings-page.component';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'cases' },
-  { path: 'cases', component: CasesPageComponent },
+  { path: 'cases', component: CaseListPageComponent },
   {
     path: 'cases/:caseId',
     component: CaseDetailComponent,

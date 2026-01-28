@@ -1,0 +1,77 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Prozess</p>
+      <h1>Prozessdetails</h1>
+      <p class="subtitle">Status, Beteiligte und naechste Schritte im Blick behalten.</p>
+    </div>
+    <div class="actions">
+      <button
+        class="primary-button"
+        type="button"
+        [disabled]="!canActivate() || isLoading()"
+        (click)="activateCase()">
+        Prozess aktivieren
+      </button>
+      <p class="hint" *ngIf="activationHint()">{{ activationHint() }}</p>
+    </div>
+  </header>
+
+  <div class="content-grid">
+    <div class="panel">
+      <div class="state" *ngIf="isLoading()">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+      </div>
+
+      <div class="state" *ngIf="status() === 'error'">
+        <p class="state-title">Prozess konnte nicht geladen werden</p>
+        <p class="state-text">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
+        <button class="ghost-button" type="button" (click)="caseStore.loadCase()">Erneut versuchen</button>
+      </div>
+
+      <div *ngIf="status() === 'success' && caseData() as data" class="details">
+        <div class="meta">
+          <span class="status">{{ statusLabel(data.status) }}</span>
+          <span class="time">Kita: {{ data.kitaName }}</span>
+        </div>
+        <h2>{{ data.title }}</h2>
+        <p class="info">Erstellt am: {{ data.createdAt | date: 'dd.MM.yyyy' }}</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Beteiligte</h3>
+      <app-stakeholder-list [stakeholders]="stakeholders()" />
+    </div>
+
+    <div class="panel">
+      <h3>Beteiligte hinzufuegen</h3>
+      <form class="form" [formGroup]="form" (ngSubmit)="submitStakeholder()">
+        <label>
+          Benutzer-ID
+          <input type="text" formControlName="userId" placeholder="z.B. u-101" />
+        </label>
+        <label>
+          Rolle
+          <select formControlName="role">
+            <option *ngFor="let option of roleOptions" [value]="option.value">{{ option.label }}</option>
+          </select>
+        </label>
+        <button class="primary-button" type="submit" [disabled]="form.invalid || isLoading()">
+          Beteiligte hinzufuegen
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <nav class="tabs">
+    <a routerLink="timeline" routerLinkActive="active">Zeitlinie</a>
+    <a routerLink="tasks" routerLinkActive="active">Aufgaben</a>
+    <a routerLink="meetings" routerLinkActive="active">Termine</a>
+  </nav>
+
+  <section class="tab-panel">
+    <router-outlet />
+  </section>
+</section>

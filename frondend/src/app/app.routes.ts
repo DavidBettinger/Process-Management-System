@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { CaseDetailComponent } from './features/cases/case-detail/case-detail.component';
+import { CaseDetailPageComponent } from './features/case-detail/pages/case-detail/case-detail.page';
 import { CaseMeetingsComponent } from './features/cases/case-meetings/case-meetings.component';
 import { CaseTasksComponent } from './features/cases/case-tasks/case-tasks.component';
 import { CaseTimelineComponent } from './features/cases/case-timeline/case-timeline.component';
@@ -11,7 +11,7 @@ export const routes: Routes = [
   { path: 'cases', component: CaseListPageComponent },
   {
     path: 'cases/:caseId',
-    component: CaseDetailComponent,
+    component: CaseDetailPageComponent,
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'timeline' },
       { path: 'timeline', component: CaseTimelineComponent },

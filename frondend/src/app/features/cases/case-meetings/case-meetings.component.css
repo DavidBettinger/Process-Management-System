@@ -1,0 +1,14 @@
+.placeholder {
+  padding: 1.5rem;
+  border-radius: 20px;
+  background: rgba(11, 15, 25, 0.04);
+}
+
+h2 {
+  margin: 0 0 0.4rem;
+}
+
+p {
+  margin: 0;
+  color: rgba(11, 15, 25, 0.6);
+}

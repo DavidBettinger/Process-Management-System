@@ -90,42 +90,274 @@ For each task: objective, files to touch, definition of done, how to test.
 ---
 
 ## 2) Frontend — Angular MVP
+Important for the frontend: all Angular modules must be in a separate folder. 
+Cases should be named process in the ui and the text of the UI must be in German. 
+But only the text that the user sees, the rest stays in english.
+Readmes should also be in english.
+Always make sure that the frontend matches the backend (API calls and DTOs)
 
-### [ ] T2.1 Initialize Angular app + routing + basic layout
-**Objective:** Shell app with navigation: Cases, Timeline (in case view).
-**Files:** `frontend/*`
-**DoD:** `npm test` passes (or `ng test`).
-**Test:** Run Angular tests and `ng serve`.
+## Frontend — Angular MVP (Codex Tasks)
 
-### [ ] T2.2 Cases list + create case screen
-**Objective:** Create/list cases with empty/error states.
-**Files:** `frontend/src/app/features/cases/*`
-**DoD:** UI shows:
-- empty state when no cases
-- error state on 500
-- success toast on create
-  **Test:** Component tests + manual click-through.
+### [x] T2.0 Establish frontend architecture conventions (feature + core)
+**Objective:** Create a clean folder structure and coding conventions for features, core services, shared UI.
+**Files to touch:**
+- `frontend/src/app/core/` (create)
+- `frontend/src/app/shared/` (create)
+- `frontend/src/app/features/` (create)
+- `frontend/src/app/app.routes.ts` (or routing module)
+  **Definition of done:**
+- Folder structure exists and is referenced in `ARCHITECTURE.md` (optional).
+- Routing skeleton compiles.
+  **How to test:**
+- `ng serve` starts without errors.
 
-### [ ] T2.3 Case detail screen (stakeholders + tasks)
-**Objective:** Add tabs and basic task list.
-**Files:** `frontend/src/app/features/cases/*`, `.../tasks/*`
-**DoD:** Task list renders status, assignee, due date.
-**Test:** Component tests.
+---
 
-### [ ] T2.4 Meeting hold screen (minutes + action items)
-**Objective:** Hold meeting, create tasks from action items, show result.
-**Files:** `frontend/src/app/features/meetings/*`
-**DoD:** On save:
-- success shows created task IDs
-- failure shows error toast
-  **Test:** Component tests + manual.
+### [x] T2.1 Create frontend model classes matching backend contracts (DTOs)
+**Objective:** Add TypeScript models/interfaces aligned with backend JSON for Case, Stakeholder, Meeting, Task, Timeline.
+**Files to touch:**
+- `frontend/src/app/core/models/`:
+  - `case.model.ts`
+  - `stakeholder.model.ts`
+  - `meeting.model.ts`
+  - `task.model.ts`
+  - `timeline.model.ts`
+  - `api-error.model.ts`
+    **Include:**
+- Enums as union types or `enum`:
+  - `CaseStatus`, `RoleInCase`
+  - `TaskState`, `TaskResolutionKind`
+  - `MeetingStatus`
+  - `TimelineEntryType`
+- Request/response DTO types:
+  - `CreateCaseRequest`, `CreateCaseResponse`
+  - `AddStakeholderRequest`
+  - `HoldMeetingRequest`, `HoldMeetingResponse`
+  - `CreateTaskRequest`, `AssignTaskRequest`, `DeclineTaskRequest`, `ResolveTaskRequest`
+    **Definition of done:**
+- Models compile; naming matches backend JSON fields (camelCase).
+- Includes 1–2 example objects in comments (optional).
+  **How to test:**
+- `ng test` (or `npm test`) passes, TypeScript build has no errors.
 
-### [ ] T2.5 Timeline view
-**Objective:** Display timeline entries.
-**Files:** `frontend/src/app/features/timeline/*`
-**DoD:** Timeline renders meeting/task events; handles empty and error.
-**Test:** Component tests.
+---
 
+### [x] T2.2 Create a typed API client service layer (HTTP wrappers)
+**Objective:** Create Angular services that map 1:1 to backend endpoints with typed requests/responses.
+**Files to touch:**
+- `frontend/src/app/core/api/`:
+  - `api.config.ts` (base URL + default headers)
+  - `cases.api.ts`
+  - `meetings.api.ts`
+  - `tasks.api.ts`
+  - `analytics.api.ts`
+    **Rules:**
+- No business logic here—only HTTP calls + typing.
+- Centralize base path `/api`.
+  **Definition of done:**
+- Services expose methods like:
+  - `createCase()`, `getCase()`, `addStakeholder()`, `activateCase()`
+  - `scheduleMeeting()`, `holdMeeting()`
+  - `createTask()`, `assignTask()`, `startTask()`, `blockTask()`, `unblockTask()`, `declineTask()`, `resolveTask()`
+  - `getTimeline()`
+    **How to test:**
+- Basic service tests using Angular HttpTestingController.
+
+---
+
+### [ ] T2.3 Implement global error handling + standard API error mapping
+**Objective:** Convert backend error envelope into user-friendly UI errors and dev-friendly logs.
+**Files to touch:**
+- `frontend/src/app/core/http/api-error.interceptor.ts`
+- `frontend/src/app/core/errors/error-mapper.ts`
+- `frontend/src/app/core/models/api-error.model.ts` (if not already)
+  **Definition of done:**
+- Interceptor catches non-2xx and returns normalized error object.
+- Console logging does not print sensitive fields.
+  **How to test:**
+- Unit tests for error mapper; interceptor test ensures 400/404/500 handled.
+
+---
+
+### [ ] T2.4 Create state management service (simple store) for MVP
+**Objective:** Add a lightweight state management layer to avoid scattered component state.
+**Approach (recommended for MVP):**
+- Use an Angular service per feature with:
+  - `signal()` or `BehaviorSubject` state
+  - `computed` selectors
+  - `methods` that call API + update state
+    **Files to touch:**
+- `frontend/src/app/core/state/`:
+  - `state.types.ts` (loading/error helpers)
+- `frontend/src/app/features/cases/state/cases.store.ts`
+- `frontend/src/app/features/case-detail/state/case-detail.store.ts`
+- `frontend/src/app/features/timeline/state/timeline.store.ts`
+- `frontend/src/app/features/tasks/state/tasks.store.ts` (optional if separated)
+  **State shape (example):**
+- `items`, `selected`, `loading`, `error`
+  **Definition of done:**
+- Stores expose:
+  - `loadCases()`, `createCase()`
+  - `loadCase(caseId)`, `addStakeholder()`, `activateCase()`
+  - `loadTimeline(caseId)`
+  - `assignTask()`, `declineTask()`, `resolveTask()`, etc.
+- Components become mostly “dumb” and subscribe to store state.
+  **How to test:**
+- Unit tests with mocked API services (happy path + error path).
+
+---
+
+### [ ] T2.5 Add authentication/tenant dev strategy (frontend)
+**Objective:** Support MVP dev auth with headers (until Keycloak is integrated).
+**Files to touch:**
+- `frontend/src/app/core/auth/dev-auth.service.ts`
+- `frontend/src/app/core/http/auth-header.interceptor.ts`
+- `frontend/src/environments/environment*.ts`
+  **Behavior:**
+- In dev: attach `X-Dev-UserId` and `X-Tenant-Id` headers (configurable).
+- In prod: no dev headers (TODO for JWT).
+  **Definition of done:**
+- All API calls include headers in dev environment.
+  **How to test:**
+- Interceptor test verifies headers are set.
+
+---
+
+### [ ] T2.6 Implement UI shell + routing + navigation
+**Objective:** Create a usable navigation for MVP: cases list, case detail, timeline.
+**Files to touch:**
+- `frontend/src/app/app.component.*`
+- `frontend/src/app/app.routes.ts`
+- `frontend/src/app/shared/layout/*`
+  **Definition of done:**
+- Routes:
+  - `/cases`
+  - `/cases/:caseId` (tabs: tasks, meetings, timeline)
+    **How to test:**
+- Manual: navigate between routes, refresh works.
+
+---
+
+### [ ] T2.7 Build Cases List page (empty/loading/error states)
+**Objective:** Users can list cases and create a new case.
+**Files to touch:**
+- `frontend/src/app/features/cases/pages/case-list/*`
+- `frontend/src/app/features/cases/components/case-create-dialog/*` (or inline form)
+- `frontend/src/app/features/cases/state/cases.store.ts` (use it)
+  **Edge cases:**
+- Empty list
+- API error
+- Loading skeleton
+  **Definition of done:**
+- Create case form validates required fields.
+- On success: navigate to case detail or refresh list.
+  **How to test:**
+- Component tests: empty + error + success.
+
+---
+
+### [ ] T2.8 Build Case Detail page (stakeholders + status + actions)
+**Objective:** Show case header, stakeholders, status, and actions (activate case).
+**Files to touch:**
+- `frontend/src/app/features/case-detail/pages/case-detail/*`
+- `frontend/src/app/features/case-detail/components/stakeholder-list/*`
+- `frontend/src/app/features/case-detail/state/case-detail.store.ts`
+  **Definition of done:**
+- Can add stakeholder with role.
+- Can activate case (only if at least one CONSULTANT; UI shows helpful error otherwise).
+  **How to test:**
+- Component tests for add stakeholder + activate.
+
+---
+
+### [ ] T2.9 Build Tasks tab (list + key actions)
+**Objective:** Show tasks for a case and allow MVP actions: assign, start, block, unblock, decline, resolve.
+**Files to touch:**
+- `frontend/src/app/features/tasks/pages/tasks-tab/*`
+- `frontend/src/app/features/tasks/components/task-list/*`
+- `frontend/src/app/features/tasks/components/task-actions/*`
+- `frontend/src/app/features/tasks/state/tasks.store.ts`
+  **Edge cases:**
+- No tasks
+- Task already RESOLVED (actions disabled)
+- Invalid transition (show server error toast)
+  **Definition of done:**
+- Actions call API and refresh state.
+- Buttons disabled when action not allowed.
+  **How to test:**
+- Component tests for enabled/disabled states and action calls.
+
+---
+
+### [ ] T2.10 Build Meetings tab (schedule + hold meeting + action items)
+**Objective:** Provide minimal meeting workflow and create tasks from action items.
+**Files to touch:**
+- `frontend/src/app/features/meetings/pages/meetings-tab/*`
+- `frontend/src/app/features/meetings/components/meeting-hold-form/*`
+- `frontend/src/app/features/meetings/components/action-items-editor/*`
+  **Important:**
+- Each action item has a stable `key` (UUID generated client-side).
+  **Definition of done:**
+- Hold meeting sends minutes + action items; shows created task IDs.
+- After holding, tasks tab shows new tasks.
+  **How to test:**
+- Component test ensures stable keys and correct payload.
+
+---
+
+### [ ] T2.11 Build Timeline tab (case timeline)
+**Objective:** Display timeline entries in chronological order with readable labels.
+**Files to touch:**
+- `frontend/src/app/features/timeline/pages/timeline-tab/*`
+- `frontend/src/app/features/timeline/components/timeline-list/*`
+- `frontend/src/app/features/timeline/state/timeline.store.ts`
+  **Definition of done:**
+- Renders MEETING_HELD, TASK_CREATED, TASK_ASSIGNED, TASK_RESOLVED entries.
+- Handles empty/error/loading.
+  **How to test:**
+- Component tests for rendering types.
+
+---
+
+### [ ] T2.12 Add UI feedback system: toasts + confirmation dialogs
+**Objective:** Make MVP usable and safe (confirm destructive actions).
+**Files to touch:**
+- `frontend/src/app/shared/ui/toast.service.ts`
+- `frontend/src/app/shared/ui/confirm-dialog/*`
+  **Definition of done:**
+- Success toast on save.
+- Error toast shows mapped message.
+- Confirm dialog for resolve/cancel actions (optional).
+  **How to test:**
+- Unit tests for toast service; manual smoke test.
+
+---
+
+### [ ] T2.13 Add shared form utilities + validation helpers
+**Objective:** Standardize required/enum validation and error display.
+**Files to touch:**
+- `frontend/src/app/shared/forms/*`
+  **Definition of done:**
+- Consistent error messages for required fields.
+  **How to test:**
+- Component test for create case form.
+
+---
+
+### [ ] T2.14 Add end-to-end MVP smoke script (manual checklist)
+**Objective:** Document how to verify the MVP works end-to-end.
+**Files to touch:**
+- `frontend/SMOKE_TEST.md`
+  **Definition of done:**
+- Checklist includes:
+  - create case
+  - add stakeholders
+  - activate case
+  - hold meeting with action items
+  - assign/decline/resolve task
+  - view timeline
+    **How to test:**
+- Follow checklist manually.
 ---
 
 ## 3) DevOps / Local Dev

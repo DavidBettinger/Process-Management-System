@@ -1,0 +1,23 @@
+<section class="case-shell">
+  <header class="case-header">
+    <div>
+      <p class="eyebrow">Prozess-Workspace</p>
+      <h1>Prozess {{ caseId() }}</h1>
+      <p class="subtitle">Organisiere Meetings, Aufgaben und Timeline-Eintraege fuer diesen Prozess.</p>
+    </div>
+    <div class="case-actions">
+      <button class="secondary-button" type="button">Stakeholder hinzufuegen</button>
+      <button class="primary-button" type="button">Besprechung planen</button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <a routerLink="tasks" routerLinkActive="active">Aufgaben</a>
+    <a routerLink="meetings" routerLinkActive="active">Besprechungen</a>
+    <a routerLink="timeline" routerLinkActive="active">Zeitlinie</a>
+  </nav>
+
+  <div class="case-content">
+    <router-outlet />
+  </div>
+</section>

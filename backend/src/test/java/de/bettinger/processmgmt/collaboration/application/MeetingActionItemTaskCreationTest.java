@@ -23,6 +23,7 @@ class MeetingActionItemTaskCreationTest {
 
 	@Test
 	void holdMeetingCreatesTasksOncePerActionItemKey() {
+		taskRepository.deleteAll();
 		UUID caseId = UUID.randomUUID();
 		MeetingEntity meeting = meetingCommandService.scheduleMeeting(caseId, Instant.now(), List.of("u-1"));
 

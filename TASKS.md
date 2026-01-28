@@ -75,7 +75,7 @@ For each task: objective, files to touch, definition of done, how to test.
 **DoD:** GET timeline returns entries in correct order and types.
 **Test:** Integration test for timeline endpoint.
 
-### [ ] T1.8 Add outbox events for meeting-held and meeting-created tasks
+### [x] T1.8 Add outbox events for meeting-held and meeting-created tasks
 **Objective:** Emit outbox events when a meeting is held and when tasks are created from action items.
 **Files:** `backend/.../collaboration/application/*`, `backend/.../common/outbox/*`
 **DoD:** Outbox rows are written for meeting held and meeting task creation; integration tests verify rows.

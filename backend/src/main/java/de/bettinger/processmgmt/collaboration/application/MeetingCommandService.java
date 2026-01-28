@@ -7,6 +7,8 @@ import de.bettinger.processmgmt.collaboration.infrastructure.persistence.Meeting
 import de.bettinger.processmgmt.collaboration.infrastructure.persistence.TaskEntity;
 import de.bettinger.processmgmt.collaboration.infrastructure.persistence.TaskRepository;
 import de.bettinger.processmgmt.common.errors.NotFoundException;
+import de.bettinger.processmgmt.common.outbox.OutboxEventEntity;
+import de.bettinger.processmgmt.common.outbox.OutboxEventRepository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,10 +23,13 @@ public class MeetingCommandService {
 
 	private final MeetingRepository meetingRepository;
 	private final TaskRepository taskRepository;
+	private final OutboxEventRepository outboxEventRepository;
 
-	public MeetingCommandService(MeetingRepository meetingRepository, TaskRepository taskRepository) {
+	public MeetingCommandService(MeetingRepository meetingRepository, TaskRepository taskRepository,
+								 OutboxEventRepository outboxEventRepository) {
 		this.meetingRepository = meetingRepository;
 		this.taskRepository = taskRepository;
+		this.outboxEventRepository = outboxEventRepository;
 	}
 
 	@Transactional
@@ -52,7 +57,10 @@ public class MeetingCommandService {
 		entity.setMinutesText(minutesText);
 		entity.replaceParticipants(participantIds);
 		entity.replaceActionItems(toActionItems(entity, actionItems, existingTaskIdsByKey));
-		return meetingRepository.save(entity);
+		MeetingEntity saved = meetingRepository.save(entity);
+		outboxEventRepository.save(outboxEvent("Meeting", saved.getId(), "MeetingHeld",
+				"{\"meetingId\":\"" + saved.getId() + "\",\"caseId\":\"" + saved.getCaseId() + "\"}"));
+		return saved;
 	}
 
 	private List<MeetingActionItemEntity> toActionItems(MeetingEntity meeting,
@@ -92,6 +100,9 @@ public class MeetingCommandService {
 				Instant.now()
 		);
 		taskRepository.save(task);
+		outboxEventRepository.save(outboxEvent("Task", taskId, "TaskCreated",
+				"{\"taskId\":\"" + taskId + "\",\"caseId\":\"" + meeting.getCaseId() + "\",\"meetingId\":\""
+						+ meeting.getId() + "\"}"));
 		return taskId;
 	}
 
@@ -103,5 +114,18 @@ public class MeetingCommandService {
 			}
 		}
 		return existing;
+	}
+
+	private OutboxEventEntity outboxEvent(String aggregateType, UUID aggregateId, String eventType, String payload) {
+		return new OutboxEventEntity(
+				UUID.randomUUID(),
+				aggregateType,
+				aggregateId.toString(),
+				eventType,
+				Instant.now(),
+				payload,
+				null,
+				null
+		);
 	}
 }

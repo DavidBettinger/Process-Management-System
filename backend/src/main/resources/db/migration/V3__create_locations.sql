@@ -1,0 +1,10 @@
+CREATE TABLE locations (
+	id UUID PRIMARY KEY,
+	tenant_id VARCHAR(255) NOT NULL,
+	label VARCHAR(255) NOT NULL,
+	street VARCHAR(255) NOT NULL,
+	house_number VARCHAR(50) NOT NULL,
+	postal_code VARCHAR(50) NOT NULL,
+	city VARCHAR(255) NOT NULL,
+	country VARCHAR(10) NOT NULL
+);

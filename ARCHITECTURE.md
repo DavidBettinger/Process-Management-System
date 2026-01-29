@@ -263,6 +263,23 @@ Response 200:
 }
 ```
 
+#### Get Location
+GET `/api/locations/{locationId}`
+Response 200:
+```json
+{
+  "id": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8",
+  "label": "Kita Sonnenblume",
+  "address": {
+    "street": "Musterstraße",
+    "houseNumber": "12",
+    "postalCode": "10115",
+    "city": "Berlin",
+    "country": "DE"
+  }
+}
+```
+
 #### Create Kita
 POST `/api/kitas`
 Request:

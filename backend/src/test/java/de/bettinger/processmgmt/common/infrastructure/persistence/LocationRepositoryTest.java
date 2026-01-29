@@ -19,7 +19,7 @@ class LocationRepositoryTest {
 	@Test
 	void savesAndLoadsLocation() {
 		UUID id = UUID.randomUUID();
-		Address address = new Address("Musterstraße", "12", "10115", "Berlin", "DE");
+		Address address = new Address("Musterstrasse", "12", "10115", "Berlin", "DE");
 		LocationEntity entity = new LocationEntity(id, "tenant-1", "Kita Sonnenblume", address);
 
 		locationRepository.saveAndFlush(entity);

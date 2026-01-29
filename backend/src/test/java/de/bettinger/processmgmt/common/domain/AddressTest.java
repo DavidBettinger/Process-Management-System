@@ -9,15 +9,15 @@ class AddressTest {
 
 	@Test
 	void defaultsCountryToGermany() {
-		Address address = new Address("Musterstraße", "12", "10115", "Berlin", null);
+		Address address = new Address("Musterstrasse", "12", "10115", "Berlin", null);
 
 		assertThat(address.getCountry()).isEqualTo("DE");
 	}
 
 	@Test
 	void equalityUsesAllFields() {
-		Address first = new Address("Musterstraße", "12", "10115", "Berlin", "DE");
-		Address second = new Address("Musterstraße", "12", "10115", "Berlin", "DE");
+		Address first = new Address("Musterstrasse", "12", "10115", "Berlin", "DE");
+		Address second = new Address("Musterstrasse", "12", "10115", "Berlin", "DE");
 
 		assertThat(first).isEqualTo(second);
 		assertThat(first.hashCode()).isEqualTo(second.hashCode());

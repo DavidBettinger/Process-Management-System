@@ -8,7 +8,7 @@ class LocationTest {
 
 	@Test
 	void createsLocationWithId() {
-		Address address = new Address("Musterstraße", "12", "10115", "Berlin", "DE");
+		Address address = new Address("Musterstrasse", "12", "10115", "Berlin", "DE");
 		Location location = Location.create("tenant-1", "Kita Sonnenblume", address);
 
 		assertThat(location.getId()).isNotNull();

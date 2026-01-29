@@ -46,11 +46,11 @@ public class CaseController {
 			@RequestHeader(DevAuthFilter.TENANT_HEADER) String tenantId,
 			@Valid @RequestBody CreateCaseRequest request
 	) {
-		log.info("Create case request tenantId={}, titleLength={}, kitaLength={}",
+		log.info("Create case request tenantId={}, titleLength={}, kitaId={}",
 				tenantId,
 				request.title() == null ? 0 : request.title().length(),
-				request.kitaName() == null ? 0 : request.kitaName().length());
-		ProcessCaseEntity entity = caseCommandService.createCase(tenantId, request.title(), request.kitaName());
+				request.kitaId());
+		ProcessCaseEntity entity = caseCommandService.createCase(tenantId, request.title(), request.kitaId());
 		log.info("Create case success tenantId={}, caseId={}", tenantId, entity.getId());
 		return ResponseEntity.status(HttpStatus.CREATED)
 				.body(new CreateCaseResponse(entity.getId(), entity.getStatus()));
@@ -100,7 +100,7 @@ public class CaseController {
 				entity.getId(),
 				entity.getTenantId(),
 				entity.getTitle(),
-				entity.getKitaName(),
+				entity.getKitaId(),
 				entity.getStatus(),
 				toStakeholders(entity),
 				entity.getCreatedAt()

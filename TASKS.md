@@ -160,7 +160,7 @@ Definition of done:
 How to test:
 	•	./gradlew test
 ---
-[ ] B4 Implement Kita API endpoints (create + list + detail)
+[x] B4 Implement Kita API endpoints (create + list + detail)
 
 Objective: Provide endpoints to create and list Kitas (name + locationId).
 Files to touch:

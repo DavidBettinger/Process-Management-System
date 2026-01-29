@@ -3,13 +3,14 @@ package de.bettinger.processmgmt.casemanagement.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class ProcessCaseTest {
 
 	@Test
 	void activationRequiresAtLeastOneConsultant() {
-		ProcessCase processCase = ProcessCase.create("tenant-1", "Title", "Kita A");
+		ProcessCase processCase = ProcessCase.create("tenant-1", "Title", UUID.randomUUID());
 		processCase.addStakeholder("u-1", StakeholderRole.DIRECTOR);
 
 		assertThatThrownBy(processCase::activate)
@@ -24,7 +25,7 @@ class ProcessCaseTest {
 
 	@Test
 	void addingStakeholdersStoresRole() {
-		ProcessCase processCase = ProcessCase.create("tenant-1", "Title", "Kita A");
+		ProcessCase processCase = ProcessCase.create("tenant-1", "Title", UUID.randomUUID());
 		processCase.addStakeholder("u-1", StakeholderRole.CONSULTANT);
 
 		assertThat(processCase.getStakeholders())

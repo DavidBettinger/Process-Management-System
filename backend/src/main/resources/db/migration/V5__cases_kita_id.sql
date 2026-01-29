@@ -1,0 +1,2 @@
+ALTER TABLE cases ADD COLUMN kita_id UUID NOT NULL;
+ALTER TABLE cases DROP COLUMN kita_name;

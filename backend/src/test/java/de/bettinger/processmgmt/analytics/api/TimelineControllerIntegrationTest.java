@@ -6,8 +6,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import de.bettinger.processmgmt.auth.DevAuthFilter;
 import de.bettinger.processmgmt.casemanagement.application.CaseCommandService;
+import de.bettinger.processmgmt.casemanagement.infrastructure.persistence.KitaEntity;
+import de.bettinger.processmgmt.casemanagement.infrastructure.persistence.KitaRepository;
 import de.bettinger.processmgmt.collaboration.application.TaskCommandService;
 import de.bettinger.processmgmt.collaboration.domain.task.TaskResolutionKind;
+import de.bettinger.processmgmt.common.domain.Address;
+import de.bettinger.processmgmt.common.infrastructure.persistence.LocationEntity;
+import de.bettinger.processmgmt.common.infrastructure.persistence.LocationRepository;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,6 +34,12 @@ class TimelineControllerIntegrationTest {
 	@Autowired
 	private TaskCommandService taskCommandService;
 
+	@Autowired
+	private LocationRepository locationRepository;
+
+	@Autowired
+	private KitaRepository kitaRepository;
+
 	private MockMvc mockMvc;
 
 	@BeforeEach
@@ -38,14 +49,16 @@ class TimelineControllerIntegrationTest {
 
 	@Test
 	void returnsOrderedTimelineEntriesForCase() throws Exception {
-		UUID caseId = caseCommandService.createCase("t-1", "Case 1", "Kita 1").getId();
+		String tenantId = "t-1";
+		UUID kitaId = seedKita(tenantId, "Kita 1");
+		UUID caseId = caseCommandService.createCase(tenantId, "Case 1", kitaId).getId();
 		UUID taskId = taskCommandService.createTask(caseId, "Title", "Desc", null).getId();
 		taskCommandService.assignTask(taskId, "u-1");
 		taskCommandService.resolveTask(taskId, TaskResolutionKind.COMPLETED, "Done", "u-1");
 
 		mockMvc.perform(get("/api/cases/{caseId}/timeline", caseId)
 						.header(DevAuthFilter.USER_HEADER, "u-1")
-						.header(DevAuthFilter.TENANT_HEADER, "t-1"))
+						.header(DevAuthFilter.TENANT_HEADER, tenantId))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.caseId").value(caseId.toString()))
 				.andExpect(jsonPath("$.entries.length()").value(3))
@@ -54,5 +67,19 @@ class TimelineControllerIntegrationTest {
 				.andExpect(jsonPath("$.entries[2].type").value("TASK_RESOLVED"))
 				.andExpect(jsonPath("$.entries[0].taskId").value(taskId.toString()))
 				.andExpect(jsonPath("$.entries[1].assigneeId").value("u-1"));
+	}
+
+	private UUID seedKita(String tenantId, String name) {
+		UUID locationId = UUID.randomUUID();
+		LocationEntity location = new LocationEntity(
+				locationId,
+				tenantId,
+				name,
+				new Address("Musterstrasse", "12", "10115", "Berlin", "DE")
+		);
+		locationRepository.saveAndFlush(location);
+		KitaEntity kita = new KitaEntity(UUID.randomUUID(), tenantId, name, locationId);
+		kitaRepository.saveAndFlush(kita);
+		return kita.getId();
 	}
 }

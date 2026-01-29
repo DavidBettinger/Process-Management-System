@@ -9,7 +9,7 @@ describe('CasesStore', () => {
       id: 'case-1',
       tenantId: 't-1',
       title: 'Titel',
-      kitaName: 'Kita',
+      kitaId: 'kita-1',
       status: 'DRAFT',
       stakeholders: [],
       createdAt: '2026-01-01T00:00:00Z'
@@ -28,7 +28,7 @@ describe('CasesStore', () => {
 
   it('creates a case, records created id, and refreshes list', async () => {
     const store = new CasesStore(createApi());
-    const request: CreateCaseRequest = { title: 'Titel', kitaName: 'Kita' };
+    const request: CreateCaseRequest = { title: 'Titel', kitaId: 'kita-1' };
 
     await store.createCase(request);
 
@@ -42,7 +42,7 @@ describe('CasesStore', () => {
       createCase: () => throwError(() => new Error('Fehler'))
     }));
 
-    await store.createCase({ title: 'Titel', kitaName: 'Kita' });
+    await store.createCase({ title: 'Titel', kitaId: 'kita-1' });
 
     expect(store.status()).toBe('error');
     expect(store.error()?.message).toBe('Fehler');

@@ -13,7 +13,7 @@ public final class CaseDtos {
 	private CaseDtos() {
 	}
 
-	public record CreateCaseRequest(@NotBlank String title, @NotBlank String kitaName) {
+	public record CreateCaseRequest(@NotBlank String title, @NotNull UUID kitaId) {
 	}
 
 	public record CreateCaseResponse(UUID id, ProcessCaseStatus status) {
@@ -31,8 +31,8 @@ public final class CaseDtos {
 	public record ActivateCaseResponse(UUID id, ProcessCaseStatus status) {
 	}
 
-	public record CaseDetailsResponse(UUID id, String tenantId, String title, String kitaName, ProcessCaseStatus status,
-									 List<StakeholderResponse> stakeholders, Instant createdAt) {
+	public record CaseDetailsResponse(UUID id, String tenantId, String title, UUID kitaId, ProcessCaseStatus status,
+			List<StakeholderResponse> stakeholders, Instant createdAt) {
 	}
 
 	public record CasesResponse(List<CaseDetailsResponse> items) {

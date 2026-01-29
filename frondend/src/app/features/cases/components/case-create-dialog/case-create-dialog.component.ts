@@ -19,7 +19,7 @@ export class CaseCreateDialogComponent {
 
   readonly form = this.formBuilder.group({
     title: ['', Validators.required],
-    kitaName: ['', Validators.required]
+    kitaId: ['', Validators.required]
   });
 
   submit(): void {
@@ -31,7 +31,7 @@ export class CaseCreateDialogComponent {
     const value = this.form.getRawValue();
     this.create.emit({
       title: value.title ?? '',
-      kitaName: value.kitaName ?? ''
+      kitaId: value.kitaId ?? ''
     });
     this.submitting.set(false);
   }

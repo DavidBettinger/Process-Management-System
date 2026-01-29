@@ -21,7 +21,7 @@ describe('CasesApi', () => {
   });
 
   it('posts create case to /api/cases', () => {
-    const payload: CreateCaseRequest = { title: 'Titel', kitaName: 'Kita' };
+    const payload: CreateCaseRequest = { title: 'Titel', kitaId: 'kita-1' };
 
     api.createCase(payload).subscribe();
 
@@ -48,7 +48,7 @@ describe('CasesApi', () => {
       id: 'case-1',
       tenantId: 't-1',
       title: 'Titel',
-      kitaName: 'Kita',
+      kitaId: 'kita-1',
       status: 'ACTIVE',
       stakeholders: [],
       createdAt: '2026-01-01T00:00:00Z'

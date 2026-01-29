@@ -31,7 +31,7 @@
         <li class="case-card" *ngFor="let item of cases()">
           <div class="case-meta">
             <span class="status">{{ statusLabel(item.status) }}</span>
-            <span class="time">Kita: {{ item.kitaName }}</span>
+            <span class="time">Kita-ID: {{ item.kitaId }}</span>
           </div>
           <h2>{{ item.title }}</h2>
           <a class="link" [routerLink]="['/cases', item.id]">Prozess oeffnen</a>

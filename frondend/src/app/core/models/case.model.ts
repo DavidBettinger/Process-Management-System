@@ -4,7 +4,7 @@ export type CaseStatus = 'DRAFT' | 'ACTIVE';
 
 export interface CreateCaseRequest {
   title: string;
-  kitaName: string;
+  kitaId: string;
 }
 
 export interface CreateCaseResponse {
@@ -21,7 +21,7 @@ export interface CaseDetailsResponse {
   id: string;
   tenantId: string;
   title: string;
-  kitaName: string;
+  kitaId: string;
   status: CaseStatus;
   stakeholders: StakeholderResponse[];
   createdAt: string;

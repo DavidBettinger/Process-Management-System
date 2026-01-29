@@ -32,7 +32,7 @@ class ApiErrorHandlingTest {
 	void rejectsMissingAuthHeaders() throws Exception {
 		mockMvc.perform(post("/api/cases")
 					.contentType(MediaType.APPLICATION_JSON)
-					.content("{\"title\":\"Case\",\"kitaName\":\"Kita\"}"))
+					.content("{\"title\":\"Case\",\"kitaId\":\"00000000-0000-0000-0000-000000000000\"}"))
 				.andExpect(status().isUnauthorized())
 				.andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
 	}
@@ -43,7 +43,7 @@ class ApiErrorHandlingTest {
 					.header(DevAuthFilter.USER_HEADER, "u-1")
 					.header(DevAuthFilter.TENANT_HEADER, "tenant-1")
 					.contentType(MediaType.APPLICATION_JSON)
-					.content("{\"title\":\"\",\"kitaName\":\"Kita\"}"))
+					.content("{\"title\":\"\",\"kitaId\":\"00000000-0000-0000-0000-000000000000\"}"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
 	}
@@ -53,6 +53,17 @@ class ApiErrorHandlingTest {
 		mockMvc.perform(get("/api/cases/00000000-0000-0000-0000-000000000000")
 					.header(DevAuthFilter.USER_HEADER, "u-1")
 					.header(DevAuthFilter.TENANT_HEADER, "tenant-1"))
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.code").value("NOT_FOUND"));
+	}
+
+	@Test
+	void returnsNotFoundForMissingKita() throws Exception {
+		mockMvc.perform(post("/api/cases")
+					.header(DevAuthFilter.USER_HEADER, "u-1")
+					.header(DevAuthFilter.TENANT_HEADER, "tenant-1")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content("{\"title\":\"Case\",\"kitaId\":\"00000000-0000-0000-0000-000000000000\"}"))
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.code").value("NOT_FOUND"));
 	}

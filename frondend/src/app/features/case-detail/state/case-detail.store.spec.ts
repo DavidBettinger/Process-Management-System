@@ -9,7 +9,7 @@ describe('CaseDetailStore', () => {
       id: 'case-1',
       tenantId: 't-1',
       title: 'Titel',
-      kitaName: 'Kita',
+      kitaId: 'kita-1',
       status: 'DRAFT',
       stakeholders: [],
       createdAt: '2026-01-01T00:00:00Z'

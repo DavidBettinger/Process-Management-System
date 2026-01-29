@@ -24,7 +24,7 @@ class ProcessCaseRepositoryTest {
 				UUID.randomUUID(),
 				"tenant-1",
 				"Title",
-				"Kita",
+				UUID.randomUUID(),
 				ProcessCaseStatus.DRAFT,
 				Instant.now()
 		);

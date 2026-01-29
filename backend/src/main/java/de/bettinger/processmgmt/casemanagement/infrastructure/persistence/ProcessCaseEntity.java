@@ -12,6 +12,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -33,10 +34,11 @@ public class ProcessCaseEntity {
 	@Column(name = "title", nullable = false)
 	private String title;
 
-	@Column(name = "kita_name", nullable = false)
-	private String kitaName;
+	@Column(name = "kita_id", nullable = false)
+	private UUID kitaId;
 
-	@Enumerated(EnumType.STRING)
+	@Setter
+    @Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false)
 	private ProcessCaseStatus status;
 
@@ -44,27 +46,23 @@ public class ProcessCaseEntity {
 	private Instant createdAt;
 
 	@OneToMany(mappedBy = "processCase", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-	private List<CaseStakeholderEntity> stakeholders = new ArrayList<>();
+	private final List<CaseStakeholderEntity> stakeholders = new ArrayList<>();
 
 	protected ProcessCaseEntity() {
 	}
 
-	public ProcessCaseEntity(UUID id, String tenantId, String title, String kitaName, ProcessCaseStatus status,
+	public ProcessCaseEntity(UUID id, String tenantId, String title, UUID kitaId, ProcessCaseStatus status,
 								Instant createdAt) {
 		this.id = id;
 		this.tenantId = tenantId;
 		this.title = title;
-		this.kitaName = kitaName;
+		this.kitaId = kitaId;
 		this.status = status;
 		this.createdAt = createdAt;
 	}
 
 	public void addStakeholder(String userId, StakeholderRole role) {
 		stakeholders.add(new CaseStakeholderEntity(this, userId, role));
-	}
-
-	public void setStatus(ProcessCaseStatus status) {
-		this.status = status;
 	}
 
 }

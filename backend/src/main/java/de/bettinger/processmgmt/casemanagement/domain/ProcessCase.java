@@ -18,24 +18,24 @@ public class ProcessCase {
 	@Getter
     private final String title;
 	@Getter
-    private final String kitaName;
+    private final UUID kitaId;
 	@Getter
     private final Instant createdAt;
 	private final List<Stakeholder> stakeholders = new ArrayList<>();
 	@Getter
     private ProcessCaseStatus status;
 
-	private ProcessCase(UUID id, String tenantId, String title, String kitaName, Instant createdAt) {
+	private ProcessCase(UUID id, String tenantId, String title, UUID kitaId, Instant createdAt) {
 		this.id = Objects.requireNonNull(id, "id");
 		this.tenantId = Objects.requireNonNull(tenantId, "tenantId");
 		this.title = Objects.requireNonNull(title, "title");
-		this.kitaName = Objects.requireNonNull(kitaName, "kitaName");
+		this.kitaId = Objects.requireNonNull(kitaId, "kitaId");
 		this.createdAt = Objects.requireNonNull(createdAt, "createdAt");
 		this.status = ProcessCaseStatus.DRAFT;
 	}
 
-	public static ProcessCase create(String tenantId, String title, String kitaName) {
-		return new ProcessCase(UUID.randomUUID(), tenantId, title, kitaName, Instant.now());
+	public static ProcessCase create(String tenantId, String title, UUID kitaId) {
+		return new ProcessCase(UUID.randomUUID(), tenantId, title, kitaId, Instant.now());
 	}
 
 	public void addStakeholder(String userId, StakeholderRole role) {

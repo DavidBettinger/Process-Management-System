@@ -2,6 +2,7 @@ package de.bettinger.processmgmt.casemanagement.application;
 
 import de.bettinger.processmgmt.casemanagement.domain.ProcessCaseStatus;
 import de.bettinger.processmgmt.casemanagement.domain.StakeholderRole;
+import de.bettinger.processmgmt.casemanagement.infrastructure.persistence.KitaRepository;
 import de.bettinger.processmgmt.casemanagement.infrastructure.persistence.ProcessCaseEntity;
 import de.bettinger.processmgmt.casemanagement.infrastructure.persistence.ProcessCaseRepository;
 import de.bettinger.processmgmt.common.errors.NotFoundException;
@@ -14,18 +15,24 @@ import org.springframework.transaction.annotation.Transactional;
 public class CaseCommandService {
 
 	private final ProcessCaseRepository processCaseRepository;
+	private final KitaRepository kitaRepository;
 
-	public CaseCommandService(ProcessCaseRepository processCaseRepository) {
+	public CaseCommandService(ProcessCaseRepository processCaseRepository, KitaRepository kitaRepository) {
 		this.processCaseRepository = processCaseRepository;
+		this.kitaRepository = kitaRepository;
 	}
 
 	@Transactional
-	public ProcessCaseEntity createCase(String tenantId, String title, String kitaName) {
+	public ProcessCaseEntity createCase(String tenantId, String title, UUID kitaId) {
+		boolean kitaExists = kitaRepository.findByIdAndTenantId(kitaId, tenantId).isPresent();
+		if (!kitaExists) {
+			throw new NotFoundException("Kita not found: " + kitaId);
+		}
 		ProcessCaseEntity entity = new ProcessCaseEntity(
 				UUID.randomUUID(),
 				tenantId,
 				title,
-				kitaName,
+				kitaId,
 				ProcessCaseStatus.DRAFT,
 				Instant.now()
 		);

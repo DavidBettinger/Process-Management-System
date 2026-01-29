@@ -27,20 +27,24 @@ describe('MeetingHoldFormComponent', () => {
       }
     ];
 
-    let payload: HoldMeetingPayload | null = null;
+    const emitted: HoldMeetingPayload[] = [];
     component.hold.subscribe((value) => {
-      payload = value;
+      emitted.push(value);
     });
 
     component.submit();
 
-    expect(payload).not.toBeNull();
-    expect(payload?.meetingId).toBe('meeting-1');
-    expect(payload?.request.participantIds).toEqual(['u-101', 'u-201']);
-    expect(payload?.request.minutesText).toBe('Ergebnisse wurden festgehalten.');
-    expect(payload?.request.actionItems?.length).toBe(1);
-    expect(payload?.request.actionItems?.[0].key).toBe('item-1');
-    expect(payload?.request.actionItems?.[0].title).toBe('Konzept vorbereiten');
-    expect(new Date(payload?.request.heldAt ?? '').toISOString()).toBe(payload?.request.heldAt);
+    expect(emitted.length).toBe(1);
+    const payload = emitted[0];
+    if (!payload) {
+      throw new Error('Expected hold payload to be emitted.');
+    }
+    expect(payload.meetingId).toBe('meeting-1');
+    expect(payload.request.participantIds).toEqual(['u-101', 'u-201']);
+    expect(payload.request.minutesText).toBe('Ergebnisse wurden festgehalten.');
+    expect(payload.request.actionItems?.length).toBe(1);
+    expect(payload.request.actionItems?.[0].key).toBe('item-1');
+    expect(payload.request.actionItems?.[0].title).toBe('Konzept vorbereiten');
+    expect(new Date(payload.request.heldAt).toISOString()).toBe(payload.request.heldAt);
   });
 });

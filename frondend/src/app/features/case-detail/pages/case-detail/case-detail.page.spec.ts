@@ -43,7 +43,7 @@ describe('CaseDetailPageComponent', () => {
       id: 'case-1',
       tenantId: 't-1',
       title: 'Prozess Alpha',
-      kitaName: 'Kita West',
+      kitaId: 'kita-1',
       status: 'DRAFT',
       stakeholders: [],
       createdAt: '2026-01-01T00:00:00Z'

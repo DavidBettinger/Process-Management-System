@@ -87,8 +87,161 @@ For each task: objective, files to touch, definition of done, how to test.
 **DoD:** Repository method returns tasks for a meeting; integration test verifies.
 **Test:** `./gradlew test`
 
+
+### [ ] B1 Add Location domain model + persistence (Address as Value Object)
+**Objective:** Introduce a Location model with an Address object and persist it in PostgreSQL.
+**Files to touch:**
+- `backend/src/main/java/.../common/domain/Address.java` (new, Value Object)
+- `backend/src/main/java/.../common/domain/LocationId.java` (new, UUID wrapper or use UUID)
+- `backend/src/main/java/.../common/domain/Location.java` (new)
+- `backend/src/main/java/.../common/infrastructure/persistence/LocationEntity.java` (new)
+- `backend/src/main/java/.../common/infrastructure/persistence/LocationRepository.java` (new)
+- DB migration: `backend/src/main/resources/db/migration/Vxxx__create_locations.sql` (Flyway/Liquibase)
+  **Model (minimum fields):**
+- Location: `id`, `label` (e.g., "Kita Sonnenblume"), `address`
+- Address: `street`, `houseNumber`, `postalCode`, `city`, `country` (default "DE" if omitted)
+  **Definition of done:**
+- Locations table exists; repository can save/load.
+- Unit test verifies Address equality/immutability and Location creation.
+  **How to test:**
+- `./gradlew test`
+
 ---
 
+### [ ] B2 Add Kita domain model (name + locationId) + persistence
+**Objective:** Add `Kita` as a first-class entity referencing a Location.
+**Files to touch:**
+- `backend/src/main/java/.../casemanagement/domain/Kita.java` (new)
+- `backend/src/main/java/.../casemanagement/domain/KitaId.java` (new)
+- `backend/src/main/java/.../casemanagement/infrastructure/persistence/KitaEntity.java` (new)
+- `backend/src/main/java/.../casemanagement/infrastructure/persistence/KitaRepository.java` (new)
+- DB migration: `Vxxx__create_kitas.sql`
+  **Model (minimum fields):**
+- `id`, `tenantId`, `name`, `locationId`
+  **Invariants:**
+- name must not be blank
+- locationId must exist (validated in application layer)
+  **Definition of done:**
+- Kita table exists; repository works.
+- Tests verify saving Kita requires non-empty name.
+  **How to test:**
+- `./gradlew test`
+
+---
+
+### [ ] B3 Implement Location API endpoints (CRUD-lite)
+**Objective:** Provide backend endpoints to create and list Locations for the tenant.
+**Files to touch:**
+- `backend/src/main/java/.../common/api/locations/LocationsController.java` (new)
+- `backend/src/main/java/.../common/application/LocationService.java` (new)
+- `backend/src/main/java/.../common/api/locations/dto/*` (new)
+- Update `ARCHITECTURE.md` API section with examples
+  **Endpoints (minimum):**
+- `POST /api/locations` (create)
+- `GET /api/locations` (list)
+- `GET /api/locations/{locationId}` (detail) (optional but recommended)
+  **Request example:**
+```json
+{
+  "label": "Kita Sonnenblume",
+  "address": {
+    "street": "Musterstraße",
+    "houseNumber": "12",
+    "postalCode": "10115",
+    "city": "Berlin",
+    "country": "DE"
+  }
+}
+```
+Definition of done:
+	•	Validation errors return 400 with field details.
+	•	Tenant isolation enforced (location belongs to tenant).
+	•	Controller tests cover 201 + 400.
+How to test:
+	•	./gradlew test
+---
+[ ] B4 Implement Kita API endpoints (create + list + detail)
+
+Objective: Provide endpoints to create and list Kitas (name + locationId).
+Files to touch:
+	•	backend/src/main/java/.../casemanagement/api/kitas/KitasController.java (new)
+	•	backend/src/main/java/.../casemanagement/application/KitaService.java (new)
+	•	backend/src/main/java/.../casemanagement/api/kitas/dto/* (new)
+	•	Update ARCHITECTURE.md API section with examples
+Endpoints (minimum):
+	•	POST /api/kitas
+	•	GET /api/kitas
+	•	GET /api/kitas/{kitaId} (recommended)
+Request example:
+```json
+{ "name": "Kita Sonnenblume", "locationId": "uuid" }
+```
+Rules:
+•	On create: verify locationId exists for tenant; else 400/404 (choose one and document).
+Definition of done:
+•	Controller tests cover:
+•	creating a Kita with valid locationId returns 201
+•	invalid/missing locationId returns 400 (or 404, consistently)
+How to test:
+•	./gradlew test
+---
+[ ] B5 Update ProcessCase to reference Kita (kitaId) instead of free-text kitaName
+
+Objective: Replace kitaName in ProcessCase creation with kitaId, enabling consistent location/name usage.
+Files to touch:
+•	backend/src/main/java/.../casemanagement/domain/ProcessCase.java (update)
+•	backend/src/main/java/.../casemanagement/api/cases/dto/* (update)
+•	backend/src/main/java/.../casemanagement/application/CaseService.java (update validation)
+•	Persistence entity/migration for cases table (add kita_id, migrate data if needed)
+•	Update SPEC.md + ARCHITECTURE.md examples
+API change:
+•	POST /api/cases request becomes:
+```json
+{ "title": "Introduce Child Protection Concept", "kitaId": "uuid" }
+```
+Definition of done:
+•	Case creation validates kitaId exists in tenant.
+•	Existing tests updated; new tests cover invalid kitaId.
+How to test:
+•	./gradlew test
+---
+[ ] B6 Add Meeting.locationId and ensure meetings can be identified by date + location
+
+Objective: Add locationId to Meeting (scheduled/held) and store it for UI identification.
+Files to touch:
+•	backend/src/main/java/.../collaboration/domain/Meeting.java (update)
+•	backend/src/main/java/.../collaboration/api/meetings/dto/* (update)
+•	backend/src/main/java/.../collaboration/application/MeetingService.java (update)
+•	Meeting persistence migration (meetings.location_id)
+•	Domain events: extend MeetingHeld payload to include locationId (and scheduled meeting event if present)
+•	Update ARCHITECTURE.md endpoint examples for meeting schedule/hold
+API changes (minimum):
+•	POST /api/cases/{caseId}/meetings includes locationId
+•	POST /api/cases/{caseId}/meetings/{meetingId}/hold includes locationId (or inherits from scheduled meeting; pick one and document)
+Rule (recommended for MVP):
+•	Default meeting location = case’s Kita location (server can fill if request omits).
+If you implement defaulting, document it and test it.
+Definition of done:
+•	Meeting schedule/hold persists locationId.
+•	Controller tests verify:
+•	invalid locationId rejected
+•	returned meeting DTO includes locationId
+How to test:
+•	./gradlew test
+
+---
+
+[ ] B7 Update timeline endpoint to include location information for meeting entries (minimal)
+
+Objective: Ensure timeline entries for meetings include locationId so frontend can resolve it.
+Files to touch:
+•	backend/src/main/java/.../analytics/application/TimelineService.java (or projector)
+•	backend/src/main/java/.../analytics/api/dto/*
+Definition of done:
+•	Timeline response for meeting entries includes locationId.
+How to test:
+•	Integration test for /api/cases/{id}/timeline includes locationId for meeting entries.
+---
 ## 2) Frontend — Angular MVP
 Important for the frontend: all Angular modules must be in a separate folder. 
 Cases should be named process in the ui and the text of the UI must be in German. 
@@ -465,6 +618,306 @@ Also create:
 - Component tests for enabled/disabled states and action calls.
 
 ---
+[ ] F1 Add models for Address, Location, Kita and update Meeting identification fields
+
+Objective: Add TypeScript models matching backend DTOs for Location and Kita and adjust Meeting model to include locationId.
+Files to touch:
+•	frontend/src/app/core/models/address.model.ts (new)
+•	frontend/src/app/core/models/location.model.ts (new)
+•	frontend/src/app/core/models/kita.model.ts (new)
+•	frontend/src/app/core/models/meeting.model.ts (update: add locationId)
+•	frontend/src/app/core/models/case.model.ts (update: use kitaId instead of kitaName)
+Definition of done:
+•	No TypeScript errors; models align with updated backend JSON.
+How to test:
+•	npm test (or ng test)
+
+---
+
+[ ] F2 Add typed API clients for Locations and Kitas
+
+Objective: Create LocationsApi and KitasApi with typed requests/responses.
+Files to touch:
+•	frontend/src/app/core/api/locations.api.ts (new)
+•	frontend/src/app/core/api/kitas.api.ts (new)
+•	Update frontend/src/app/core/api/api.config.ts if needed
+Endpoints:
+•	createLocation(), listLocations(), getLocation() (optional)
+•	createKita(), listKitas(), getKita() (optional)
+Definition of done:
+•	HttpTestingController unit tests for both API clients.
+How to test:
+•	npm test
+
+---
+
+[ ] F3 Add stores: LocationsStore + KitasStore (Signals)
+
+Objective: Provide consistent state management for locations/kitas lists and creation.
+Files to touch:
+•	frontend/src/app/features/locations/state/locations.store.ts (new)
+•	frontend/src/app/features/locations/state/locations.store.spec.ts (new)
+•	frontend/src/app/features/kitas/state/kitas.store.ts (new)
+•	frontend/src/app/features/kitas/state/kitas.store.spec.ts (new)
+Store API (both):
+•	state: ListState<T>
+•	loadX(): Promise<void>
+•	createX(req): Promise<void> → refresh list
+Definition of done:
+•	Happy path + error path tests
+•	Stores compile and follow the same patterns as existing stores.
+How to test:
+•	npm test
+
+---
+
+[ ] F4 Create Locations UI (Add + List)
+
+Objective: Create a usable UI to add and list locations with address.
+Files to touch:
+•	frontend/src/app/features/locations/pages/locations-page/* (new)
+•	frontend/src/app/features/locations/components/location-form/* (new)
+•	frontend/src/app/features/locations/components/location-list/* (new)
+•	Routing: add /locations
+UI requirements:
+•	Form fields: label, street, houseNumber, postalCode, city, country (default DE)
+•	Empty/loading/error states
+•	On create success: toast + list refresh
+Definition of done:
+•	Page is navigable and functional with mocks or backend.
+•	Component tests cover validation + create call.
+How to test:
+•	npm test, manual check via ng serve
+
+---
+
+[ ] F5 Create Kitas UI (Add + List, selecting a Location)
+
+Objective: Create UI to add a Kita (name + location selection) and list Kitas.
+Files to touch:
+•	frontend/src/app/features/kitas/pages/kitas-page/* (new)
+•	frontend/src/app/features/kitas/components/kita-form/* (new)
+•	frontend/src/app/features/kitas/components/kita-list/* (new)
+•	Routing: add /kitas
+•	Reuse LocationsStore for location dropdown
+UI requirements:
+•	Kita form:
+•	name (required)
+•	location dropdown (required)
+•	link/button: “Create new location” (navigates to /locations)
+•	Kitas list shows: name + location label (resolve location)
+Definition of done:
+•	Creating a Kita refreshes list.
+•	Empty state guides user to create locations first.
+How to test:
+•	npm test, manual flow:
+•	create location → create kita → see kita in list
+
+---
+
+[ ] F6 Update Case creation flow to select Kita (instead of typing kitaName)
+
+Objective: Update case create UI and store to use kitaId, and show selected Kita name + location in case header.
+Files to touch:
+•	frontend/src/app/features/cases/pages/case-list/* (create case form/dialog)
+•	frontend/src/app/features/cases/state/cases.store.ts (create payload update)
+•	frontend/src/app/features/case-detail/pages/case-detail/* (display)
+•	Possibly add a shared kita-picker component:
+•	frontend/src/app/shared/ui/kita-picker/* (new)
+UI requirements:
+•	Create case form:
+•	title
+•	kita dropdown (required)
+•	quick links to /kitas and /locations if empty
+Definition of done:
+•	Create case sends {title, kitaId}.
+•	Case detail shows Kita name and its location label/address (resolved via stores or detail endpoint).
+How to test:
+•	Component tests for create-case form validation and payload.
+
+---
+
+[ ] F7 Update Meetings UI: identify meetings by date + location and allow location selection
+
+Objective: Ensure meetings are displayed/identified by their date and location in UI and payloads include locationId.
+Files to touch:
+•	frontend/src/app/core/models/meeting.model.ts (already updated in F1)
+•	frontend/src/app/features/meetings/pages/meetings-tab/*
+•	frontend/src/app/features/meetings/components/meeting-hold-form/*
+•	frontend/src/app/features/meetings/state/meetings.store.ts (payload update)
+•	Shared component (recommended):
+•	frontend/src/app/shared/ui/location-picker/* (new) OR reuse dropdown
+UI requirements:
+•	Meeting list rows show:
+•	date/time (scheduledAt or heldAt)
+•	location label (resolved via LocationsStore)
+•	Hold meeting form includes location picker:
+•	default to case’s Kita location if known
+Definition of done:
+•	Meeting schedule/hold sends locationId (or omits only if backend defaults; must match backend behavior).
+•	Meeting display uses: Date + LocationLabel as primary identifier.
+How to test:
+•	Component test verifies meeting item renders “date + location”
+•	Payload test verifies locationId included
+
+---
+
+[ ] F8 End-to-end frontend smoke checklist update
+
+Objective: Extend smoke test to include Location/Kita flows and meeting identification.
+Files to touch:
+•	frontend/SMOKE_TEST.md
+Checklist additions:
+•	Create location → create kita → create case selecting kita
+•	Hold meeting and confirm it shows date + location
+Definition of done:
+•	Updated checklist is complete and runnable.
+How to test:
+•	Follow checklist manually
+
+### [ ] T2.15 Implement Stakeholders Feature (Create/List + Select)
+
+**Objective:** Add a Stakeholders feature to create and manage people/entities that can participate in cases and be assigned tasks.
+
+**Assumptions / TODO (must not invent contracts):**
+- Backend endpoints for stakeholders may not exist yet.
+- If backend endpoints are missing, add `TODO:` markers in:
+  - `ARCHITECTURE.md` (API section)
+  - `frontend/src/app/core/api/stakeholders.api.ts`
+- Do not fake persistence. UI can be built to compile, but actions that require missing endpoints must show a clear TODO error.
+
+**Files to touch / create:**
+- Models:
+  - `frontend/src/app/core/models/stakeholder.model.ts` (extend if needed)
+  - `frontend/src/app/core/models/stakeholder-requests.model.ts` (new)
+- API client:
+  - `frontend/src/app/core/api/stakeholders.api.ts` (new)
+- Store:
+  - `frontend/src/app/features/stakeholders/state/stakeholders.store.ts` (new)
+  - `frontend/src/app/features/stakeholders/state/stakeholders.store.spec.ts` (new)
+- UI:
+  - `frontend/src/app/features/stakeholders/pages/stakeholders-page/*` (new)
+  - `frontend/src/app/features/stakeholders/components/stakeholder-form/*` (new)
+  - `frontend/src/app/features/stakeholders/components/stakeholder-list/*` (new)
+- Routing:
+  - Add route `/stakeholders` in `app.routes.ts`
+- Shared UI (if needed):
+  - Use existing toast/error system
+
+**Required frontend contracts (DTOs):**
+- `Stakeholder`:
+  - `id: string` (UUID string)
+  - `displayName: string`
+  - `email?: string`
+  - `type: 'PERSON' | 'ORG'` (optional; if backend does not support yet, keep TODO)
+- `CreateStakeholderRequest`:
+  - `displayName: string`
+  - `email?: string`
+
+**Store API (must match):**
+- Signals:
+  - `state: ListState<Stakeholder>`
+- Computed:
+  - `stakeholders`, `status`, `error`, `isLoading`, `isEmpty`
+- Methods:
+  - `loadStakeholders(): Promise<void>`
+  - `createStakeholder(req: CreateStakeholderRequest): Promise<void>`
+
+**UI requirements:**
+- Stakeholders page shows:
+  - loading state
+  - empty state ("No stakeholders yet")
+  - error state (mapped error message)
+  - create stakeholder form (required: displayName)
+- On create success:
+  - show toast
+  - refresh list
+
+**Definition of Done:**
+- Stakeholders page is reachable and renders correctly.
+- Store + tests exist (happy path + error path).
+- No invented endpoints: missing backend routes are marked as TODO and UI shows a clear error message if used.
+
+**How to test:**
+- `npm test`
+- Manual: open `/stakeholders`, verify empty/loading/error states, validate form.
+
+---
+
+### [ ] T2.16 Case Stakeholders + Task Assignment UX (Add to Case + Assign Tasks)
+
+**Objective:** Make it easy to:
+1) Add existing stakeholders to a case with a role, and
+2) Assign case tasks to those stakeholders.
+
+**Assumptions / TODO (must not invent contracts):**
+- Case stakeholder endpoints exist per `ARCHITECTURE.md`:
+  - `POST /api/cases/{caseId}/stakeholders`
+- Task assignment endpoint exists:
+  - `POST /api/tasks/{taskId}/assign`
+- If any are missing, add `TODO:` markers and do not fake.
+
+**Files to touch:**
+- Case detail UI:
+  - `frontend/src/app/features/case-detail/pages/case-detail/*`
+  - `frontend/src/app/features/case-detail/components/stakeholder-list/*`
+  - `frontend/src/app/features/case-detail/components/add-stakeholder-dialog/*` (new)
+- Stores:
+  - `frontend/src/app/features/case-detail/state/case-detail.store.ts` (use `addStakeholder`)
+  - `frontend/src/app/features/tasks/state/tasks.store.ts` (use `assignTask`)
+  - `frontend/src/app/features/stakeholders/state/stakeholders.store.ts` (consume list)
+- Shared components (optional but recommended):
+  - `frontend/src/app/shared/forms/role-select/*` (new)
+  - `frontend/src/app/shared/ui/user-picker/*` (new) OR reuse simple dropdown
+
+**Required UI behavior:**
+
+1) **Add stakeholder to case**
+- In Case Detail → Stakeholders section:
+  - Button: "Add stakeholder"
+  - Dialog:
+    - Select stakeholder (from StakeholdersStore list)
+    - Select role in case (`CONSULTANT | DIRECTOR | TEAM_MEMBER | SPONSOR`)
+  - Submit calls `CaseDetailStore.addStakeholder({ userId, role })`
+  - On success:
+    - show toast
+    - refresh case details
+- Error modes:
+  - Stakeholders list empty → show link/button to create stakeholders
+  - API error → show mapped toast
+
+2) **Assign tasks to case stakeholders**
+- In Tasks tab:
+  - Each task row has "Assign" action (if allowed by task state)
+  - Assign dialog/dropdown shows **only stakeholders in the case**
+  - On selection:
+    - call `TasksStore.assignTask(taskId, { assigneeId })`
+  - On success:
+    - show toast
+    - refresh tasks
+- Edge cases:
+  - Case has no stakeholders → disable assign and show message
+  - Task is RESOLVED → assign disabled
+  - If server rejects assignee (not in case) → show error toast
+
+**Definition of Done:**
+- From a fresh run:
+  1) Create stakeholder(s) in `/stakeholders`
+  2) Create a case
+  3) Add stakeholder(s) to the case with roles
+  4) Create a task and assign it to a case stakeholder
+- UI includes loading/empty/error states for stakeholder pickers.
+- Component tests cover:
+  - Add stakeholder happy path (calls store method)
+  - Assign task happy path (calls store method)
+  - Disabled states (no stakeholders, resolved task)
+
+**How to test:**
+- `npm test`
+- Manual MVP flow:
+  - Create stakeholder → add to case → assign task → verify task shows assignee
+
+---
 
 ### [ ] T2.10 Build Meetings tab (schedule + hold meeting + action items)
 **Objective:** Provide minimal meeting workflow and create tasks from action items.
@@ -552,3 +1005,338 @@ Also create:
 - Frontend: `cd frontend && npm install && npm test && npm start`
 - Manual smoke:
     - Create case → add stakeholders → hold meeting with action items → resolve/decline task → view timeline
+
+  
+
+---
+
+### [ ] Doc1.0 Update `ARCHITECTURE.md` so it becomes the **single source of truth** for the API contracts after introducing:
+
+- **Address** model
+- **Location** model (label + address)
+- **Kita** model (name + locationId)
+- **ProcessCase** now references **kitaId** (instead of `kitaName`)
+- **Meeting** includes **locationId** and UI identification uses **date + location**
+
+This task is documentation-only but must be precise and example-driven so Codex doesn’t guess.
+
+---
+
+## Files to Touch
+
+- `ARCHITECTURE.md`
+- *(Optional, recommended)* `SPEC.md` (update examples to match the new contracts)
+
+---
+
+## Required Updates in `ARCHITECTURE.md`
+
+### 1) Add / Update “Data Contracts” Section
+
+Add a section named **“Data Contracts (DTOs)”** containing the definitions below.
+
+#### Address (Value Object)
+```json
+{
+  "street": "Musterstraße",
+  "houseNumber": "12",
+  "postalCode": "10115",
+  "city": "Berlin",
+  "country": "DE"
+}
+```
+
+**Fields**
+- `street` (string, required)
+- `houseNumber` (string, required)
+- `postalCode` (string, required)
+- `city` (string, required)
+- `country` (string, optional; default `"DE"`)
+
+---
+
+#### Location
+```json
+{
+  "id": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8",
+  "tenantId": "tenant-001",
+  "label": "Kita Sonnenblume",
+  "address": {
+    "street": "Musterstraße",
+    "houseNumber": "12",
+    "postalCode": "10115",
+    "city": "Berlin",
+    "country": "DE"
+  },
+  "createdAt": "2026-01-29T09:00:00Z"
+}
+```
+
+**Fields**
+- `id` (UUID string)
+- `tenantId` (string; may be implicit in auth/headers—document whichever is used)
+- `label` (string, required)
+- `address` (Address, required)
+- `createdAt` (ISO timestamp, optional but recommended)
+
+---
+
+#### Kita
+```json
+{
+  "id": "a7c9a0bb-2f0b-4f2d-a7c2-2b4bf7a1b6e2",
+  "tenantId": "tenant-001",
+  "name": "Kita Sonnenblume",
+  "locationId": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8",
+  "createdAt": "2026-01-29T09:10:00Z"
+}
+```
+
+**Fields**
+- `id` (UUID string)
+- `tenantId` (string; may be implicit)
+- `name` (string, required)
+- `locationId` (UUID string, required)
+- `createdAt` (ISO timestamp, optional but recommended)
+
+---
+
+#### ProcessCase (updated)
+Replace `kitaName` with `kitaId`.
+
+```json
+{
+  "id": "2b1e6d57-8b52-41a8-a2d3-7c1f1a9f1d16",
+  "tenantId": "tenant-001",
+  "title": "Introduce Child Protection Concept",
+  "kitaId": "a7c9a0bb-2f0b-4f2d-a7c2-2b4bf7a1b6e2",
+  "status": "ACTIVE",
+  "stakeholders": [
+    { "userId": "u-101", "role": "CONSULTANT" },
+    { "userId": "u-201", "role": "DIRECTOR" }
+  ],
+  "createdAt": "2026-01-28T10:00:00Z"
+}
+```
+
+---
+
+#### Meeting (updated)
+Meeting must include `locationId` so UI can identify it by **date + location**.
+
+```json
+{
+  "id": "f8c25b59-5c5b-4d78-9d9c-57cb9d0f3cdb",
+  "caseId": "2b1e6d57-8b52-41a8-a2d3-7c1f1a9f1d16",
+  "status": "HELD",
+  "scheduledAt": "2026-02-01T10:00:00Z",
+  "heldAt": "2026-02-01T10:00:00Z",
+  "locationId": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8",
+  "participantIds": ["u-101","u-201"],
+  "minutesText": "We discussed next steps..."
+}
+```
+
+**Fields**
+- `locationId` (UUID string, required)
+- UI identification rule (document explicitly):
+  - Display label: `heldAt || scheduledAt` + resolved `Location.label`
+
+---
+
+### 2) Add / Update API Endpoints Section
+
+Add the endpoints below under a new heading: **“Locations & Kitas”**.
+
+#### Locations
+**Create Location**  
+POST `/api/locations`
+
+Request:
+```json
+{
+  "label": "Kita Sonnenblume",
+  "address": {
+    "street": "Musterstraße",
+    "houseNumber": "12",
+    "postalCode": "10115",
+    "city": "Berlin",
+    "country": "DE"
+  }
+}
+```
+
+Response `201`:
+```json
+{
+  "id": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8"
+}
+```
+
+**List Locations**  
+GET `/api/locations`
+
+Response `200`:
+```json
+{
+  "items": [
+    {
+      "id": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8",
+      "label": "Kita Sonnenblume",
+      "address": {
+        "street": "Musterstraße",
+        "houseNumber": "12",
+        "postalCode": "10115",
+        "city": "Berlin",
+        "country": "DE"
+      }
+    }
+  ]
+}
+```
+
+---
+
+#### Kitas
+**Create Kita**  
+POST `/api/kitas`
+
+Request:
+```json
+{
+  "name": "Kita Sonnenblume",
+  "locationId": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8"
+}
+```
+
+Response `201`:
+```json
+{
+  "id": "a7c9a0bb-2f0b-4f2d-a7c2-2b4bf7a1b6e2"
+}
+```
+
+**List Kitas**  
+GET `/api/kitas`
+
+Response `200`:
+```json
+{
+  "items": [
+    {
+      "id": "a7c9a0bb-2f0b-4f2d-a7c2-2b4bf7a1b6e2",
+      "name": "Kita Sonnenblume",
+      "locationId": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8"
+    }
+  ]
+}
+```
+
+---
+
+### 3) Update Existing Endpoints (Breaking Changes)
+
+#### Cases (create)
+Update **Create case** request to use `kitaId`:
+
+POST `/api/cases`
+
+Request:
+```json
+{
+  "title": "Introduce Child Protection Concept",
+  "kitaId": "a7c9a0bb-2f0b-4f2d-a7c2-2b4bf7a1b6e2"
+}
+```
+
+Document validation behavior:
+- If `kitaId` does not exist for tenant → return `400` **or** `404` (pick one and document consistently).
+
+---
+
+#### Meetings (schedule + hold)
+Update meeting schedule and hold requests to include `locationId` OR define defaulting.
+
+**Option A (explicit in payload; simplest)**
+- `POST /api/cases/{caseId}/meetings` requires `locationId`
+- `POST /api/cases/{caseId}/meetings/{meetingId}/hold` requires `locationId`
+
+**Option B (default to Kita location)**
+- schedule/hold may omit `locationId`
+- server sets `locationId = case.kita.locationId`
+- Document this rule clearly and show examples for both “provided” and “defaulted”.
+
+Pick **one option** and document it. Do not leave ambiguity.
+
+Example for Hold Meeting (explicit location):
+```json
+{
+  "heldAt": "2026-02-01T10:00:00Z",
+  "locationId": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8",
+  "participantIds": ["u-101","u-201"],
+  "minutesText": "We discussed next steps...",
+  "actionItems": [
+    { "key": "ai-1", "title": "Draft concept v1", "assigneeId": "u-201", "dueDate": "2026-02-10" }
+  ]
+}
+```
+
+---
+
+### 4) Update Timeline Contract (Meeting entries include locationId)
+Ensure meeting timeline entries include `locationId`:
+
+```json
+{
+  "type": "MEETING_HELD",
+  "occurredAt": "2026-02-01T10:00:00Z",
+  "meetingId": "f8c25b59-5c5b-4d78-9d9c-57cb9d0f3cdb",
+  "locationId": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8"
+}
+```
+
+---
+
+## Edge Cases to Document (must add to ARCHITECTURE.md)
+
+1) **Location not found**
+- Creating a Kita with unknown `locationId` returns `400` or `404` (choose and document).
+
+2) **Tenant isolation**
+- Cross-tenant IDs must be rejected.
+
+3) **Meeting identification**
+- If `heldAt` is null (scheduled only), UI uses `scheduledAt + location`.
+
+4) **Validation errors**
+- Missing required address fields return `400` with field-level details.
+
+---
+
+## Definition of Done
+
+- `ARCHITECTURE.md` contains:
+  - DTO definitions for Address, Location, Kita, updated ProcessCase and Meeting
+  - Endpoints: Locations + Kitas (create/list with examples)
+  - Updated Cases create contract (kitaId)
+  - Updated Meetings schedule/hold contract (locationId rule chosen)
+  - Timeline meeting entry includes locationId
+  - Documented edge cases and validation rules
+- No conflicting examples remain (search for `kitaName` and remove/replace all occurrences).
+
+---
+
+## How to Verify
+
+1) Manual doc consistency checks:
+- Search `ARCHITECTURE.md` for:
+  - `kitaName` → should be **0 matches**
+  - `locationId` in meeting payloads → should appear in schedule/hold examples
+- Ensure all JSON is valid (no trailing commas).
+
+2) Optional: run a quick markdown preview to ensure formatting is readable.
+
+"""
+path = Path("/mnt/data/TASK_API_CONTRACT_UPDATE.md")
+path.write_text(content, encoding="utf-8")
+str(path)

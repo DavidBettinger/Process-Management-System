@@ -7,12 +7,17 @@ import de.bettinger.processmgmt.collaboration.api.TaskDtos.CreateTaskResponse;
 import de.bettinger.processmgmt.collaboration.api.TaskDtos.DeclineTaskRequest;
 import de.bettinger.processmgmt.collaboration.api.TaskDtos.ResolveTaskRequest;
 import de.bettinger.processmgmt.collaboration.api.TaskDtos.TaskStatusResponse;
+import de.bettinger.processmgmt.collaboration.api.TaskDtos.TaskSummaryResponse;
+import de.bettinger.processmgmt.collaboration.api.TaskDtos.TasksResponse;
 import de.bettinger.processmgmt.collaboration.application.TaskCommandService;
+import de.bettinger.processmgmt.collaboration.application.TaskQueryService;
 import de.bettinger.processmgmt.collaboration.infrastructure.persistence.TaskEntity;
 import jakarta.validation.Valid;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,9 +31,11 @@ import de.bettinger.processmgmt.auth.DevAuthFilter;
 public class TaskController {
 
 	private final TaskCommandService taskCommandService;
+	private final TaskQueryService taskQueryService;
 
-	public TaskController(TaskCommandService taskCommandService) {
+	public TaskController(TaskCommandService taskCommandService, TaskQueryService taskQueryService) {
 		this.taskCommandService = taskCommandService;
+		this.taskQueryService = taskQueryService;
 	}
 
 	@PostMapping("/cases/{caseId}/tasks")
@@ -39,6 +46,14 @@ public class TaskController {
 		TaskEntity task = taskCommandService.createTask(caseId, request.title(), request.description(), request.dueDate());
 		return ResponseEntity.status(HttpStatus.CREATED)
 				.body(new CreateTaskResponse(task.getId(), task.getState()));
+	}
+
+	@GetMapping("/cases/{caseId}/tasks")
+	public TasksResponse listTasks(@PathVariable UUID caseId) {
+		List<TaskSummaryResponse> items = taskQueryService.listTasks(caseId).stream()
+				.map(task -> new TaskSummaryResponse(task.getId(), task.getState(), task.getAssigneeId()))
+				.toList();
+		return new TasksResponse(items);
 	}
 
 	@PostMapping("/tasks/{taskId}/assign")

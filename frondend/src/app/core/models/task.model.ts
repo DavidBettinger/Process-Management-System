@@ -25,6 +25,10 @@ export interface Task {
   assigneeId?: string | null;
 }
 
+export interface TasksResponse {
+  items: Task[];
+}
+
 export interface AssignTaskRequest {
   assigneeId: string;
 }

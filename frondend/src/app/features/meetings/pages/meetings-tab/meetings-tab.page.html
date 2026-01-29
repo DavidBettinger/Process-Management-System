@@ -1,0 +1,57 @@
+<section class="tab">
+  <header class="tab-header">
+    <div>
+      <h2>Termine</h2>
+      <p>Plane Termine fuer diesen Prozess und halte Protokolle fest.</p>
+    </div>
+  </header>
+
+  <div class="panel" *ngIf="status() === 'error'">
+    <div class="state">
+      <p class="state-title">Termin konnte nicht gespeichert werden</p>
+      <p class="state-text">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
+    </div>
+  </div>
+
+  <div class="grid">
+    <section class="panel">
+      <h3>Termin planen</h3>
+      <form class="form" [formGroup]="scheduleForm" (ngSubmit)="submitSchedule()">
+        <label>
+          Geplant am
+          <input type="datetime-local" formControlName="scheduledAt" />
+        </label>
+        <label>
+          Teilnehmer-IDs (kommasepariert)
+          <input type="text" formControlName="participantIds" placeholder="z.B. u-101, u-201" />
+        </label>
+        <button class="primary-button" type="submit" [disabled]="isLoading()">Termin planen</button>
+      </form>
+
+      <div class="state" *ngIf="meetings().length === 0">
+        <p class="state-title">Keine Termine geplant</p>
+        <p class="state-text">Plane einen Termin, um ihn im Prozess zu protokollieren.</p>
+      </div>
+
+      <div class="meeting-list" *ngIf="meetings().length > 0">
+        <article class="meeting-card" *ngFor="let meeting of meetings()">
+          <div class="meeting-meta">
+            <span class="status">{{ meetingStatusLabel(meeting.status) }}</span>
+            <span class="time">{{ meeting.id }}</span>
+          </div>
+          <p>Termin-ID fuer das Protokoll.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <app-meeting-hold-form
+        [meetings]="meetings()"
+        [isLoading]="isLoading()"
+        [holdResult]="holdResult()"
+        (hold)="handleHold($event)"
+        (clearResult)="clearHoldResult()"
+      />
+    </section>
+  </div>
+</section>

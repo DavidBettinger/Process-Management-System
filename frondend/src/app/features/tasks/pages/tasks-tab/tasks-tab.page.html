@@ -1,0 +1,38 @@
+<section class="tab">
+  <header class="tab-header">
+    <div>
+      <h2>Aufgaben</h2>
+      <p>Verwalte Aufgaben fuer diesen Prozess und halte den Fortschritt aktuell.</p>
+    </div>
+  </header>
+
+  <div class="panel">
+    <div class="state" *ngIf="isLoading()">
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+    </div>
+
+    <div class="state" *ngIf="status() === 'error'">
+      <p class="state-title">Aufgaben konnten nicht geladen werden</p>
+      <p class="state-text">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
+      <button class="ghost-button" type="button" (click)="tasksStore.loadTasks()">Erneut versuchen</button>
+    </div>
+
+    <div class="state" *ngIf="status() === 'success' && tasks().length === 0">
+      <p class="state-title">Keine Aufgaben vorhanden</p>
+      <p class="state-text">Erstelle Aufgaben in Terminen oder fuege sie spaeter hinzu.</p>
+    </div>
+
+    <app-task-list
+      *ngIf="status() === 'success' && tasks().length > 0"
+      [tasks]="tasks()"
+      [busyTaskIds]="busyTaskIds()"
+      (assign)="handleAssign($event)"
+      (start)="handleStart($event)"
+      (block)="handleBlock($event)"
+      (unblock)="handleUnblock($event)"
+      (decline)="handleDecline($event)"
+      (resolve)="handleResolve($event)"
+    />
+  </div>
+</section>

@@ -29,14 +29,26 @@ export class TasksStore {
   }
 
   async loadTasks(): Promise<void> {
-    // TODO: Implement GET tasks for case once backend provides an endpoint.
-    const error = new Error('TODO: Implement GET tasks for case');
-    this.state.update((current) => ({
-      ...current,
-      status: 'error',
-      error: toStoreError(error)
-    }));
-    throw error;
+    const caseId = this.caseId();
+    if (!caseId) {
+      this.state.update((current) => ({ ...current, status: 'error', error: missingCaseIdError() }));
+      return;
+    }
+    this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
+    try {
+      const response = await firstValueFrom(this.tasksApi.getTasks(caseId));
+      this.state.update(() => ({
+        items: response.items,
+        status: 'success',
+        error: undefined
+      }));
+    } catch (error) {
+      this.state.update((current) => ({
+        ...current,
+        status: 'error',
+        error: toStoreError(error)
+      }));
+    }
   }
 
   async createTask(req: CreateTaskRequest): Promise<void> {

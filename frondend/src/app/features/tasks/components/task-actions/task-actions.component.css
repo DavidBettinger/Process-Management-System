@@ -1,0 +1,43 @@
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.action-row {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.action-block {
+  background: rgba(15, 23, 42, 0.03);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.action-block h4 {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+}
+
+.action-block form {
+  display: grid;
+  gap: 8px;
+}
+
+.action-block input,
+.action-block select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(15, 23, 42, 0.15);
+  font-size: 0.9rem;
+}
+
+.resolved {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #0f766e;
+}

@@ -118,6 +118,99 @@ We are NOT doing full event sourcing in MVP 1.
 
 ## 5) APIs (MVP 1)
 
+### Data Contracts (DTOs)
+
+#### Address (Value Object)
+```json
+{
+  "street": "Musterstraße",
+  "houseNumber": "12",
+  "postalCode": "10115",
+  "city": "Berlin",
+  "country": "DE"
+}
+```
+Fields:
+- `street` (string, required)
+- `houseNumber` (string, required)
+- `postalCode` (string, required)
+- `city` (string, required)
+- `country` (string, optional; default `"DE"`)
+
+#### Location
+```json
+{
+  "id": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8",
+  "tenantId": "tenant-001",
+  "label": "Kita Sonnenblume",
+  "address": {
+    "street": "Musterstraße",
+    "houseNumber": "12",
+    "postalCode": "10115",
+    "city": "Berlin",
+    "country": "DE"
+  },
+  "createdAt": "2026-01-29T09:00:00Z"
+}
+```
+Fields:
+- `id` (UUID string)
+- `tenantId` (string; may be implicit in auth/headers)
+- `label` (string, required)
+- `address` (Address, required)
+- `createdAt` (ISO timestamp, optional but recommended)
+
+#### Kita
+```json
+{
+  "id": "a7c9a0bb-2f0b-4f2d-a7c2-2b4bf7a1b6e2",
+  "tenantId": "tenant-001",
+  "name": "Kita Sonnenblume",
+  "locationId": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8",
+  "createdAt": "2026-01-29T09:10:00Z"
+}
+```
+Fields:
+- `id` (UUID string)
+- `tenantId` (string; may be implicit)
+- `name` (string, required)
+- `locationId` (UUID string, required)
+- `createdAt` (ISO timestamp, optional but recommended)
+
+#### ProcessCase (updated)
+```json
+{
+  "id": "2b1e6d57-8b52-41a8-a2d3-7c1f1a9f1d16",
+  "tenantId": "tenant-001",
+  "title": "Introduce Child Protection Concept",
+  "kitaId": "a7c9a0bb-2f0b-4f2d-a7c2-2b4bf7a1b6e2",
+  "status": "ACTIVE",
+  "stakeholders": [
+    { "userId": "u-101", "role": "CONSULTANT" },
+    { "userId": "u-201", "role": "DIRECTOR" }
+  ],
+  "createdAt": "2026-01-28T10:00:00Z"
+}
+```
+
+#### Meeting (updated)
+```json
+{
+  "id": "f8c25b59-5c5b-4d78-9d9c-57cb9d0f3cdb",
+  "caseId": "2b1e6d57-8b52-41a8-a2d3-7c1f1a9f1d16",
+  "status": "HELD",
+  "scheduledAt": "2026-02-01T10:00:00Z",
+  "heldAt": "2026-02-01T10:00:00Z",
+  "locationId": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8",
+  "participantIds": ["u-101","u-201"],
+  "minutesText": "We discussed next steps..."
+}
+```
+Fields:
+- `locationId` (UUID string, required)
+- UI identification rule:
+  - Display label: `heldAt || scheduledAt` + resolved `Location.label`
+
 Base path: `/api`
 
 ### Health
@@ -127,12 +220,84 @@ Response 200:
 { "status": "ok" }
 ```
 
+### Locations & Kitas
+
+#### Create Location
+POST `/api/locations`
+Request:
+```json
+{
+  "label": "Kita Sonnenblume",
+  "address": {
+    "street": "Musterstraße",
+    "houseNumber": "12",
+    "postalCode": "10115",
+    "city": "Berlin",
+    "country": "DE"
+  }
+}
+```
+Response 201:
+```json
+{ "id": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8" }
+```
+
+#### List Locations
+GET `/api/locations`
+Response 200:
+```json
+{
+  "items": [
+    {
+      "id": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8",
+      "label": "Kita Sonnenblume",
+      "address": {
+        "street": "Musterstraße",
+        "houseNumber": "12",
+        "postalCode": "10115",
+        "city": "Berlin",
+        "country": "DE"
+      }
+    }
+  ]
+}
+```
+
+#### Create Kita
+POST `/api/kitas`
+Request:
+```json
+{
+  "name": "Kita Sonnenblume",
+  "locationId": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8"
+}
+```
+Response 201:
+```json
+{ "id": "a7c9a0bb-2f0b-4f2d-a7c2-2b4bf7a1b6e2" }
+```
+
+#### List Kitas
+GET `/api/kitas`
+Response 200:
+```json
+{
+  "items": [
+    {
+      "id": "a7c9a0bb-2f0b-4f2d-a7c2-2b4bf7a1b6e2",
+      "name": "Kita Sonnenblume",
+      "locationId": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8"
+    }
+  ]
+}
+```
+
 ### Cases
 #### Create case
 POST `/api/cases`
 Request:
 ```json
-{ "title": "Introduce Child Protection Concept", "kitaName": "Kita Sonnenblume" }
+{ "title": "Introduce Child Protection Concept", "kitaId": "a7c9a0bb-2f0b-4f2d-a7c2-2b4bf7a1b6e2" }
 ```
 Response 201:
 ```json
@@ -148,7 +313,7 @@ Response 200:
       "id": "uuid",
       "tenantId": "tenant-1",
       "title": "Introduce Child Protection Concept",
-      "kitaName": "Kita Sonnenblume",
+      "kitaId": "a7c9a0bb-2f0b-4f2d-a7c2-2b4bf7a1b6e2",
       "status": "DRAFT",
       "stakeholders": [],
       "createdAt": "2026-01-28T10:00:00Z"
@@ -183,7 +348,11 @@ Meetings
 POST /api/cases/{caseId}/meetings
 Request:
 ```json
-{ "scheduledAt": "2026-02-01T10:00:00Z", "participantIds": ["u-101","u-201"] }
+{
+  "scheduledAt": "2026-02-01T10:00:00Z",
+  "locationId": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8",
+  "participantIds": ["u-101","u-201"]
+}
 ```
 Response 201:
 ```json
@@ -196,6 +365,7 @@ Request:
 ```json
 {
   "heldAt": "2026-02-01T10:00:00Z",
+  "locationId": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8",
   "participantIds": ["u-101","u-201"],
   "minutesText": "We discussed next steps...",
   "actionItems": [
@@ -222,6 +392,16 @@ Request:
 Response 201:
 ```json
 { "id": "uuid", "state": "OPEN" }
+```
+List tasks
+GET /api/cases/{caseId}/tasks
+Response 200:
+```json
+{
+  "items": [
+    { "id": "uuid", "state": "OPEN", "assigneeId": null }
+  ]
+}
 ```
 Assign task
 POST /api/tasks/{taskId}/assign
@@ -281,12 +461,29 @@ Response:
 {
   "caseId": "uuid",
   "entries": [
-    { "type": "MEETING_HELD", "occurredAt": "2026-02-01T10:00:00Z", "meetingId": "..." },
+    {
+      "type": "MEETING_HELD",
+      "occurredAt": "2026-02-01T10:00:00Z",
+      "meetingId": "...",
+      "locationId": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8"
+    },
     { "type": "TASK_CREATED", "occurredAt": "2026-02-01T10:05:00Z", "taskId": "..." },
     { "type": "TASK_ASSIGNED", "occurredAt": "2026-02-01T10:06:00Z", "taskId": "...", "assigneeId": "u-201" }
   ]
 }
 ```
+
+Edge Cases & Validation
+1) Location not found:
+   - Creating a Kita with unknown `locationId` returns 404.
+2) Kita not found:
+   - Creating a case with unknown `kitaId` returns 404.
+3) Tenant isolation:
+   - Cross-tenant IDs must be rejected (404 or 403, pick consistently at implementation time).
+4) Meeting identification:
+   - If `heldAt` is null (scheduled only), UI uses `scheduledAt + Location.label`.
+5) Validation errors:
+   - Missing required address fields return 400 with field-level details.
 6) Auth Strategy (MVP)
    •	Target: OIDC with Keycloak.
    •	MVP approach:
@@ -529,7 +726,7 @@ export class TasksStore {
 
   setCaseId(caseId: string): void;
 
-  loadTasks(): Promise<void>; // GET tasks by case (you may need an endpoint; TODO if missing)
+  loadTasks(): Promise<void>; // GET tasks by case
 
   createTask(req: CreateTaskRequest): Promise<void>;
 
@@ -563,8 +760,6 @@ Behavior rules
 4.	clears busy in finally block
 •	On invalid transition:
 •	API returns 400/409 → show toast via component using errorMapper.
-
-Note: If your backend doesn’t have GET /cases/{caseId}/tasks yet, mark it as TODO in ARCHITECTURE.md + implement a temporary workaround (e.g., fetch via timeline projection) only if absolutely needed. Prefer adding the endpoint.
 
 ⸻
 

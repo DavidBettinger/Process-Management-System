@@ -1,0 +1,65 @@
+<div class="actions">
+  <p class="resolved" *ngIf="isResolved()">Aufgabe ist abgeschlossen. Aktionen sind deaktiviert.</p>
+
+  <div class="action-row">
+    <div class="action-block">
+      <h4>Zuweisen</h4>
+      <form [formGroup]="assignForm" (ngSubmit)="submitAssign()">
+        <input type="text" formControlName="assigneeId" placeholder="Benutzer-ID" />
+        <button type="submit" class="ghost-button" [disabled]="!canAssign() || busy || assignForm.invalid">
+          Zuweisen
+        </button>
+      </form>
+    </div>
+
+    <div class="action-block">
+      <h4>Starten</h4>
+      <button type="button" class="ghost-button" [disabled]="!canStart() || busy" (click)="submitStart()">
+        Starten
+      </button>
+    </div>
+
+    <div class="action-block">
+      <h4>Blockieren</h4>
+      <form [formGroup]="blockForm" (ngSubmit)="submitBlock()">
+        <input type="text" formControlName="reason" placeholder="Grund" />
+        <button type="submit" class="ghost-button" [disabled]="!canBlock() || busy || blockForm.invalid">
+          Blockieren
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="action-row">
+    <div class="action-block">
+      <h4>Entsperren</h4>
+      <button type="button" class="ghost-button" [disabled]="!canUnblock() || busy" (click)="submitUnblock()">
+        Entsperren
+      </button>
+    </div>
+
+    <div class="action-block">
+      <h4>Abgeben</h4>
+      <form [formGroup]="declineForm" (ngSubmit)="submitDecline()">
+        <input type="text" formControlName="reason" placeholder="Grund" />
+        <input type="text" formControlName="suggestedAssigneeId" placeholder="Vorschlag (optional)" />
+        <button type="submit" class="ghost-button" [disabled]="!canDecline() || busy || declineForm.invalid">
+          Abgeben
+        </button>
+      </form>
+    </div>
+
+    <div class="action-block">
+      <h4>Abschliessen</h4>
+      <form [formGroup]="resolveForm" (ngSubmit)="submitResolve()">
+        <select formControlName="kind">
+          <option *ngFor="let option of resolveKinds" [value]="option.value">{{ option.label }}</option>
+        </select>
+        <input type="text" formControlName="reason" placeholder="Begruendung" />
+        <button type="submit" class="ghost-button" [disabled]="!canResolve() || busy || resolveForm.invalid">
+          Abschliessen
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

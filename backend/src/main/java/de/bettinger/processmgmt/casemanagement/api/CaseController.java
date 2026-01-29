@@ -15,6 +15,8 @@ import de.bettinger.processmgmt.casemanagement.infrastructure.persistence.Proces
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,6 +31,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/cases")
 public class CaseController {
 
+	private static final Logger log = LoggerFactory.getLogger(CaseController.class);
+
 	private final CaseCommandService caseCommandService;
 	private final CaseQueryService caseQueryService;
 
@@ -42,7 +46,12 @@ public class CaseController {
 			@RequestHeader(DevAuthFilter.TENANT_HEADER) String tenantId,
 			@Valid @RequestBody CreateCaseRequest request
 	) {
+		log.info("Create case request tenantId={}, titleLength={}, kitaLength={}",
+				tenantId,
+				request.title() == null ? 0 : request.title().length(),
+				request.kitaName() == null ? 0 : request.kitaName().length());
 		ProcessCaseEntity entity = caseCommandService.createCase(tenantId, request.title(), request.kitaName());
+		log.info("Create case success tenantId={}, caseId={}", tenantId, entity.getId());
 		return ResponseEntity.status(HttpStatus.CREATED)
 				.body(new CreateCaseResponse(entity.getId(), entity.getStatus()));
 	}
@@ -64,15 +73,19 @@ public class CaseController {
 
 	@GetMapping("/{caseId}")
 	public CaseDetailsResponse getCase(@PathVariable UUID caseId) {
+		log.info("Get case request caseId={}", caseId);
 		ProcessCaseEntity entity = caseQueryService.getCase(caseId);
+		log.info("Get case success caseId={}, tenantId={}", caseId, entity.getTenantId());
 		return toDetails(entity);
 	}
 
 	@GetMapping
 	public CasesResponse listCases(@RequestHeader(DevAuthFilter.TENANT_HEADER) String tenantId) {
+		log.info("List cases request tenantId={}", tenantId);
 		List<CaseDetailsResponse> items = caseQueryService.listCases(tenantId).stream()
 				.map(this::toDetails)
 				.toList();
+		log.info("List cases success tenantId={}, count={}", tenantId, items.size());
 		return new CasesResponse(items);
 	}
 

@@ -8,7 +8,8 @@ import {
   CreateTaskResponse,
   DeclineTaskRequest,
   ResolveTaskRequest,
-  TaskStatusResponse
+  TaskStatusResponse,
+  TasksResponse
 } from '../models/task.model';
 import { buildApiUrl } from './api.config';
 
@@ -18,6 +19,10 @@ export class TasksApi {
 
   createTask(caseId: string, request: CreateTaskRequest): Observable<CreateTaskResponse> {
     return this.http.post<CreateTaskResponse>(buildApiUrl(`/cases/${caseId}/tasks`), request);
+  }
+
+  getTasks(caseId: string): Observable<TasksResponse> {
+    return this.http.get<TasksResponse>(buildApiUrl(`/cases/${caseId}/tasks`));
   }
 
   assignTask(taskId: string, request: AssignTaskRequest): Observable<TaskStatusResponse> {

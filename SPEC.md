@@ -80,7 +80,7 @@ A process management app for **Kita consulting** (Fachberatung) to document and 
 
 ### Core Entities (rough)
 - ProcessCase
-    - id, tenantId, title, kitaName, status, createdAt
+    - id, tenantId, title, kitaId, status, createdAt
 - CaseStakeholder
     - stakeholderId (userId), roleInCase
 - Meeting
@@ -111,7 +111,7 @@ A process management app for **Kita consulting** (Fachberatung) to document and 
   "id": "2b1e6d57-8b52-41a8-a2d3-7c1f1a9f1d16",
   "tenantId": "tenant-001",
   "title": "Introduce Child Protection Concept",
-  "kitaName": "Kita Sonnenblume",
+  "kitaId": "a7c9a0bb-2f0b-4f2d-a7c2-2b4bf7a1b6e2",
   "status": "ACTIVE",
   "stakeholders": [
     { "userId": "u-101", "role": "CONSULTANT" },

@@ -7,6 +7,7 @@ describe('TasksStore', () => {
   const createApi = (overrides?: Partial<TasksApi>): TasksApi => {
     return {
       createTask: () => of({ id: 'task-1', state: 'OPEN' }),
+      getTasks: () => of({ items: [{ id: 'task-1', state: 'OPEN', assigneeId: null }] }),
       assignTask: () => of({ id: 'task-1', state: 'ASSIGNED', assigneeId: 'u-1' }),
       startTask: () => of({ id: 'task-1', state: 'IN_PROGRESS', assigneeId: 'u-1' }),
       blockTask: () => of({ id: 'task-1', state: 'BLOCKED', assigneeId: 'u-1' }),
@@ -44,6 +45,15 @@ describe('TasksStore', () => {
     expect(store.error()?.code).toBe('MISSING_CASE_ID');
   });
 
+  it('sets error when caseId is missing for loadTasks', async () => {
+    const store = new TasksStore(createApi());
+
+    await store.loadTasks();
+
+    expect(store.status()).toBe('error');
+    expect(store.error()?.code).toBe('MISSING_CASE_ID');
+  });
+
   it('sets error on action failure', async () => {
     const store = new TasksStore(createApi({
       assignTask: () => throwError(() => new Error('Fehler'))
@@ -57,16 +67,26 @@ describe('TasksStore', () => {
     expect(store.error()?.message).toBe('Fehler');
   });
 
-  it('loadTasks throws TODO when endpoint missing', async () => {
+  it('loadTasks stores items on success', async () => {
     const store = new TasksStore(createApi());
+    store.setCaseId('case-1');
 
-    let caught = false;
-    try {
-      await store.loadTasks();
-    } catch {
-      caught = true;
-    }
-    expect(caught).toBe(true);
+    await store.loadTasks();
+
+    expect(store.status()).toBe('success');
+    expect(store.tasks()).toHaveLength(1);
+    expect(store.error()).toBeUndefined();
+  });
+
+  it('loadTasks stores error from api', async () => {
+    const store = new TasksStore(createApi({
+      getTasks: () => throwError(() => new Error('Fehler beim Laden'))
+    }));
+    store.setCaseId('case-1');
+
+    await store.loadTasks();
+
     expect(store.status()).toBe('error');
+    expect(store.error()?.message).toBe('Fehler beim Laden');
   });
 });

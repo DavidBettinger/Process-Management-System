@@ -26,6 +26,7 @@ export class CasesStore {
         status: 'success',
         error: undefined
       }));
+      console.log(response);
     } catch (error) {
       this.state.update((current) => ({
         ...current,

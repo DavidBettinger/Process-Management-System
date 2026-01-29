@@ -1,0 +1,56 @@
+<section class="hold-form">
+  <header class="hold-header">
+    <div>
+      <h2>Termin durchfuehren</h2>
+      <p>Halte Protokoll fest und lege Aufgabenpunkte an.</p>
+    </div>
+  </header>
+
+  <div class="result" *ngIf="holdResult">
+    <p class="result-title">Termin abgeschlossen</p>
+    <p class="result-text">Erstellte Aufgaben: {{ holdResult.createdTaskIds.length }}</p>
+    <ul class="result-list">
+      <li *ngFor="let taskId of holdResult.createdTaskIds">{{ taskId }}</li>
+    </ul>
+    <button class="ghost-button" type="button" (click)="clearHoldResult()">Hinweis schliessen</button>
+  </div>
+
+  <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+    <ng-container *ngIf="meetings.length > 0; else manualId">
+      <label>
+        Termin
+        <select formControlName="meetingId">
+          <option value="">Bitte waehlen</option>
+          <option *ngFor="let meeting of meetings" [value]="meeting.id">{{ meetingLabel(meeting) }}</option>
+        </select>
+      </label>
+    </ng-container>
+    <ng-template #manualId>
+      <label>
+        Termin-ID
+        <input type="text" formControlName="meetingId" placeholder="UUID des Termins" />
+      </label>
+    </ng-template>
+
+    <label>
+      Durchgefuehrt am
+      <input type="datetime-local" formControlName="heldAt" />
+    </label>
+
+    <label>
+      Teilnehmer-IDs (kommasepariert)
+      <input type="text" formControlName="participantIds" placeholder="z.B. u-101, u-201" />
+    </label>
+
+    <label>
+      Protokoll
+      <textarea formControlName="minutesText" rows="4" placeholder="Wichtige Ergebnisse und Beschluesse"></textarea>
+    </label>
+
+    <app-action-items-editor [items]="actionItems" (itemsChange)="updateActionItems($event)" />
+
+    <p class="error" *ngIf="actionItemsError">{{ actionItemsError }}</p>
+
+    <button class="primary-button" type="submit" [disabled]="isLoading">Termin abschliessen</button>
+  </form>
+</section>

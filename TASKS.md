@@ -618,7 +618,7 @@ Also create:
 - Component tests for enabled/disabled states and action calls.
 
 ---
-[ ] F1 Add models for Address, Location, Kita and update Meeting identification fields
+[x] F1 Add models for Address, Location, Kita and update Meeting identification fields
 
 Objective: Add TypeScript models matching backend DTOs for Location and Kita and adjust Meeting model to include locationId.
 Files to touch:

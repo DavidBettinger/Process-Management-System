@@ -129,7 +129,7 @@ For each task: objective, files to touch, definition of done, how to test.
 
 ---
 
-### [ ] B3 Implement Location API endpoints (CRUD-lite)
+### [x] B3 Implement Location API endpoints (CRUD-lite)
 **Objective:** Provide backend endpoints to create and list Locations for the tenant.
 **Files to touch:**
 - `backend/src/main/java/.../common/api/locations/LocationsController.java` (new)

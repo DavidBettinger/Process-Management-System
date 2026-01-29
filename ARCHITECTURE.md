@@ -309,6 +309,17 @@ Response 200:
 }
 ```
 
+#### Get Kita
+GET `/api/kitas/{kitaId}`
+Response 200:
+```json
+{
+  "id": "a7c9a0bb-2f0b-4f2d-a7c2-2b4bf7a1b6e2",
+  "name": "Kita Sonnenblume",
+  "locationId": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8"
+}
+```
+
 ### Cases
 #### Create case
 POST `/api/cases`

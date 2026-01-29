@@ -83,13 +83,15 @@ class LocationsControllerTest {
 
 	@Test
 	void listsLocationsByTenant() throws Exception {
+		String tenantId = "tenant-" + UUID.randomUUID();
+		String otherTenantId = "tenant-" + UUID.randomUUID();
 		Address address = new Address("Musterstrasse", "12", "10115", "Berlin", "DE");
-		UUID first = locationService.createLocation("tenant-3", "Kita Sonnenblume", address).getId();
-		locationService.createLocation("tenant-4", "Kita Regenbogen", address);
+		UUID first = locationService.createLocation(tenantId, "Kita Sonnenblume", address).getId();
+		locationService.createLocation(otherTenantId, "Kita Regenbogen", address);
 
 		mockMvc.perform(get("/api/locations")
 						.header(DevAuthFilter.USER_HEADER, "u-1")
-						.header(DevAuthFilter.TENANT_HEADER, "tenant-3"))
+						.header(DevAuthFilter.TENANT_HEADER, tenantId))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.items.length()").value(1))
 				.andExpect(jsonPath("$.items[0].id").value(first.toString()))

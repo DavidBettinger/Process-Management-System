@@ -1,0 +1,6 @@
+CREATE TABLE kitas (
+	id UUID PRIMARY KEY,
+	tenant_id VARCHAR(255) NOT NULL,
+	name VARCHAR(255) NOT NULL,
+	location_id UUID NOT NULL
+);

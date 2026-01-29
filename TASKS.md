@@ -88,7 +88,7 @@ For each task: objective, files to touch, definition of done, how to test.
 **Test:** `./gradlew test`
 
 
-### [ ] B1 Add Location domain model + persistence (Address as Value Object)
+### [x] B1 Add Location domain model + persistence (Address as Value Object)
 **Objective:** Introduce a Location model with an Address object and persist it in PostgreSQL.
 **Files to touch:**
 - `backend/src/main/java/.../common/domain/Address.java` (new, Value Object)
@@ -108,7 +108,7 @@ For each task: objective, files to touch, definition of done, how to test.
 
 ---
 
-### [ ] B2 Add Kita domain model (name + locationId) + persistence
+### [x] B2 Add Kita domain model (name + locationId) + persistence
 **Objective:** Add `Kita` as a first-class entity referencing a Location.
 **Files to touch:**
 - `backend/src/main/java/.../casemanagement/domain/Kita.java` (new)

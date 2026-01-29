@@ -41,7 +41,9 @@ public class TimelineQueryService {
 		UUID meetingId = readUuid(payload, "meetingId");
 		UUID taskId = readUuid(payload, "taskId");
 		String assigneeId = readText(payload, "assigneeId");
-		return java.util.Optional.of(new TimelineEntry(type, event.getOccurredAt(), meetingId, taskId, assigneeId));
+		UUID locationId = readUuid(payload, "locationId");
+		return java.util.Optional.of(new TimelineEntry(type, event.getOccurredAt(), meetingId, taskId, assigneeId,
+				locationId));
 	}
 
 	private String toTimelineType(String eventType) {

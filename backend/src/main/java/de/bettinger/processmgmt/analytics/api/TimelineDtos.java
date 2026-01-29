@@ -9,7 +9,8 @@ public final class TimelineDtos {
 	private TimelineDtos() {
 	}
 
-	public record TimelineEntry(String type, Instant occurredAt, UUID meetingId, UUID taskId, String assigneeId) {
+	public record TimelineEntry(String type, Instant occurredAt, UUID meetingId, UUID taskId, String assigneeId,
+			UUID locationId) {
 	}
 
 	public record TimelineResponse(UUID caseId, List<TimelineEntry> entries) {

@@ -231,7 +231,7 @@ How to test:
 
 ---
 
-[ ] B7 Update timeline endpoint to include location information for meeting entries (minimal)
+[x] B7 Update timeline endpoint to include location information for meeting entries (minimal)
 
 Objective: Ensure timeline entries for meetings include locationId so frontend can resolve it.
 Files to touch:

@@ -6,6 +6,7 @@ export interface TimelineEntry {
   meetingId?: string | null;
   taskId?: string | null;
   assigneeId?: string | null;
+  locationId?: string | null;
 }
 
 export interface TimelineResponse {

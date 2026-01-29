@@ -1,1 +1,1 @@
-ALTER TABLE meetings ADD COLUMN location_id UUID;
+ALTER TABLE meetings ADD COLUMN location_id UUID NOT NULL;

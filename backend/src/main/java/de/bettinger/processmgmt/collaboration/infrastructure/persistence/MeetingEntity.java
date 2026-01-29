@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -28,53 +29,49 @@ public class MeetingEntity {
 	@Column(name = "case_id", nullable = false)
 	private UUID caseId;
 
-	@Enumerated(EnumType.STRING)
+	@Setter
+    @Column(name = "location_id", nullable = false)
+	private UUID locationId;
+
+	@Setter
+    @Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false)
 	private MeetingStatus status;
 
 	@Column(name = "scheduled_at")
 	private Instant scheduledAt;
 
-	@Column(name = "held_at")
+	@Setter
+    @Column(name = "held_at")
 	private Instant heldAt;
 
-	@Column(name = "minutes_text")
+	@Setter
+    @Column(name = "minutes_text")
 	private String minutesText;
 
 	@OneToMany(mappedBy = "meeting", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true,
 			fetch = FetchType.EAGER)
-	private List<MeetingParticipantEntity> participants = new ArrayList<>();
+	private final List<MeetingParticipantEntity> participants = new ArrayList<>();
 
 	@OneToMany(mappedBy = "meeting", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true,
 			fetch = FetchType.EAGER)
-	private List<MeetingActionItemEntity> actionItems = new ArrayList<>();
+	private final List<MeetingActionItemEntity> actionItems = new ArrayList<>();
 
 	protected MeetingEntity() {
 	}
 
-	public MeetingEntity(UUID id, UUID caseId, MeetingStatus status, Instant scheduledAt, Instant heldAt,
+	public MeetingEntity(UUID id, UUID caseId, UUID locationId, MeetingStatus status, Instant scheduledAt, Instant heldAt,
 						 String minutesText) {
 		this.id = id;
 		this.caseId = caseId;
+		this.locationId = locationId;
 		this.status = status;
 		this.scheduledAt = scheduledAt;
 		this.heldAt = heldAt;
 		this.minutesText = minutesText;
 	}
 
-	public void setStatus(MeetingStatus status) {
-		this.status = status;
-	}
-
-	public void setHeldAt(Instant heldAt) {
-		this.heldAt = heldAt;
-	}
-
-	public void setMinutesText(String minutesText) {
-		this.minutesText = minutesText;
-	}
-
-	public void replaceParticipants(List<String> participantIds) {
+    public void replaceParticipants(List<String> participantIds) {
 		participants.clear();
 		for (String userId : participantIds) {
 			participants.add(new MeetingParticipantEntity(this, userId));

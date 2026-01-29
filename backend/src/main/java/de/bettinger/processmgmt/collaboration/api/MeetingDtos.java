@@ -15,14 +15,19 @@ public final class MeetingDtos {
 	private MeetingDtos() {
 	}
 
-	public record ScheduleMeetingRequest(@NotNull Instant scheduledAt, @NotEmpty List<String> participantIds) {
+	public record ScheduleMeetingRequest(
+			@NotNull Instant scheduledAt,
+			@NotNull UUID locationId,
+			@NotEmpty List<String> participantIds
+	) {
 	}
 
-	public record ScheduleMeetingResponse(UUID id, MeetingStatus status) {
+	public record ScheduleMeetingResponse(UUID id, MeetingStatus status, UUID locationId) {
 	}
 
 	public record HoldMeetingRequest(
 			@NotNull Instant heldAt,
+			@NotNull UUID locationId,
 			@NotEmpty List<String> participantIds,
 			@NotBlank String minutesText,
 			List<@Valid ActionItemRequest> actionItems

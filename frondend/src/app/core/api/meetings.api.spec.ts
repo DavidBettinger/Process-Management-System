@@ -22,6 +22,7 @@ describe('MeetingsApi', () => {
   it('schedules a meeting', () => {
     const payload: ScheduleMeetingRequest = {
       scheduledAt: '2026-01-02T09:00:00Z',
+      locationId: 'location-1',
       participantIds: ['u-1']
     };
 
@@ -30,12 +31,13 @@ describe('MeetingsApi', () => {
     const req = httpMock.expectOne('/api/cases/case-1/meetings');
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual(payload);
-    req.flush({ id: 'm-1', status: 'SCHEDULED' });
+    req.flush({ id: 'm-1', status: 'SCHEDULED', locationId: 'location-1' });
   });
 
   it('holds a meeting', () => {
     const payload: HoldMeetingRequest = {
       heldAt: '2026-01-02T10:00:00Z',
+      locationId: 'location-1',
       participantIds: ['u-1'],
       minutesText: 'Notizen',
       actionItems: []

@@ -2,17 +2,20 @@ export type MeetingStatus = 'SCHEDULED' | 'HELD' | 'CANCELLED';
 
 export interface ScheduleMeetingRequest {
   scheduledAt: string;
+  locationId: string;
   participantIds: string[];
 }
 
 export interface ScheduleMeetingResponse {
   id: string;
   status: MeetingStatus;
+  locationId: string;
 }
 
 export interface Meeting {
   id: string;
   status: MeetingStatus;
+  locationId: string;
 }
 
 export interface ActionItemRequest {
@@ -24,6 +27,7 @@ export interface ActionItemRequest {
 
 export interface HoldMeetingRequest {
   heldAt: string;
+  locationId: string;
   participantIds: string[];
   minutesText: string;
   actionItems?: ActionItemRequest[] | null;

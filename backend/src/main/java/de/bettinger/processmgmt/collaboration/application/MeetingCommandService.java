@@ -7,6 +7,7 @@ import de.bettinger.processmgmt.collaboration.infrastructure.persistence.Meeting
 import de.bettinger.processmgmt.collaboration.infrastructure.persistence.TaskEntity;
 import de.bettinger.processmgmt.collaboration.infrastructure.persistence.TaskRepository;
 import de.bettinger.processmgmt.common.errors.NotFoundException;
+import de.bettinger.processmgmt.common.infrastructure.persistence.LocationRepository;
 import de.bettinger.processmgmt.common.outbox.OutboxEventEntity;
 import de.bettinger.processmgmt.common.outbox.OutboxEventRepository;
 import java.time.Instant;
@@ -24,19 +25,24 @@ public class MeetingCommandService {
 	private final MeetingRepository meetingRepository;
 	private final TaskRepository taskRepository;
 	private final OutboxEventRepository outboxEventRepository;
+	private final LocationRepository locationRepository;
 
 	public MeetingCommandService(MeetingRepository meetingRepository, TaskRepository taskRepository,
-								 OutboxEventRepository outboxEventRepository) {
+								 OutboxEventRepository outboxEventRepository, LocationRepository locationRepository) {
 		this.meetingRepository = meetingRepository;
 		this.taskRepository = taskRepository;
 		this.outboxEventRepository = outboxEventRepository;
+		this.locationRepository = locationRepository;
 	}
 
 	@Transactional
-	public MeetingEntity scheduleMeeting(UUID caseId, Instant scheduledAt, List<String> participantIds) {
+	public MeetingEntity scheduleMeeting(String tenantId, UUID caseId, UUID locationId, Instant scheduledAt,
+										 List<String> participantIds) {
+		validateLocation(tenantId, locationId);
 		MeetingEntity entity = new MeetingEntity(
 				UUID.randomUUID(),
 				caseId,
+				locationId,
 				MeetingStatus.SCHEDULED,
 				scheduledAt,
 				null,
@@ -47,10 +53,16 @@ public class MeetingCommandService {
 	}
 
 	@Transactional
-	public MeetingEntity holdMeeting(UUID meetingId, Instant heldAt, String minutesText, List<String> participantIds,
+	public MeetingEntity holdMeeting(String tenantId, UUID meetingId, UUID locationId, Instant heldAt,
+									 String minutesText, List<String> participantIds,
 									 List<MeetingActionItemCommand> actionItems) {
+		validateLocation(tenantId, locationId);
 		MeetingEntity entity = meetingRepository.findById(meetingId)
 				.orElseThrow(() -> new NotFoundException("Meeting not found: " + meetingId));
+		if (entity.getLocationId() != null && !entity.getLocationId().equals(locationId)) {
+			throw new IllegalArgumentException("Meeting location does not match scheduled location");
+		}
+		entity.setLocationId(locationId);
 		Map<String, UUID> existingTaskIdsByKey = existingTaskIdsByKey(entity);
 		entity.setStatus(MeetingStatus.HELD);
 		entity.setHeldAt(heldAt);
@@ -59,7 +71,8 @@ public class MeetingCommandService {
 		entity.replaceActionItems(toActionItems(entity, actionItems, existingTaskIdsByKey));
 		MeetingEntity saved = meetingRepository.save(entity);
 		outboxEventRepository.save(outboxEvent("Meeting", saved.getId(), "MeetingHeld",
-				"{\"meetingId\":\"" + saved.getId() + "\",\"caseId\":\"" + saved.getCaseId() + "\"}"));
+				"{\"meetingId\":\"" + saved.getId() + "\",\"caseId\":\"" + saved.getCaseId()
+						+ "\",\"locationId\":\"" + saved.getLocationId() + "\"}"));
 		return saved;
 	}
 
@@ -127,5 +140,12 @@ public class MeetingCommandService {
 				null,
 				null
 		);
+	}
+
+	private void validateLocation(String tenantId, UUID locationId) {
+		boolean exists = locationRepository.findByIdAndTenantId(locationId, tenantId).isPresent();
+		if (!exists) {
+			throw new NotFoundException("Location not found: " + locationId);
+		}
 	}
 }

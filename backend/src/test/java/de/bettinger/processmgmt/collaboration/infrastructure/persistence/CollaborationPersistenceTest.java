@@ -26,6 +26,7 @@ class CollaborationPersistenceTest {
 		MeetingEntity meeting = new MeetingEntity(
 				UUID.randomUUID(),
 				UUID.randomUUID(),
+				UUID.randomUUID(),
 				MeetingStatus.SCHEDULED,
 				Instant.now(),
 				null,

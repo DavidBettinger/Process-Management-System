@@ -8,6 +8,7 @@ import de.bettinger.processmgmt.collaboration.application.MeetingActionItemComma
 import de.bettinger.processmgmt.collaboration.application.MeetingCommandService;
 import de.bettinger.processmgmt.collaboration.infrastructure.persistence.MeetingActionItemEntity;
 import de.bettinger.processmgmt.collaboration.infrastructure.persistence.MeetingEntity;
+import de.bettinger.processmgmt.auth.DevAuthFilter;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Objects;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,21 +35,36 @@ public class MeetingController {
 	@PostMapping
 	public ResponseEntity<ScheduleMeetingResponse> scheduleMeeting(
 			@PathVariable UUID caseId,
+			@RequestHeader(DevAuthFilter.TENANT_HEADER) String tenantId,
 			@Valid @RequestBody ScheduleMeetingRequest request
 	) {
-		MeetingEntity meeting = meetingCommandService.scheduleMeeting(caseId, request.scheduledAt(), request.participantIds());
+		MeetingEntity meeting = meetingCommandService.scheduleMeeting(
+				tenantId,
+				caseId,
+				request.locationId(),
+				request.scheduledAt(),
+				request.participantIds()
+		);
 		return ResponseEntity.status(HttpStatus.CREATED)
-				.body(new ScheduleMeetingResponse(meeting.getId(), meeting.getStatus()));
+				.body(new ScheduleMeetingResponse(meeting.getId(), meeting.getStatus(), meeting.getLocationId()));
 	}
 
 	@PostMapping("/{meetingId}/hold")
 	public HoldMeetingResponse holdMeeting(
 			@PathVariable UUID meetingId,
+			@RequestHeader(DevAuthFilter.TENANT_HEADER) String tenantId,
 			@Valid @RequestBody HoldMeetingRequest request
 	) {
 		List<MeetingActionItemCommand> actionItems = toCommands(request.actionItems());
-		MeetingEntity meeting = meetingCommandService.holdMeeting(meetingId, request.heldAt(), request.minutesText(),
-				request.participantIds(), actionItems);
+		MeetingEntity meeting = meetingCommandService.holdMeeting(
+				tenantId,
+				meetingId,
+				request.locationId(),
+				request.heldAt(),
+				request.minutesText(),
+				request.participantIds(),
+				actionItems
+		);
 		List<UUID> createdTaskIds = meeting.getActionItems().stream()
 				.map(MeetingActionItemEntity::getCreatedTaskId)
 				.filter(Objects::nonNull)

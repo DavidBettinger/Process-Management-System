@@ -29,6 +29,7 @@ export class MeetingHoldFormComponent {
   readonly form = this.formBuilder.group({
     meetingId: ['', [Validators.required]],
     heldAt: ['', [Validators.required]],
+    locationId: ['', [Validators.required]],
     participantIds: ['', [Validators.required]],
     minutesText: ['', [Validators.required]]
   });
@@ -43,7 +44,7 @@ export class MeetingHoldFormComponent {
       return;
     }
     if (this.actionItems.some((item) => !item.title.trim())) {
-      this.actionItemsError = 'Bitte gib fuer jedes Action Item einen Titel an.';
+      this.actionItemsError = 'Bitte gib fuer jeden Aufgabenpunkt einen Titel an.';
       return;
     }
 
@@ -51,6 +52,7 @@ export class MeetingHoldFormComponent {
     const meetingId = value.meetingId ?? '';
     const request: HoldMeetingRequest = {
       heldAt: toIsoDateTime(value.heldAt ?? ''),
+      locationId: value.locationId ?? '',
       participantIds: parseIds(value.participantIds ?? ''),
       minutesText: value.minutesText ?? '',
       actionItems: this.actionItems.length ? this.actionItems.map((item) => ({

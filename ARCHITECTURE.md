@@ -384,7 +384,7 @@ Request:
 ```
 Response 201:
 ```json
-{ "id": "uuid", "status": "SCHEDULED" }
+{ "id": "uuid", "status": "SCHEDULED", "locationId": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8" }
 ```
 
 #### Hold meeting (store minutes + create tasks)

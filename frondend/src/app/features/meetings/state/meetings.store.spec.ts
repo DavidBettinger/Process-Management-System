@@ -6,7 +6,7 @@ import { HoldMeetingRequest } from '../../../core/models/meeting.model';
 describe('MeetingsStore', () => {
   const createApi = (overrides?: Partial<MeetingsApi>): MeetingsApi => {
     return {
-      scheduleMeeting: () => of({ id: 'm-1', status: 'SCHEDULED' }),
+      scheduleMeeting: () => of({ id: 'm-1', status: 'SCHEDULED', locationId: 'location-1' }),
       holdMeeting: () => of({ meetingId: 'm-1', createdTaskIds: [] }),
       ...overrides
     } as MeetingsApi;
@@ -16,7 +16,11 @@ describe('MeetingsStore', () => {
     const store = new MeetingsStore(createApi());
     store.setCaseId('case-1');
 
-    await store.scheduleMeeting({ scheduledAt: '2026-01-01T10:00:00Z', participantIds: ['u-1'] });
+    await store.scheduleMeeting({
+      scheduledAt: '2026-01-01T10:00:00Z',
+      locationId: 'location-1',
+      participantIds: ['u-1']
+    });
 
     expect(store.meetings().length).toBe(1);
     expect(store.meetings()[0].id).toBe('m-1');
@@ -29,6 +33,7 @@ describe('MeetingsStore', () => {
 
     const req: HoldMeetingRequest = {
       heldAt: '2026-01-01T11:00:00Z',
+      locationId: 'location-1',
       participantIds: ['u-1'],
       minutesText: 'Notizen',
       actionItems: []
@@ -43,7 +48,11 @@ describe('MeetingsStore', () => {
   it('sets error when caseId is missing', async () => {
     const store = new MeetingsStore(createApi());
 
-    await store.scheduleMeeting({ scheduledAt: '2026-01-01T10:00:00Z', participantIds: ['u-1'] });
+    await store.scheduleMeeting({
+      scheduledAt: '2026-01-01T10:00:00Z',
+      locationId: 'location-1',
+      participantIds: ['u-1']
+    });
 
     expect(store.status()).toBe('error');
     expect(store.error()?.code).toBe('MISSING_CASE_ID');
@@ -71,6 +80,7 @@ describe('MeetingsStore', () => {
 
     await store.holdMeeting('m-1', {
       heldAt: '2026-01-01T11:00:00Z',
+      locationId: 'location-1',
       participantIds: ['u-1'],
       minutesText: 'Notizen',
       actionItems: []

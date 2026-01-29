@@ -14,6 +14,7 @@ describe('MeetingHoldFormComponent', () => {
     component.form.setValue({
       meetingId: 'meeting-1',
       heldAt: heldAtInput,
+      locationId: 'location-1',
       participantIds: 'u-101, u-201',
       minutesText: 'Ergebnisse wurden festgehalten.'
     });
@@ -42,6 +43,7 @@ describe('MeetingHoldFormComponent', () => {
     expect(payload.meetingId).toBe('meeting-1');
     expect(payload.request.participantIds).toEqual(['u-101', 'u-201']);
     expect(payload.request.minutesText).toBe('Ergebnisse wurden festgehalten.');
+    expect(payload.request.locationId).toBe('location-1');
     expect(payload.request.actionItems?.length).toBe(1);
     expect(payload.request.actionItems?.[0].key).toBe('item-1');
     expect(payload.request.actionItems?.[0].title).toBe('Konzept vorbereiten');

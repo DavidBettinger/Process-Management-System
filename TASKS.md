@@ -185,7 +185,7 @@ Definition of done:
 How to test:
 •	./gradlew test
 ---
-[ ] B5 Update ProcessCase to reference Kita (kitaId) instead of free-text kitaName
+[x] B5 Update ProcessCase to reference Kita (kitaId) instead of free-text kitaName
 
 Objective: Replace kitaName in ProcessCase creation with kitaId, enabling consistent location/name usage.
 Files to touch:
@@ -205,7 +205,7 @@ Definition of done:
 How to test:
 •	./gradlew test
 ---
-[ ] B6 Add Meeting.locationId and ensure meetings can be identified by date + location
+[x] B6 Add Meeting.locationId and ensure meetings can be identified by date + location
 
 Objective: Add locationId to Meeting (scheduled/held) and store it for UI identification.
 Files to touch:

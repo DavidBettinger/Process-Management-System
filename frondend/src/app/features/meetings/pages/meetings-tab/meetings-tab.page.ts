@@ -27,6 +27,7 @@ export class MeetingsTabPageComponent implements OnInit {
 
   readonly scheduleForm = this.formBuilder.group({
     scheduledAt: ['', [Validators.required]],
+    locationId: ['', [Validators.required]],
     participantIds: ['', [Validators.required]]
   });
 
@@ -49,9 +50,10 @@ export class MeetingsTabPageComponent implements OnInit {
     const value = this.scheduleForm.getRawValue();
     await this.meetingsStore.scheduleMeeting({
       scheduledAt: toIsoDateTime(value.scheduledAt ?? ''),
+      locationId: value.locationId ?? '',
       participantIds: parseIds(value.participantIds ?? '')
     });
-    this.scheduleForm.reset({ scheduledAt: '', participantIds: '' });
+    this.scheduleForm.reset({ scheduledAt: '', locationId: '', participantIds: '' });
   }
 
   async handleHold(payload: HoldMeetingPayload): Promise<void> {

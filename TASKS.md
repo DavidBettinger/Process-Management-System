@@ -634,7 +634,7 @@ How to test:
 
 ---
 
-[ ] F2 Add typed API clients for Locations and Kitas
+[x] F2 Add typed API clients for Locations and Kitas
 
 Objective: Create LocationsApi and KitasApi with typed requests/responses.
 Files to touch:

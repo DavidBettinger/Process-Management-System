@@ -6,11 +6,13 @@ import { CaseListPageComponent } from './features/cases/pages/case-list/case-lis
 import { MeetingsPageComponent } from './features/meetings/meetings-page/meetings-page.component';
 import { MeetingsTabPageComponent } from './features/meetings/pages/meetings-tab/meetings-tab.page';
 import { LocationsPageComponent } from './features/locations/pages/locations-page/locations-page.page';
+import { KitasPageComponent } from './features/kitas/pages/kitas-page/kitas-page.page';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'cases' },
   { path: 'cases', component: CaseListPageComponent },
   { path: 'locations', component: LocationsPageComponent },
+  { path: 'kitas', component: KitasPageComponent },
   {
     path: 'cases/:caseId',
     component: CaseDetailPageComponent,

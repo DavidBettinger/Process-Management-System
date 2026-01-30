@@ -704,7 +704,7 @@ UI requirements:
 •	Kita form:
 •	name (required)
 •	location dropdown (required)
-•	link/button: “Create new location” (navigates to /locations)
+•	link/button: “Create new location” reuse existing LocationCreate UI and show it as an overlay (close it when location is created).
 •	Kitas list shows: name + location label (resolve location)
 Definition of done:
 •	Creating a Kita refreshes list.

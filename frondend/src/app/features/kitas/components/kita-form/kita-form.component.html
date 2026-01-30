@@ -1,0 +1,34 @@
+<section class="form-panel">
+  <header>
+    <p class="eyebrow">Kitas</p>
+    <h2>Neue Kita anlegen</h2>
+    <p class="subtitle">Verbinde die Kita mit einem Standort, damit Prozesse korrekt zugeordnet sind.</p>
+  </header>
+
+  <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+    <label>
+      Name der Kita
+      <input type="text" formControlName="name" placeholder="z.B. Kita Sonnenblume" />
+      <span class="field-error" *ngIf="isInvalid('name')">Bitte einen Namen eingeben.</span>
+    </label>
+
+    <label>
+      Standort
+      <select formControlName="locationId">
+        <option value="">Bitte waehlen</option>
+        <option *ngFor="let location of locations" [value]="location.id">
+          {{ location.label }} · {{ location.address.city }}
+        </option>
+      </select>
+      <span class="field-error" *ngIf="isInvalid('locationId')">Bitte einen Standort auswaehlen.</span>
+    </label>
+
+    <p class="hint" *ngIf="locations.length === 0">
+      Es sind noch keine Standorte vorhanden. Bitte zuerst einen Standort anlegen.
+    </p>
+
+    <a class="link" routerLink="/locations">Neuen Standort anlegen</a>
+
+    <button class="primary-button" type="submit" [disabled]="isSubmitting">Kita speichern</button>
+  </form>
+</section>

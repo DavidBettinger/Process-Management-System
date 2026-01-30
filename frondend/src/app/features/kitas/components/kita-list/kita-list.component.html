@@ -1,0 +1,9 @@
+<ul class="kita-list">
+  <li class="kita-card" *ngFor="let kita of kitas">
+    <div class="kita-header">
+      <h3>{{ kita.name }}</h3>
+      <span class="meta">ID: {{ kita.id }}</span>
+    </div>
+    <p class="location">Standort: {{ locationLabel(kita.locationId) }}</p>
+  </li>
+</ul>

@@ -352,6 +352,58 @@ Response 200:
 }
 ```
 
+### Stakeholders
+
+#### Create Stakeholder
+POST `/api/stakeholders`
+Request:
+```json
+{
+  "firstName": "Maria",
+  "lastName": "Becker",
+  "role": "CONSULTANT"
+}
+```
+Response 201:
+```json
+{ "id": "8a4a1cf3-6bbf-4f44-b8b8-6a0a0e5b8d2f" }
+```
+
+#### List Stakeholders
+GET `/api/stakeholders`
+Response 200:
+```json
+{
+  "items": [
+    {
+      "id": "8a4a1cf3-6bbf-4f44-b8b8-6a0a0e5b8d2f",
+      "firstName": "Maria",
+      "lastName": "Becker",
+      "role": "CONSULTANT"
+    }
+  ]
+}
+```
+
+#### List Tasks for Stakeholder
+GET `/api/stakeholders/{stakeholderId}/tasks`
+Response 200:
+```json
+{
+  "stakeholderId": "8a4a1cf3-6bbf-4f44-b8b8-6a0a0e5b8d2f",
+  "items": [
+    {
+      "id": "1d4e6c8a-6dc3-4a1b-9a68-5c4e5d2c84f0",
+      "caseId": "2b1e6d57-8b52-41a8-a2d3-7c1f1a9f1d16",
+      "title": "Draft child protection concept v1",
+      "state": "ASSIGNED",
+      "assigneeId": "8a4a1cf3-6bbf-4f44-b8b8-6a0a0e5b8d2f",
+      "dueDate": "2026-02-10"
+    }
+  ]
+}
+```
+
 ### Cases
 #### Create case
 POST `/api/cases`

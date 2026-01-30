@@ -5,6 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TasksStore } from '../../state/tasks.store';
 import { TaskListComponent } from '../../components/task-list/task-list.component';
 import { AssignTaskRequest, DeclineTaskRequest, ResolveTaskRequest } from '../../../../core/models/task.model';
+import { StakeholdersStore } from '../../../stakeholders/state/stakeholders.store';
 
 @Component({
   selector: 'app-tasks-tab-page',
@@ -17,12 +18,16 @@ export class TasksTabPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   readonly tasksStore = inject(TasksStore);
+  readonly stakeholdersStore = inject(StakeholdersStore);
 
   readonly tasks = this.tasksStore.tasks;
   readonly status = this.tasksStore.status;
   readonly error = this.tasksStore.error;
   readonly isLoading = this.tasksStore.isLoading;
   readonly busyTaskIds = this.tasksStore.busyTaskIds;
+  readonly stakeholders = this.stakeholdersStore.stakeholders;
+  readonly stakeholdersStatus = this.stakeholdersStore.status;
+  readonly stakeholdersError = this.stakeholdersStore.error;
 
   ngOnInit(): void {
     const parentRoute = this.route.parent ?? this.route;
@@ -33,6 +38,7 @@ export class TasksTabPageComponent implements OnInit {
       }
       void this.tasksStore.loadTasks();
     });
+    void this.stakeholdersStore.loadStakeholders();
   }
 
   async handleAssign(payload: { taskId: string; assigneeId: string }): Promise<void> {

@@ -29,12 +29,12 @@
       </label>
       <label>
         Verantwortlich (optional)
-        <input
-          type="text"
-          [ngModel]="item.assigneeId"
-          (ngModelChange)="updateField(i, 'assigneeId', $event)"
-          [ngModelOptions]="{ standalone: true }"
-          placeholder="z.B. u-201"
+        <app-stakeholder-select
+          [stakeholders]="stakeholders"
+          [selectedId]="item.assigneeId || null"
+          [disabled]="stakeholders.length === 0"
+          [placeholder]="'Bitte waehlen'"
+          (selectedIdChange)="updateField(i, 'assigneeId', $event)"
         />
       </label>
       <label>

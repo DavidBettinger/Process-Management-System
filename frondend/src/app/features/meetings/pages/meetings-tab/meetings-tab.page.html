@@ -35,11 +35,46 @@
           <p class="state-text">{{ locationsError()?.message ?? 'Unbekannter Fehler' }}</p>
           <button class="ghost-button" type="button" (click)="retryLocations()">Erneut versuchen</button>
         </div>
-        <label>
-          Teilnehmer-IDs (kommasepariert)
-          <input type="text" formControlName="participantIds" placeholder="z.B. u-101, u-201" />
-        </label>
-        <button class="primary-button" type="submit" [disabled]="isLoading()">Termin planen</button>
+        <div class="participants">
+          <div class="participants-header">
+            <p>Teilnehmende</p>
+            <button class="ghost-button" type="button" (click)="addScheduleParticipant()">
+              Teilnehmende hinzufuegen
+            </button>
+          </div>
+          <div class="participant-row" *ngFor="let participantId of scheduleParticipants; let i = index">
+            <app-stakeholder-select
+              [stakeholders]="stakeholders()"
+              [selectedId]="participantId || null"
+              [disabled]="stakeholdersStatus() !== 'success'"
+              [required]="true"
+              (selectedIdChange)="updateScheduleParticipant(i, $event)"
+            />
+            <button
+              class="ghost-button"
+              type="button"
+              (click)="removeScheduleParticipant(i)"
+              [disabled]="scheduleParticipants.length === 1"
+            >
+              Entfernen
+            </button>
+          </div>
+          <p class="error" *ngIf="scheduleParticipantsError">{{ scheduleParticipantsError }}</p>
+          <div class="state" *ngIf="stakeholdersStatus() === 'loading'">
+            <p class="state-title">Beteiligte werden geladen</p>
+          </div>
+          <div class="state" *ngIf="stakeholdersStatus() === 'error'">
+            <p class="state-title">Beteiligte konnten nicht geladen werden</p>
+            <p class="state-text">{{ stakeholdersError()?.message ?? 'Unbekannter Fehler' }}</p>
+          </div>
+        </div>
+        <button
+          class="primary-button"
+          type="submit"
+          [disabled]="isLoading() || stakeholdersStatus() !== 'success'"
+        >
+          Termin planen
+        </button>
       </form>
 
       <div class="state" *ngIf="meetings().length === 0">
@@ -62,6 +97,9 @@
       <app-meeting-hold-form
         [meetings]="meetings()"
         [locations]="locations()"
+        [stakeholders]="stakeholders()"
+        [stakeholdersReady]="stakeholdersStatus() === 'success'"
+        [stakeholdersError]="stakeholdersError()?.message ?? null"
         [defaultLocationId]="defaultLocationId()"
         [isLoading]="isLoading()"
         [holdResult]="holdResult()"

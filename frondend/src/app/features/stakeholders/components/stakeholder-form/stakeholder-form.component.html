@@ -1,0 +1,34 @@
+<section class="form-panel">
+  <header>
+    <p class="eyebrow">Stammdaten</p>
+    <h2>Neue Beteiligte anlegen</h2>
+    <p class="subtitle">Ergaenze Personen, die in Prozessen vorkommen.</p>
+  </header>
+
+  <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+    <label>
+      Vorname
+      <input type="text" formControlName="firstName" placeholder="z.B. Maria" />
+      <span class="field-error" *ngIf="isInvalid('firstName')">Bitte Vorname angeben.</span>
+    </label>
+
+    <label>
+      Nachname
+      <input type="text" formControlName="lastName" placeholder="z.B. Becker" />
+      <span class="field-error" *ngIf="isInvalid('lastName')">Bitte Nachname angeben.</span>
+    </label>
+
+    <label>
+      Rolle
+      <select formControlName="role">
+        <option value="" disabled>Bitte waehlen</option>
+        <option *ngFor="let role of roles" [value]="role.value">{{ role.label }}</option>
+      </select>
+      <span class="field-error" *ngIf="isInvalid('role')">Bitte Rolle auswaehlen.</span>
+    </label>
+
+    <button class="primary-button" type="submit" [disabled]="isSubmitting">
+      Beteiligte anlegen
+    </button>
+  </form>
+</section>

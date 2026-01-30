@@ -5,8 +5,18 @@
     <div class="action-block">
       <h4>Zuweisen</h4>
       <form [formGroup]="assignForm" (ngSubmit)="submitAssign()">
-        <input type="text" formControlName="assigneeId" placeholder="Benutzer-ID" />
-        <button type="submit" class="ghost-button" [disabled]="!canAssign() || busy || assignForm.invalid">
+        <app-stakeholder-select
+          [stakeholders]="stakeholders"
+          [selectedId]="assignForm.controls.assigneeId.value"
+          [disabled]="!stakeholdersReady"
+          [required]="true"
+          (selectedIdChange)="assignForm.controls.assigneeId.setValue($event ?? '')"
+        />
+        <button
+          type="submit"
+          class="ghost-button"
+          [disabled]="!canAssign() || busy || !stakeholdersReady || assignForm.invalid"
+        >
           Zuweisen
         </button>
       </form>
@@ -42,7 +52,14 @@
       <h4>Abgeben</h4>
       <form [formGroup]="declineForm" (ngSubmit)="submitDecline()">
         <input type="text" formControlName="reason" placeholder="Grund" />
-        <input type="text" formControlName="suggestedAssigneeId" placeholder="Vorschlag (optional)" />
+        <app-stakeholder-select
+          [stakeholders]="stakeholders"
+          [selectedId]="declineForm.controls.suggestedAssigneeId.value"
+          [disabled]="!stakeholdersReady"
+          [required]="false"
+          [placeholder]="'Vorschlag (optional)'"
+          (selectedIdChange)="declineForm.controls.suggestedAssigneeId.setValue($event ?? '')"
+        />
         <button type="submit" class="ghost-button" [disabled]="!canDecline() || busy || declineForm.invalid">
           Abgeben
         </button>

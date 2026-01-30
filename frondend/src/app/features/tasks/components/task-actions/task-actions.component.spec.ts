@@ -16,11 +16,15 @@ describe('TaskActionsComponent', () => {
 
     const fixture = TestBed.createComponent(TaskActionsComponent);
     fixture.componentInstance.task = buildTask('OPEN');
+    fixture.componentInstance.stakeholders = [
+      { id: 's-1', firstName: 'Maria', lastName: 'Becker', role: 'CONSULTANT' }
+    ];
     fixture.detectChanges();
 
-    const input = fixture.nativeElement.querySelector('input[formControlName="assigneeId"]') as HTMLInputElement;
-    input.value = 'u-1';
-    input.dispatchEvent(new Event('input'));
+    const selects = Array.from(fixture.nativeElement.querySelectorAll('select')) as HTMLSelectElement[];
+    const assigneeSelect = selects[0];
+    assigneeSelect.value = 's-1';
+    assigneeSelect.dispatchEvent(new Event('change'));
     fixture.detectChanges();
 
     const buttons = Array.from(fixture.nativeElement.querySelectorAll('button')) as HTMLButtonElement[];

@@ -7,6 +7,15 @@
   </header>
 
   <div class="panel">
+    <div class="state" *ngIf="stakeholdersStatus() === 'loading'">
+      <p class="state-title">Beteiligte werden geladen</p>
+    </div>
+
+    <div class="state" *ngIf="stakeholdersStatus() === 'error'">
+      <p class="state-title">Beteiligte konnten nicht geladen werden</p>
+      <p class="state-text">{{ stakeholdersError()?.message ?? 'Unbekannter Fehler' }}</p>
+    </div>
+
     <div class="state" *ngIf="isLoading()">
       <div class="skeleton"></div>
       <div class="skeleton"></div>
@@ -27,6 +36,8 @@
       *ngIf="status() === 'success' && tasks().length > 0"
       [tasks]="tasks()"
       [busyTaskIds]="busyTaskIds()"
+      [stakeholders]="stakeholders()"
+      [stakeholdersReady]="stakeholdersStatus() === 'success'"
       (assign)="handleAssign($event)"
       (start)="handleStart($event)"
       (block)="handleBlock($event)"

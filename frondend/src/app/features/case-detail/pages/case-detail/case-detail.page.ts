@@ -10,11 +10,21 @@ import { KitasStore } from '../../../kitas/state/kitas.store';
 import { LocationsStore } from '../../../locations/state/locations.store';
 import { Kita } from '../../../../core/models/kita.model';
 import { Location } from '../../../../core/models/location.model';
+import { StakeholdersStore } from '../../../stakeholders/state/stakeholders.store';
+import { StakeholderSelectComponent } from '../../../../shared/ui/stakeholder-select/stakeholder-select.component';
 
 @Component({
   selector: 'app-case-detail-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, RouterLinkActive, RouterOutlet, StakeholderListComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterLink,
+    RouterLinkActive,
+    RouterOutlet,
+    StakeholderListComponent,
+    StakeholderSelectComponent
+  ],
   templateUrl: './case-detail.page.html',
   styleUrl: './case-detail.page.css'
 })
@@ -25,6 +35,7 @@ export class CaseDetailPageComponent implements OnInit {
   readonly caseStore = inject(CaseDetailStore);
   readonly kitasStore = inject(KitasStore);
   readonly locationsStore = inject(LocationsStore);
+  readonly stakeholdersStore = inject(StakeholdersStore);
 
   readonly caseData = this.caseStore.caseData;
   readonly status = this.caseStore.status;
@@ -35,9 +46,12 @@ export class CaseDetailPageComponent implements OnInit {
   readonly canActivate = this.caseStore.canActivate;
   readonly kitas = this.kitasStore.kitas;
   readonly locations = this.locationsStore.locations;
+  readonly availableStakeholders = this.stakeholdersStore.stakeholders;
+  readonly stakeholdersStatus = this.stakeholdersStore.status;
+  readonly stakeholdersError = this.stakeholdersStore.error;
 
   readonly form = this.formBuilder.group({
-    userId: ['', [Validators.required]],
+    stakeholderId: ['', [Validators.required]],
     role: ['CONSULTANT' as RoleInCase, [Validators.required]]
   });
 
@@ -57,6 +71,7 @@ export class CaseDetailPageComponent implements OnInit {
     });
     void this.kitasStore.loadKitas();
     void this.locationsStore.loadLocations();
+    void this.stakeholdersStore.loadStakeholders();
   }
 
   async submitStakeholder(): Promise<void> {
@@ -64,9 +79,15 @@ export class CaseDetailPageComponent implements OnInit {
       this.form.markAllAsTouched();
       return;
     }
+    if (this.stakeholdersStatus() !== 'success') {
+      return;
+    }
     const value = this.form.getRawValue();
-    await this.caseStore.addStakeholder({ userId: value.userId ?? '', role: value.role ?? 'CONSULTANT' });
-    this.form.reset({ userId: '', role: 'CONSULTANT' });
+    await this.caseStore.addStakeholder({
+      userId: value.stakeholderId ?? '',
+      role: value.role ?? 'CONSULTANT'
+    });
+    this.form.reset({ stakeholderId: '', role: 'CONSULTANT' });
   }
 
   async activateCase(): Promise<void> {

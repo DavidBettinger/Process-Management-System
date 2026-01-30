@@ -5,15 +5,17 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MeetingsStore } from '../../state/meetings.store';
 import { MeetingHoldFormComponent, HoldMeetingPayload } from '../../components/meeting-hold-form/meeting-hold-form.component';
+import { StakeholderSelectComponent } from '../../../../shared/ui/stakeholder-select/stakeholder-select.component';
 import { LocationsStore } from '../../../locations/state/locations.store';
 import { KitasStore } from '../../../kitas/state/kitas.store';
 import { CaseDetailStore } from '../../../case-detail/state/case-detail.store';
 import { Meeting } from '../../../../core/models/meeting.model';
+import { StakeholdersStore } from '../../../stakeholders/state/stakeholders.store';
 
 @Component({
   selector: 'app-meetings-tab-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MeetingHoldFormComponent],
+  imports: [CommonModule, ReactiveFormsModule, MeetingHoldFormComponent, StakeholderSelectComponent],
   templateUrl: './meetings-tab.page.html',
   styleUrl: './meetings-tab.page.css'
 })
@@ -25,6 +27,7 @@ export class MeetingsTabPageComponent implements OnInit {
   readonly locationsStore = inject(LocationsStore);
   readonly kitasStore = inject(KitasStore);
   readonly caseStore = inject(CaseDetailStore);
+  readonly stakeholdersStore = inject(StakeholdersStore);
 
   readonly meetings = this.meetingsStore.meetings;
   readonly status = this.meetingsStore.status;
@@ -34,12 +37,17 @@ export class MeetingsTabPageComponent implements OnInit {
   readonly locations = this.locationsStore.locations;
   readonly locationsStatus = this.locationsStore.status;
   readonly locationsError = this.locationsStore.error;
+  readonly stakeholders = this.stakeholdersStore.stakeholders;
+  readonly stakeholdersStatus = this.stakeholdersStore.status;
+  readonly stakeholdersError = this.stakeholdersStore.error;
 
   readonly scheduleForm = this.formBuilder.group({
     scheduledAt: ['', [Validators.required]],
-    locationId: ['', [Validators.required]],
-    participantIds: ['', [Validators.required]]
+    locationId: ['', [Validators.required]]
   });
+
+  scheduleParticipants: string[] = [''];
+  scheduleParticipantsError: string | null = null;
 
   private readonly defaultLocationEffect = effect(() => {
     const defaultLocationId = this.defaultLocationId();
@@ -60,20 +68,32 @@ export class MeetingsTabPageComponent implements OnInit {
     });
     void this.locationsStore.loadLocations();
     void this.kitasStore.loadKitas();
+    void this.stakeholdersStore.loadStakeholders();
   }
 
   async submitSchedule(): Promise<void> {
+    this.scheduleParticipantsError = null;
     if (this.scheduleForm.invalid) {
       this.scheduleForm.markAllAsTouched();
+      return;
+    }
+    if (this.stakeholdersStatus() !== 'success') {
+      this.scheduleParticipantsError = this.stakeholdersError()?.message ?? 'Beteiligte konnten nicht geladen werden.';
+      return;
+    }
+    const participantIds = this.scheduleParticipants.filter(Boolean);
+    if (participantIds.length === 0) {
+      this.scheduleParticipantsError = 'Bitte waehle mindestens eine beteiligte Person aus.';
       return;
     }
     const value = this.scheduleForm.getRawValue();
     await this.meetingsStore.scheduleMeeting({
       scheduledAt: toIsoDateTime(value.scheduledAt ?? ''),
       locationId: value.locationId ?? '',
-      participantIds: parseIds(value.participantIds ?? '')
+      participantIds
     });
-    this.scheduleForm.reset({ scheduledAt: '', locationId: '', participantIds: '' });
+    this.scheduleForm.reset({ scheduledAt: '', locationId: '' });
+    this.scheduleParticipants = [''];
   }
 
   async handleHold(payload: HoldMeetingPayload): Promise<void> {
@@ -115,6 +135,23 @@ export class MeetingsTabPageComponent implements OnInit {
     void this.locationsStore.loadLocations();
   }
 
+  addScheduleParticipant(): void {
+    this.scheduleParticipants = [...this.scheduleParticipants, ''];
+  }
+
+  removeScheduleParticipant(index: number): void {
+    this.scheduleParticipants = this.scheduleParticipants.filter((_, idx) => idx !== index);
+  }
+
+  updateScheduleParticipant(index: number, value: string | null): void {
+    const next = [...this.scheduleParticipants];
+    next[index] = value ?? '';
+    this.scheduleParticipants = next;
+    if (this.scheduleParticipantsError) {
+      this.scheduleParticipantsError = null;
+    }
+  }
+
   defaultLocationId(): string | null {
     const caseData = this.caseStore.caseData();
     if (!caseData?.kitaId) {
@@ -124,12 +161,6 @@ export class MeetingsTabPageComponent implements OnInit {
     return kita?.locationId ?? null;
   }
 }
-
-const parseIds = (input: string): string[] =>
-  input
-    .split(',')
-    .map((value) => value.trim())
-    .filter(Boolean);
 
 const toIsoDateTime = (value: string): string => {
   const date = new Date(value);

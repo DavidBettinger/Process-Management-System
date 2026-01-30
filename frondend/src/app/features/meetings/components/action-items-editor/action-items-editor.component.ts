@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Stakeholder } from '../../../../core/models/stakeholder.model';
+import { StakeholderSelectComponent } from '../../../../shared/ui/stakeholder-select/stakeholder-select.component';
 
 export interface ActionItemDraft {
   key: string;
@@ -12,12 +14,13 @@ export interface ActionItemDraft {
 @Component({
   selector: 'app-action-items-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, StakeholderSelectComponent],
   templateUrl: './action-items-editor.component.html',
   styleUrl: './action-items-editor.component.css'
 })
 export class ActionItemsEditorComponent {
   @Input() items: ActionItemDraft[] = [];
+  @Input() stakeholders: Stakeholder[] = [];
   @Output() itemsChange = new EventEmitter<ActionItemDraft[]>();
 
   addItem(): void {

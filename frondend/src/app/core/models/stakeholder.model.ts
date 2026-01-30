@@ -21,6 +21,14 @@ export interface CreateStakeholderRequest {
   role: StakeholderRole;
 }
 
+export interface CreateStakeholderResponse {
+  id: string;
+}
+
+export interface StakeholdersListResponse {
+  items: Stakeholder[];
+}
+
 export interface StakeholdersResponse {
   caseId: string;
   stakeholders: StakeholderResponse[];

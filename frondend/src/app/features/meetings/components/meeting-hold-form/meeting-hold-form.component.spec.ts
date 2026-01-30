@@ -17,9 +17,9 @@ describe('MeetingHoldFormComponent', () => {
       meetingId: 'meeting-1',
       heldAt: heldAtInput,
       locationId: 'location-1',
-      participantIds: 'u-101, u-201',
       minutesText: 'Ergebnisse wurden festgehalten.'
     });
+    component.participantIds = ['u-101', 'u-201'];
 
     component.actionItems = [
       {

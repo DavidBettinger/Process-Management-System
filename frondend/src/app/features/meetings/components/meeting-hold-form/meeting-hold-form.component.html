@@ -51,20 +51,53 @@
     </p>
     <a class="link" routerLink="/locations">Neuen Standort anlegen</a>
 
-    <label>
-      Teilnehmer-IDs (kommasepariert)
-      <input type="text" formControlName="participantIds" placeholder="z.B. u-101, u-201" />
-    </label>
+    <div class="participants">
+      <div class="participants-header">
+        <p>Teilnehmende</p>
+        <button class="ghost-button" type="button" (click)="addParticipant()">Teilnehmende hinzufuegen</button>
+      </div>
+      <div class="participant-row" *ngFor="let participantId of participantIds; let i = index">
+        <app-stakeholder-select
+          [stakeholders]="stakeholders"
+          [selectedId]="participantId || null"
+          [disabled]="!stakeholdersReady"
+          [required]="true"
+          (selectedIdChange)="updateParticipant(i, $event)"
+        />
+        <button
+          class="ghost-button"
+          type="button"
+          (click)="removeParticipant(i)"
+          [disabled]="participantIds.length === 1"
+        >
+          Entfernen
+        </button>
+      </div>
+      <p class="error" *ngIf="participantsError">{{ participantsError }}</p>
+      <div class="state" *ngIf="!stakeholdersReady && !stakeholdersError">
+        <p class="state-title">Beteiligte werden geladen</p>
+      </div>
+      <div class="state" *ngIf="!stakeholdersReady && stakeholdersError">
+        <p class="state-title">Beteiligte konnten nicht geladen werden</p>
+        <p class="state-text">{{ stakeholdersError }}</p>
+      </div>
+    </div>
 
     <label>
       Protokoll
       <textarea formControlName="minutesText" rows="4" placeholder="Wichtige Ergebnisse und Beschluesse"></textarea>
     </label>
 
-    <app-action-items-editor [items]="actionItems" (itemsChange)="updateActionItems($event)" />
+    <app-action-items-editor
+      [items]="actionItems"
+      [stakeholders]="stakeholders"
+      (itemsChange)="updateActionItems($event)"
+    />
 
     <p class="error" *ngIf="actionItemsError">{{ actionItemsError }}</p>
 
-    <button class="primary-button" type="submit" [disabled]="isLoading">Termin abschliessen</button>
+    <button class="primary-button" type="submit" [disabled]="isLoading || !stakeholdersReady">
+      Termin abschliessen
+    </button>
   </form>
 </section>

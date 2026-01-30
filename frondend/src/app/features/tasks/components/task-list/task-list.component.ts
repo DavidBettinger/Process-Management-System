@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Task, TaskResolutionKind } from '../../../../core/models/task.model';
+import { Stakeholder } from '../../../../core/models/stakeholder.model';
 import { TaskActionsComponent } from '../task-actions/task-actions.component';
 
 @Component({
@@ -13,6 +14,8 @@ import { TaskActionsComponent } from '../task-actions/task-actions.component';
 export class TaskListComponent {
   @Input({ required: true }) tasks: Task[] = [];
   @Input() busyTaskIds: Set<string> = new Set();
+  @Input() stakeholders: Stakeholder[] = [];
+  @Input() stakeholdersReady = true;
 
   @Output() assign = new EventEmitter<{ taskId: string; assigneeId: string }>();
   @Output() start = new EventEmitter<string>();

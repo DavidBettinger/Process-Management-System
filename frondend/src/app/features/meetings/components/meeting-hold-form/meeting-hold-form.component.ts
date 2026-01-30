@@ -3,8 +3,10 @@ import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, injec
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HoldMeetingRequest, HoldMeetingResponse, Meeting } from '../../../../core/models/meeting.model';
 import { Location } from '../../../../core/models/location.model';
+import { Stakeholder } from '../../../../core/models/stakeholder.model';
 import { ActionItemDraft, ActionItemsEditorComponent } from '../action-items-editor/action-items-editor.component';
 import { RouterLink } from '@angular/router';
+import { StakeholderSelectComponent } from '../../../../shared/ui/stakeholder-select/stakeholder-select.component';
 
 export interface HoldMeetingPayload {
   meetingId: string;
@@ -14,7 +16,7 @@ export interface HoldMeetingPayload {
 @Component({
   selector: 'app-meeting-hold-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ActionItemsEditorComponent, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, ActionItemsEditorComponent, RouterLink, StakeholderSelectComponent],
   templateUrl: './meeting-hold-form.component.html',
   styleUrl: './meeting-hold-form.component.css'
 })
@@ -23,9 +25,12 @@ export class MeetingHoldFormComponent implements OnChanges {
 
   @Input() meetings: Meeting[] = [];
   @Input() locations: Location[] = [];
+  @Input() stakeholders: Stakeholder[] = [];
   @Input() defaultLocationId: string | null = null;
   @Input() isLoading = false;
   @Input() holdResult: HoldMeetingResponse | null = null;
+  @Input() stakeholdersReady = true;
+  @Input() stakeholdersError: string | null = null;
 
   @Output() hold = new EventEmitter<HoldMeetingPayload>();
   @Output() clearResult = new EventEmitter<void>();
@@ -34,21 +39,32 @@ export class MeetingHoldFormComponent implements OnChanges {
     meetingId: ['', [Validators.required]],
     heldAt: ['', [Validators.required]],
     locationId: ['', [Validators.required]],
-    participantIds: ['', [Validators.required]],
     minutesText: ['', [Validators.required]]
   });
 
   actionItems: ActionItemDraft[] = [];
   actionItemsError: string | null = null;
+  participantIds: string[] = [''];
+  participantsError: string | null = null;
 
   submit(): void {
     this.actionItemsError = null;
+    this.participantsError = null;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
+    if (!this.stakeholdersReady) {
+      this.participantsError = this.stakeholdersError ?? 'Beteiligte konnten nicht geladen werden.';
+      return;
+    }
     if (this.actionItems.some((item) => !item.title.trim())) {
       this.actionItemsError = 'Bitte gib fuer jeden Aufgabenpunkt einen Titel an.';
+      return;
+    }
+    const participants = this.participantIds.filter(Boolean);
+    if (participants.length === 0) {
+      this.participantsError = 'Bitte waehle mindestens eine beteiligte Person aus.';
       return;
     }
 
@@ -57,7 +73,7 @@ export class MeetingHoldFormComponent implements OnChanges {
     const request: HoldMeetingRequest = {
       heldAt: toIsoDateTime(value.heldAt ?? ''),
       locationId: value.locationId ?? '',
-      participantIds: parseIds(value.participantIds ?? ''),
+      participantIds: participants,
       minutesText: value.minutesText ?? '',
       actionItems: this.actionItems.length ? this.actionItems.map((item) => ({
         key: item.key,
@@ -72,6 +88,23 @@ export class MeetingHoldFormComponent implements OnChanges {
 
   updateActionItems(items: ActionItemDraft[]): void {
     this.actionItems = items;
+  }
+
+  addParticipant(): void {
+    this.participantIds = [...this.participantIds, ''];
+  }
+
+  removeParticipant(index: number): void {
+    this.participantIds = this.participantIds.filter((_, idx) => idx !== index);
+  }
+
+  updateParticipant(index: number, value: string | null): void {
+    const next = [...this.participantIds];
+    next[index] = value ?? '';
+    this.participantIds = next;
+    if (this.participantsError) {
+      this.participantsError = null;
+    }
   }
 
   clearHoldResult(): void {
@@ -125,12 +158,6 @@ export class MeetingHoldFormComponent implements OnChanges {
     return parsed.toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' });
   }
 }
-
-const parseIds = (input: string): string[] =>
-  input
-    .split(',')
-    .map((value) => value.trim())
-    .filter(Boolean);
 
 const toIsoDateTime = (value: string): string => {
   const date = new Date(value);

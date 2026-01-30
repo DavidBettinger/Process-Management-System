@@ -9,8 +9,10 @@ import { RoleInCase, StakeholderResponse } from '../../../../core/models/stakeho
 import { LoadStatus, StoreError } from '../../../../core/state/state.types';
 import { KitasStore } from '../../../kitas/state/kitas.store';
 import { LocationsStore } from '../../../locations/state/locations.store';
+import { StakeholdersStore } from '../../../stakeholders/state/stakeholders.store';
 import { Kita } from '../../../../core/models/kita.model';
 import { Location } from '../../../../core/models/location.model';
+import { Stakeholder } from '../../../../core/models/stakeholder.model';
 
 class CaseDetailStoreStub {
   caseData = signal<ProcessCase | null>(null);
@@ -58,6 +60,17 @@ class LocationsStoreStub {
   };
 }
 
+class StakeholdersStoreStub {
+  stakeholders = signal<Stakeholder[]>([]);
+  status = signal<LoadStatus>('idle');
+  error = signal<StoreError | undefined>(undefined);
+  loadCalls = 0;
+
+  loadStakeholders = () => {
+    this.loadCalls += 1;
+  };
+}
+
 describe('CaseDetailPageComponent', () => {
   const buildStore = (): CaseDetailStoreStub => {
     const store = new CaseDetailStoreStub();
@@ -80,6 +93,11 @@ describe('CaseDetailPageComponent', () => {
     const store = buildStore();
     const kitasStore = new KitasStoreStub();
     const locationsStore = new LocationsStoreStub();
+    const stakeholdersStore = new StakeholdersStoreStub();
+    stakeholdersStore.status.set('success');
+    stakeholdersStore.stakeholders.set([
+      { id: 's-1', firstName: 'Maria', lastName: 'Becker', role: 'CONSULTANT' }
+    ]);
 
     TestBed.configureTestingModule({
       imports: [CaseDetailPageComponent],
@@ -87,6 +105,7 @@ describe('CaseDetailPageComponent', () => {
         { provide: CaseDetailStore, useValue: store },
         { provide: KitasStore, useValue: kitasStore },
         { provide: LocationsStore, useValue: locationsStore },
+        { provide: StakeholdersStore, useValue: stakeholdersStore },
         {
           provide: ActivatedRoute,
           useValue: { paramMap: of(convertToParamMap({ caseId: 'case-1' })) }
@@ -97,11 +116,10 @@ describe('CaseDetailPageComponent', () => {
     const fixture = TestBed.createComponent(CaseDetailPageComponent);
     fixture.detectChanges();
 
+    const component = fixture.componentInstance;
     const compiled = fixture.nativeElement as HTMLElement;
-    const input = compiled.querySelector('input[formControlName="userId"]') as HTMLInputElement;
+    component.form.controls.stakeholderId.setValue('s-1');
     const select = compiled.querySelector('select[formControlName="role"]') as HTMLSelectElement;
-    input.value = 'u-101';
-    input.dispatchEvent(new Event('input'));
     select.value = 'CONSULTANT';
     select.dispatchEvent(new Event('change'));
 
@@ -109,13 +127,14 @@ describe('CaseDetailPageComponent', () => {
     form.dispatchEvent(new Event('submit'));
     await fixture.whenStable();
 
-    expect(store.addStakeholderCalls).toEqual([{ userId: 'u-101', role: 'CONSULTANT' }]);
+    expect(store.addStakeholderCalls).toEqual([{ userId: 's-1', role: 'CONSULTANT' }]);
   });
 
   it('activates the case when allowed', async () => {
     const store = buildStore();
     const kitasStore = new KitasStoreStub();
     const locationsStore = new LocationsStoreStub();
+    const stakeholdersStore = new StakeholdersStoreStub();
     store.canActivate.set(true);
 
     TestBed.configureTestingModule({
@@ -124,6 +143,7 @@ describe('CaseDetailPageComponent', () => {
         { provide: CaseDetailStore, useValue: store },
         { provide: KitasStore, useValue: kitasStore },
         { provide: LocationsStore, useValue: locationsStore },
+        { provide: StakeholdersStore, useValue: stakeholdersStore },
         {
           provide: ActivatedRoute,
           useValue: { paramMap: of(convertToParamMap({ caseId: 'case-1' })) }
@@ -147,6 +167,7 @@ describe('CaseDetailPageComponent', () => {
     const store = buildStore();
     const kitasStore = new KitasStoreStub();
     const locationsStore = new LocationsStoreStub();
+    const stakeholdersStore = new StakeholdersStoreStub();
     store.canActivate.set(false);
     store.caseStatus.set('DRAFT');
 
@@ -156,6 +177,7 @@ describe('CaseDetailPageComponent', () => {
         { provide: CaseDetailStore, useValue: store },
         { provide: KitasStore, useValue: kitasStore },
         { provide: LocationsStore, useValue: locationsStore },
+        { provide: StakeholdersStore, useValue: stakeholdersStore },
         {
           provide: ActivatedRoute,
           useValue: { paramMap: of(convertToParamMap({ caseId: 'case-1' })) }

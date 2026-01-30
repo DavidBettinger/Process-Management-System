@@ -10,6 +10,8 @@
     <app-task-actions
       [task]="task"
       [busy]="isBusy(task.id)"
+      [stakeholders]="stakeholders"
+      [stakeholdersReady]="stakeholdersReady"
       (assign)="assign.emit($event)"
       (start)="start.emit($event)"
       (block)="block.emit($event)"

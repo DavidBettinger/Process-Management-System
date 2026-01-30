@@ -1,0 +1,28 @@
+.stakeholder-select {
+  display: grid;
+  gap: 0.5rem;
+}
+
+select {
+  padding: 0.65rem 0.8rem;
+  border-radius: 12px;
+  border: 1px solid rgba(16, 18, 24, 0.15);
+  font-size: 0.95rem;
+  background: #fff;
+}
+
+select:disabled {
+  background: rgba(16, 18, 24, 0.05);
+  cursor: not-allowed;
+}
+
+.empty {
+  margin: 0;
+  font-size: 0.75rem;
+  color: rgba(16, 18, 24, 0.6);
+}
+
+.empty a {
+  color: inherit;
+  font-weight: 600;
+}

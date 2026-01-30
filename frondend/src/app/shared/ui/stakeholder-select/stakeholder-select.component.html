@@ -1,0 +1,17 @@
+<div class="stakeholder-select">
+  <select
+    [value]="selectedId ?? ''"
+    [disabled]="disabled || stakeholders.length === 0"
+    [attr.required]="required ? true : null"
+    (change)="onSelectionChange($event)"
+  >
+    <option value="" disabled>{{ placeholder }}</option>
+    <option *ngFor="let stakeholder of stakeholders" [value]="stakeholder.id">
+      {{ labelFor(stakeholder) }}
+    </option>
+  </select>
+
+  <p class="empty" *ngIf="stakeholders.length === 0">
+    Keine Beteiligten vorhanden. <a href="/stakeholders">Jetzt anlegen</a>
+  </p>
+</div>

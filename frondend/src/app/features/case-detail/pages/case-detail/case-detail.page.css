@@ -80,6 +80,22 @@
   font-size: 0.95rem;
 }
 
+.state {
+  display: grid;
+  gap: 4px;
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.state-title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.state-text {
+  margin: 0;
+}
+
 .tabs {
   display: flex;
   gap: 16px;

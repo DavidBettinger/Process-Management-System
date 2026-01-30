@@ -737,7 +737,7 @@ How to test:
 
 ---
 
-### [ ] F7 Refactor Meetings UI: Create Meeting with Date + Location (Picker + Inline Create Location Overlay)
+### [x] F7 Refactor Meetings UI: Create Meeting with Date + Location (Picker + Inline Create Location Overlay)
 
 **Objective:** Refactor the Meetings UI so that creating/scheduling a meeting requires **only**
 1) a **date/time** and
@@ -747,7 +747,7 @@ The user must be able to:
 - select a location from a list of existing locations, or
 - create a new location inline via an **overlay** (modal/dialog) that **reuses** the existing Location Create UI.
 
-**Important:** All code and tests in English. UX text can be English for now.
+**Important:** All code and tests in English. UX text must be in german.
 
 ---
 
@@ -756,7 +756,7 @@ The user must be able to:
 ### Meeting creation UX changes (MVP)
 - Meeting creation form only asks for:
   - `scheduledAt` (date/time)
-  - `locationId` (selected location)
+  - `location: label + city (of the address)` (selected location)
 - Participants/minutes/action items are NOT part of “create meeting” (they remain in the “hold meeting” UI if it exists).
 
 ### Location selection + inline creation
@@ -1124,7 +1124,7 @@ How to test:
 
 ---
 
-### [ ] Doc1.0 Update `ARCHITECTURE.md` so it becomes the **single source of truth** for the API contracts after introducing:
+### [x] Doc1.0 Update `ARCHITECTURE.md` so it becomes the **single source of truth** for the API contracts after introducing:
 
 - **Address** model
 - **Location** model (label + address)
@@ -1454,3 +1454,398 @@ Ensure meeting timeline entries include `locationId`:
 path = Path("/mnt/data/TASK_API_CONTRACT_UPDATE.md")
 path.write_text(content, encoding="utf-8")
 str(path)
+
+---
+
+## [x] Task R1 — Refactor Stakeholder Model (Backend + Frontend)
+
+**Task ID:** STKH-REF-001  
+**Chunk size:** 30–90 minutes  
+**Objective:** Update the Stakeholder model across backend and frontend so a stakeholder has:
+- `firstName` (required)
+- `lastName` (required)
+- `role` (required; global stakeholder role, not case role)
+
+> Note: This is about the **Stakeholder entity** itself. Case-specific roles (`roleInCase`) may still exist separately. If both are needed, document the difference explicitly in `ARCHITECTURE.md` (recommended).
+
+### Files to touch (Backend)
+- Models / DTOs:
+  - `backend/src/main/java/.../common/api/stakeholders/dto/StakeholderDto.java` (new or update)
+  - `backend/src/main/java/.../common/api/stakeholders/dto/CreateStakeholderRequest.java` (new or update)
+  - `backend/src/main/java/.../common/api/stakeholders/dto/ListStakeholdersResponse.java` (new)
+- Domain:
+  - `backend/src/main/java/.../common/domain/Stakeholder.java` (new or update)
+  - `backend/src/main/java/.../common/domain/StakeholderId.java` (new or update)
+  - `backend/src/main/java/.../common/domain/StakeholderRole.java` (new enum)
+- Persistence:
+  - `backend/src/main/java/.../common/infrastructure/persistence/StakeholderEntity.java` (new or update)
+  - `backend/src/main/java/.../common/infrastructure/persistence/StakeholderRepository.java` (new or update)
+- DB migration:
+  - `backend/src/main/resources/db/migration/Vxxx__stakeholders_first_last_role.sql`
+    - If stakeholders table doesn’t exist: create it
+    - If it exists: add columns + backfill strategy (see notes)
+
+### Files to touch (Frontend)
+- Models:
+  - `frontend/src/app/core/models/stakeholder.model.ts` (update)
+  - `frontend/src/app/core/models/stakeholder-requests.model.ts` (update or create)
+- UI (if stakeholder form already exists):
+  - `frontend/src/app/features/stakeholders/components/stakeholder-form/*` (update fields)
+- Store + API typings:
+  - `frontend/src/app/core/api/stakeholders.api.ts` (update types)
+  - `frontend/src/app/features/stakeholders/state/stakeholders.store.ts` (update)
+- Tests:
+  - Update corresponding frontend tests for form validation and payload shape
+
+### Data Contracts (must be reflected in `ARCHITECTURE.md`)
+#### Stakeholder
+```json
+{
+  "id": "8a4a1cf3-6bbf-4f44-b8b8-6a0a0e5b8d2f",
+  "tenantId": "tenant-001",
+  "firstName": "Maria",
+  "lastName": "Becker",
+  "role": "CONSULTANT",
+  "createdAt": "2026-01-30T10:00:00Z"
+}
+```
+
+#### CreateStakeholderRequest
+```json
+{
+  "firstName": "Maria",
+  "lastName": "Becker",
+  "role": "CONSULTANT"
+}
+```
+
+### StakeholderRole (global)
+Use a global enum with a small initial set (can be extended later):
+- `CONSULTANT`
+- `DIRECTOR`
+- `TEAM_MEMBER`
+- `SPONSOR`
+- `EXTERNAL`
+
+> If you prefer a different set, document it and keep it consistent across backend + frontend.
+
+### Validation Rules
+- `firstName` and `lastName`: non-blank, max length e.g. 100 (document exact constraint)
+- `role`: required, must match enum
+
+### Definition of Done (DoD)
+- Backend compiles and tests pass:
+  - Stakeholder domain entity enforces required fields (unit tests)
+  - DTO validation returns `400` for missing names/role (controller tests if endpoints exist)
+- Frontend compiles and tests pass:
+  - Stakeholder form validates required fields
+  - API client uses the new request/response typing
+- No remaining references to old stakeholder fields (search and remove/replace).
+
+### How to test
+- Backend: `cd backend && ./gradlew test`
+- Frontend: `cd frontend && npm test`
+
+### Notes (migration)
+- If a stakeholders table already exists (e.g., with `displayName`):
+  - Add `first_name`, `last_name`, `role` columns
+  - Keep `display_name` temporarily or remove it with a follow-up migration
+  - Backfill can set `first_name=display_name`, `last_name=''` as a temporary migration **only** if documented; otherwise require manual migration.
+
+---
+
+## [x] Task R2 — Add Stakeholder Endpoints + Assigned Tasks Query (Backend)
+
+**Task ID:** STKH-API-002  
+**Chunk size:** 30–90 minutes (may split if needed)  
+**Objective:** Refactor backend to support:
+1) Create a stakeholder
+2) List all stakeholders for a tenant
+3) Fetch all tasks assigned to a given stakeholder
+
+### Endpoints to implement
+
+#### 1) Create stakeholder
+POST `/api/stakeholders`
+
+Request:
+```json
+{
+  "firstName": "Maria",
+  "lastName": "Becker",
+  "role": "CONSULTANT"
+}
+```
+
+Response `201`:
+```json
+{ "id": "8a4a1cf3-6bbf-4f44-b8b8-6a0a0e5b8d2f" }
+```
+
+#### 2) List stakeholders
+GET `/api/stakeholders`
+
+Response `200`:
+```json
+{
+  "items": [
+    {
+      "id": "8a4a1cf3-6bbf-4f44-b8b8-6a0a0e5b8d2f",
+      "firstName": "Maria",
+      "lastName": "Becker",
+      "role": "CONSULTANT"
+    }
+  ]
+}
+```
+
+#### 3) List tasks assigned to stakeholder
+GET `/api/stakeholders/{stakeholderId}/tasks`
+
+Response `200`:
+```json
+{
+  "stakeholderId": "8a4a1cf3-6bbf-4f44-b8b8-6a0a0e5b8d2f",
+  "items": [
+    {
+      "id": "1d4e6c8a-6dc3-4a1b-9a68-5c4e5d2c84f0",
+      "caseId": "2b1e6d57-8b52-41a8-a2d3-7c1f1a9f1d16",
+      "title": "Draft child protection concept v1",
+      "state": "ASSIGNED",
+      "assigneeId": "8a4a1cf3-6bbf-4f44-b8b8-6a0a0e5b8d2f",
+      "dueDate": "2026-02-10"
+    }
+  ]
+}
+```
+
+> The task DTO can be a **summary** DTO (recommended). Do not return minutes/evidence unless needed.
+
+### Files to touch (Backend)
+- API layer:
+  - `backend/src/main/java/.../common/api/stakeholders/StakeholdersController.java` (new)
+  - `backend/src/main/java/.../common/api/stakeholders/dto/*` (create/update)
+- Application layer:
+  - `backend/src/main/java/.../common/application/StakeholderService.java` (new)
+  - `backend/src/main/java/.../collaboration/application/StakeholderTasksQueryService.java` (new) OR add to `TaskService` as query method
+- Domain / persistence:
+  - `Stakeholder` domain + repository (from Task 1)
+  - Task repository query method:
+    - `findByTenantIdAndAssigneeId(tenantId, stakeholderId)` (recommended)
+- Error handling:
+  - If stakeholder not found: return `404`
+  - Validation errors: `400`
+- Documentation:
+  - Update `ARCHITECTURE.md` with all endpoint definitions + examples
+
+### Authorization (MVP rule)
+- Tenant isolation: all endpoints must filter by `tenantId`
+- Keep it simple:
+  - Allow if authenticated (or dev auth profile) AND tenant matches
+  - More granular RBAC can be added later
+
+### Tests (required for DoD)
+Add controller tests using MockMvc (or WebTestClient) verifying:
+1) POST `/api/stakeholders`:
+  - returns `201` on valid request
+  - returns `400` when firstName/lastName/role missing
+2) GET `/api/stakeholders`:
+  - returns `200` with list
+3) GET `/api/stakeholders/{id}/tasks`:
+  - returns `200` with only tasks assigned to that stakeholder
+  - returns `404` when stakeholder does not exist (for tenant)
+
+### Definition of Done (DoD)
+- Endpoints implemented and documented in `ARCHITECTURE.md`
+- All tests pass:
+  - `./gradlew test`
+- No endpoint behavior is ambiguous (choose 400 vs 404 consistently for missing related IDs and document it)
+
+### How to test
+- `cd backend && ./gradlew test`
+- Optional manual smoke:
+  - create stakeholder → list stakeholders → create/assign task → fetch stakeholder tasks
+
+---
+
+# [x] Task SH UI Stakeholder Creation + Replace ID Inputs with Stakeholder Dropdowns
+
+Language: **English** (required for repo files)
+
+This change makes stakeholders usable end-to-end in the UI:
+1) Create stakeholders in the UI
+2) Replace any previous “enter stakeholderId” flows with dropdowns showing **name + role**
+3) Ensure selected stakeholders are used when adding participants to meetings or assigning tasks
+
+> This is split into 3 sub-tasks to keep changes PR-sized.
+
+---
+
+## [x] Sub-Task A — Stakeholders UI: Create + List (usable CRUD-lite)
+
+**Task ID:** FE-STKH-UI-001A  
+**Chunk size:** 30–90 minutes  
+**Objective:** Add/finish a Stakeholders page where users can create stakeholders and see all stakeholders.
+
+### Preconditions
+- Backend endpoints exist (from STKH-API-002):
+  - `POST /api/stakeholders`
+  - `GET /api/stakeholders`
+- Frontend models + API client typings exist (from STKH-REF-001 + STKH-API-002).
+
+### Files to touch
+- Models (verify):
+  - `frontend/src/app/core/models/stakeholder.model.ts`
+  - `frontend/src/app/core/models/stakeholder-requests.model.ts`
+- API client (verify):
+  - `frontend/src/app/core/api/stakeholders.api.ts`
+- Store:
+  - `frontend/src/app/features/stakeholders/state/stakeholders.store.ts`
+  - `frontend/src/app/features/stakeholders/state/stakeholders.store.spec.ts`
+- UI:
+  - `frontend/src/app/features/stakeholders/pages/stakeholders-page/*`
+  - `frontend/src/app/features/stakeholders/components/stakeholder-form/*`
+  - `frontend/src/app/features/stakeholders/components/stakeholder-list/*`
+- Routing:
+  - `frontend/src/app/app.routes.ts` (add `/stakeholders`)
+
+### UI requirements
+- Form fields (required):
+  - `firstName`
+  - `lastName`
+  - `role` (dropdown)
+- List shows:
+  - Full name: “firstName lastName”
+  - Role label
+- Empty/loading/error states
+- After create:
+  - toast success
+  - refresh list automatically
+
+### Definition of Done (DoD)
+- Stakeholders page works end-to-end with backend:
+  - create stakeholder
+  - list stakeholders
+- Tests pass:
+  - store tests: happy path + error path
+  - component tests: required validation + submit triggers store
+- `npm test` passes
+
+### How to test
+- `cd frontend && npm test`
+- Manual: visit `/stakeholders`, create 2 stakeholders, confirm list updates.
+
+---
+
+## [x] Sub-Task B — Create reusable StakeholderSelect dropdown component (name + role)
+
+**Task ID:** FE-STKH-UI-001B  
+**Chunk size:** 30–90 minutes  
+**Objective:** Replace stakeholderId inputs with a reusable dropdown component that displays stakeholder **name + role** and returns `stakeholderId`.
+
+### Files to touch / create
+- Shared UI:
+  - `frontend/src/app/shared/ui/stakeholder-select/stakeholder-select.component.ts` (new)
+  - `frontend/src/app/shared/ui/stakeholder-select/stakeholder-select.component.html` (new)
+  - `frontend/src/app/shared/ui/stakeholder-select/stakeholder-select.component.spec.ts` (new)
+- Integration:
+  - `frontend/src/app/features/stakeholders/state/stakeholders.store.ts` (ensure it exposes current list + load method)
+- Optional helper:
+  - `frontend/src/app/shared/pipes/stakeholder-label.pipe.ts` (new) OR inline label formatting
+
+### Component API (must be implemented)
+Inputs:
+- `stakeholders: Stakeholder[]`
+- `selectedId: string | null`
+- `disabled?: boolean`
+- `required?: boolean`
+- `placeholder?: string`
+
+Outputs:
+- `selectedIdChange: EventEmitter<string | null>`
+
+UI behavior:
+- Each option label must show:
+  - `"FirstName LastName — ROLE"`
+- If list is empty:
+  - show message: “No stakeholders available. Create one.”
+  - provide optional link/button to navigate to `/stakeholders` (optional; keep it simple)
+
+### Definition of Done (DoD)
+- Component renders correct labels (name + role)
+- Component emits selectedIdChange when selection changes
+- Unit tests cover:
+  - renders options from input list
+  - emits correct id
+  - empty list state
+
+### How to test
+- `cd frontend && npm test`
+
+---
+
+## [x] Sub-Task C — Replace stakeholderId inputs in Meetings + Tasks with StakeholderSelect
+
+**Task ID:** FE-STKH-UI-001C  
+**Chunk size:** 60–120 minutes (split further if needed)  
+**Objective:** Wherever the UI previously asked for a stakeholder by **ID** (participants, assignee, suggested assignee), replace it with the new StakeholderSelect dropdown and wire it to the correct store/API payload.
+
+### Targets (update all occurrences)
+1) **Meeting scheduling / creation**
+- Replace any participant id inputs with stakeholder selection.
+- Minimum: allow selecting 0..N participants as stakeholders (multi-select or repeated selects).
+
+2) **Hold meeting (participants + action items assignee)**
+- Replace participant ids with selection.
+- Replace actionItems[].assigneeId input with dropdown per action item row.
+
+3) **Task actions**
+- Assign task dialog: replace id input with StakeholderSelect.
+- Decline assignment: if UI collects `suggestedAssigneeId`, use StakeholderSelect.
+
+### Data loading rule
+- On any page/dialog that needs stakeholder options:
+  - ensure `StakeholdersStore.loadStakeholders()` is called on init or on open
+  - show loading indicator until list available
+  - if load fails: show error state and disable submit
+
+### Files to touch
+(Adjust to your actual names)
+- Meetings:
+  - `frontend/src/app/features/meetings/pages/meetings-tab/*`
+  - `frontend/src/app/features/meetings/components/meeting-create-form/*`
+  - `frontend/src/app/features/meetings/components/meeting-hold-form/*`
+- Tasks:
+  - `frontend/src/app/features/tasks/components/task-actions/*`
+  - `frontend/src/app/features/tasks/pages/tasks-tab/*`
+- Stores:
+  - `frontend/src/app/features/stakeholders/state/stakeholders.store.ts`
+  - `frontend/src/app/features/meetings/state/meetings.store.ts`
+  - `frontend/src/app/features/tasks/state/tasks.store.ts`
+- Tests:
+  - Update existing tests or add:
+    - `meeting-hold-form.component.spec.ts`
+    - `task-actions.component.spec.ts`
+    - `meetings-tab.component.spec.ts`
+
+### Acceptance criteria
+- Meeting payload contains `participantIds: string[]` derived from UI selection.
+- Hold meeting action items payload contains `assigneeId` derived from selection (or null).
+- Assign task payload contains `assigneeId` derived from selection.
+- Dropdown labels show: “FirstName LastName — ROLE” everywhere.
+
+### Definition of Done (DoD)
+- No stakeholder selection is done via raw ID inputs anymore in the UI (remove/replace all such inputs).
+- Tests added/updated and passing:
+  - Assign task uses dropdown and calls store with correct id
+  - Hold meeting action item assignee uses dropdown and produces correct payload
+  - Participant selection produces correct participantIds
+- `npm test` passes.
+
+### How to test
+- `cd frontend && npm test`
+- Manual smoke:
+  - Create 2 stakeholders in `/stakeholders`
+  - Create/schedule meeting → select participants → save
+  - Hold meeting → add action item with assignee selected
+  - Create task → assign task using dropdown

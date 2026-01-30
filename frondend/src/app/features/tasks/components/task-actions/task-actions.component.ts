@@ -2,6 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Task, TaskResolutionKind } from '../../../../core/models/task.model';
+import { Stakeholder } from '../../../../core/models/stakeholder.model';
+import { StakeholderSelectComponent } from '../../../../shared/ui/stakeholder-select/stakeholder-select.component';
 
 interface AssignPayload {
   taskId: string;
@@ -28,7 +30,7 @@ interface ResolvePayload {
 @Component({
   selector: 'app-task-actions',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, StakeholderSelectComponent],
   templateUrl: './task-actions.component.html',
   styleUrl: './task-actions.component.css'
 })
@@ -36,6 +38,8 @@ export class TaskActionsComponent {
   private readonly formBuilder = inject(FormBuilder);
   @Input({ required: true }) task!: Task;
   @Input() busy = false;
+  @Input() stakeholders: Stakeholder[] = [];
+  @Input() stakeholdersReady = true;
 
   @Output() assign = new EventEmitter<AssignPayload>();
   @Output() start = new EventEmitter<string>();
@@ -98,7 +102,7 @@ export class TaskActionsComponent {
   }
 
   submitAssign(): void {
-    if (!this.canAssign() || this.busy || this.assignForm.invalid) {
+    if (!this.canAssign() || this.busy || !this.stakeholdersReady || this.assignForm.invalid) {
       this.assignForm.markAllAsTouched();
       return;
     }

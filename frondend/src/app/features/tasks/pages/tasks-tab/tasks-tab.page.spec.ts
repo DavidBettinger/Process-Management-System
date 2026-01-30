@@ -4,8 +4,10 @@ import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
 import { TasksTabPageComponent } from './tasks-tab.page';
 import { TasksStore } from '../../state/tasks.store';
+import { StakeholdersStore } from '../../../stakeholders/state/stakeholders.store';
 import { initialListState, ListState, StoreError } from '../../../../core/state/state.types';
 import { Task } from '../../../../core/models/task.model';
+import { Stakeholder } from '../../../../core/models/stakeholder.model';
 
 class TasksStoreStub {
   state = signal<ListState<Task>>(initialListState());
@@ -31,9 +33,22 @@ class TasksStoreStub {
   resolveTask = async () => {};
 }
 
+class StakeholdersStoreStub {
+  state = signal<ListState<Stakeholder>>(initialListState());
+  stakeholders = signal<Stakeholder[]>([]);
+  status = signal<'idle' | 'loading' | 'success' | 'error'>('idle');
+  error = signal<StoreError | undefined>(undefined);
+  loadCalls = 0;
+
+  loadStakeholders = () => {
+    this.loadCalls += 1;
+  };
+}
+
 describe('TasksTabPageComponent', () => {
   it('shows empty state', () => {
     const store = new TasksStoreStub();
+    const stakeholdersStore = new StakeholdersStoreStub();
     store.status.set('success');
     store.tasks.set([]);
 
@@ -41,6 +56,7 @@ describe('TasksTabPageComponent', () => {
       imports: [TasksTabPageComponent],
       providers: [
         { provide: TasksStore, useValue: store },
+        { provide: StakeholdersStore, useValue: stakeholdersStore },
         { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ caseId: 'case-1' })) } }
       ]
     });
@@ -51,10 +67,12 @@ describe('TasksTabPageComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Keine Aufgaben vorhanden');
     expect(store.loadCalls).toBe(1);
+    expect(stakeholdersStore.loadCalls).toBe(1);
   });
 
   it('shows error state', () => {
     const store = new TasksStoreStub();
+    const stakeholdersStore = new StakeholdersStoreStub();
     store.status.set('error');
     store.error.set({ message: 'Fehler' });
 
@@ -62,6 +80,7 @@ describe('TasksTabPageComponent', () => {
       imports: [TasksTabPageComponent],
       providers: [
         { provide: TasksStore, useValue: store },
+        { provide: StakeholdersStore, useValue: stakeholdersStore },
         { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ caseId: 'case-1' })) } }
       ]
     });

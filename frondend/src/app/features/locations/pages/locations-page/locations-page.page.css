@@ -1,0 +1,102 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  color: rgba(16, 18, 24, 0.6);
+  margin: 0 0 0.5rem;
+}
+
+h1 {
+  margin: 0 0 0.5rem;
+  font-size: 2.4rem;
+}
+
+.subtitle {
+  margin: 0;
+  color: rgba(16, 18, 24, 0.7);
+}
+
+.toast {
+  align-self: flex-end;
+  background: rgba(16, 18, 24, 0.9);
+  color: #f7f2ea;
+  padding: 0.6rem 1.2rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  box-shadow: 0 12px 28px rgba(16, 18, 24, 0.2);
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.45fr) minmax(0, 0.55fr);
+  gap: 2rem;
+}
+
+.list-panel {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 22px;
+  padding: 1.5rem;
+  border: 1px solid rgba(16, 18, 24, 0.08);
+  min-height: 260px;
+}
+
+.state {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.state-title {
+  font-weight: 600;
+  margin: 0;
+}
+
+.state-text {
+  margin: 0;
+  color: rgba(16, 18, 24, 0.7);
+}
+
+.ghost-button {
+  align-self: flex-start;
+  border: 1px solid rgba(16, 18, 24, 0.2);
+  background: transparent;
+  padding: 0.5rem 1.2rem;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.skeleton {
+  height: 18px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(16, 18, 24, 0.08), rgba(16, 18, 24, 0.18), rgba(16, 18, 24, 0.08));
+  animation: shimmer 1.2s infinite;
+  background-size: 240px 100%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -120px 0;
+  }
+  100% {
+    background-position: 120px 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+}

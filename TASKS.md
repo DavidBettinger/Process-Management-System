@@ -651,7 +651,7 @@ How to test:
 
 ---
 
-[ ] F3 Add stores: LocationsStore + KitasStore (Signals)
+[x] F3 Add stores: LocationsStore + KitasStore (Signals)
 
 Objective: Provide consistent state management for locations/kitas lists and creation.
 Files to touch:
@@ -671,7 +671,7 @@ How to test:
 
 ---
 
-[ ] F4 Create Locations UI (Add + List)
+[x] F4 Create Locations UI (Add + List)
 
 Objective: Create a usable UI to add and list locations with address.
 Files to touch:
@@ -737,28 +737,142 @@ How to test:
 
 ---
 
-[ ] F7 Update Meetings UI: identify meetings by date + location and allow location selection
+### [ ] F7Refactor Meetings UI: Create Meeting with Date + Location (Picker + Inline Create Location Overlay)
 
-Objective: Ensure meetings are displayed/identified by their date and location in UI and payloads include locationId.
-Files to touch:
-•	frontend/src/app/core/models/meeting.model.ts (already updated in F1)
-•	frontend/src/app/features/meetings/pages/meetings-tab/*
-•	frontend/src/app/features/meetings/components/meeting-hold-form/*
-•	frontend/src/app/features/meetings/state/meetings.store.ts (payload update)
-•	Shared component (recommended):
-•	frontend/src/app/shared/ui/location-picker/* (new) OR reuse dropdown
-UI requirements:
-•	Meeting list rows show:
-•	date/time (scheduledAt or heldAt)
-•	location label (resolved via LocationsStore)
-•	Hold meeting form includes location picker:
-•	default to case’s Kita location if known
-Definition of done:
-•	Meeting schedule/hold sends locationId (or omits only if backend defaults; must match backend behavior).
-•	Meeting display uses: Date + LocationLabel as primary identifier.
-How to test:
-•	Component test verifies meeting item renders “date + location”
-•	Payload test verifies locationId included
+**Objective:** Refactor the Meetings UI so that creating/scheduling a meeting requires **only**
+1) a **date/time** and
+2) a **location**.
+
+The user must be able to:
+- select a location from a list of existing locations, or
+- create a new location inline via an **overlay** (modal/dialog) that **reuses** the existing Location Create UI.
+
+**Important:** All code and tests in English. UX text can be English for now.
+
+---
+
+## Scope
+
+### Meeting creation UX changes (MVP)
+- Meeting creation form only asks for:
+  - `scheduledAt` (date/time)
+  - `locationId` (selected location)
+- Participants/minutes/action items are NOT part of “create meeting” (they remain in the “hold meeting” UI if it exists).
+
+### Location selection + inline creation
+- Location field:
+  - Dropdown/select populated from `LocationsStore`
+  - Button/link: “Create new location”
+- Clicking “Create new location” opens an **overlay** that embeds the **existing location create form component** (do not duplicate form logic).
+- On successful location creation:
+  - overlay closes
+  - locations list refreshes
+  - newly created location becomes selected in the meeting form
+
+---
+
+## Files to touch
+
+### Meetings feature
+- `frontend/src/app/features/meetings/pages/meetings-tab/*`
+- `frontend/src/app/features/meetings/components/meeting-create-form/*` *(new or refactor existing)*
+- `frontend/src/app/features/meetings/state/meetings.store.ts` *(ensure schedule/create meeting method exists)*
+- `frontend/src/app/features/meetings/state/meetings.store.spec.ts`
+
+### Locations feature (reuse existing)
+- `frontend/src/app/features/locations/components/location-form/*` *(must be reusable in overlay)*
+- `frontend/src/app/features/locations/state/locations.store.ts`
+
+### Shared UI overlay
+- `frontend/src/app/shared/ui/overlay/*` *(new) OR reuse existing dialog implementation*
+- `frontend/src/app/shared/ui/confirm-dialog/*` *(if you already have one, can be reused)*
+- `frontend/src/app/shared/ui/toast.service.ts` *(reuse for success/error feedback)*
+
+### Tests
+- `frontend/src/app/features/meetings/components/meeting-create-form/meeting-create-form.component.spec.ts` *(new)*
+- `frontend/src/app/features/meetings/pages/meetings-tab/meetings-tab.component.spec.ts` *(update/add)*
+- `frontend/src/app/shared/ui/overlay/overlay.component.spec.ts` *(if new overlay added)*
+- Optionally add/extend:
+  - `frontend/src/app/features/locations/components/location-form/location-form.component.spec.ts`
+
+---
+
+## Required API / Store behavior
+
+### LocationsStore
+Must already provide:
+- `loadLocations(): Promise<void>`
+- `createLocation(req): Promise<void>`
+
+### MeetingsStore
+Must provide a schedule/create method (choose one and use consistently):
+- `scheduleMeeting(req: ScheduleMeetingRequest): Promise<void>`
+
+**ScheduleMeetingRequest** must include:
+- `scheduledAt: string` (ISO datetime)
+- `locationId: string` (UUID)
+
+If the backend endpoint for schedule meeting does not exist yet:
+- Add a clear `TODO:` in `ARCHITECTURE.md`
+- Disable the submit button and show a message “Scheduling endpoint not available yet (TODO)”
+- Do not fake the API call.
+
+---
+
+## UI Requirements (Acceptance)
+
+### Meeting Create Form
+- Fields:
+  1) Date/time picker → required
+  2) Location select → required
+- Location select behavior:
+  - shows loading state while locations are loading
+  - shows empty state:
+    - “No locations yet. Create one.”
+  - button “Create new location” always visible
+- On submit success:
+  - show success toast
+  - clear form (or navigate/refresh meeting list)
+- On submit failure:
+  - show error toast (mapped)
+
+### Create Location Overlay
+- Opens as modal/overlay on top of the meeting form.
+- Contains the existing **LocationFormComponent** (reuse).
+- On successful location creation:
+  - closes overlay
+  - ensures LocationsStore has the new location in its list (refresh or optimistic update)
+  - sets selected `locationId` in meeting form to the new location’s id
+
+---
+
+## Edge Cases
+- User opens overlay, cancels → meeting form remains unchanged.
+- Location creation fails (400 validation) → overlay stays open and shows field errors.
+- Locations list API fails → meeting form shows error state + retry button.
+
+---
+
+## Definition of Done (DoD)
+- Meeting creation UI only requires **date + location**.
+- Overlay for creating a new location is implemented and reuses the existing LocationForm.
+- New location is auto-selected after creation.
+- Tests are implemented and passing:
+  - `meeting-create-form` tests cover:
+    - required validation (cannot submit without date or location)
+    - selecting existing location enables submit
+    - opening overlay renders LocationForm
+    - successful location creation closes overlay and selects new location
+    - API error shows error state
+  - If overlay component is new:
+    - overlay open/close behavior has unit tests
+- `npm test` passes.
+
+---
+
+## How to Test
+1) Unit tests:
+- `cd frontend && npm test`
 
 ---
 

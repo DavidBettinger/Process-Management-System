@@ -1,0 +1,49 @@
+<section class="form-panel">
+  <header>
+    <p class="eyebrow">Standorte</p>
+    <h2>Neuen Standort anlegen</h2>
+    <p class="subtitle">Lege eine Adresse an, damit Prozesse und Termine darauf verweisen koennen.</p>
+  </header>
+
+  <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+    <label>
+      Bezeichnung
+      <input type="text" formControlName="label" placeholder="z.B. Kita Sonnenblume" />
+      <span class="field-error" *ngIf="isInvalid('label')">Bitte eine Bezeichnung eingeben.</span>
+    </label>
+
+    <div class="grid">
+      <label>
+        Strasse
+        <input type="text" formControlName="street" placeholder="Musterstrasse" />
+        <span class="field-error" *ngIf="isInvalid('street')">Strasse ist erforderlich.</span>
+      </label>
+
+      <label>
+        Hausnummer
+        <input type="text" formControlName="houseNumber" placeholder="12" />
+        <span class="field-error" *ngIf="isInvalid('houseNumber')">Hausnummer ist erforderlich.</span>
+      </label>
+
+      <label>
+        PLZ
+        <input type="text" formControlName="postalCode" placeholder="10115" />
+        <span class="field-error" *ngIf="isInvalid('postalCode')">PLZ ist erforderlich.</span>
+      </label>
+
+      <label>
+        Stadt
+        <input type="text" formControlName="city" placeholder="Berlin" />
+        <span class="field-error" *ngIf="isInvalid('city')">Stadt ist erforderlich.</span>
+      </label>
+    </div>
+
+    <label>
+      Land
+      <input type="text" formControlName="country" placeholder="DE" />
+      <span class="hint">Standard: DE</span>
+    </label>
+
+    <button class="primary-button" type="submit" [disabled]="isSubmitting">Standort speichern</button>
+  </form>
+</section>

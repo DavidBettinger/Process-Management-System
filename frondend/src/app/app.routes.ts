@@ -5,10 +5,12 @@ import { CaseTimelineComponent } from './features/cases/case-timeline/case-timel
 import { CaseListPageComponent } from './features/cases/pages/case-list/case-list.page';
 import { MeetingsPageComponent } from './features/meetings/meetings-page/meetings-page.component';
 import { MeetingsTabPageComponent } from './features/meetings/pages/meetings-tab/meetings-tab.page';
+import { LocationsPageComponent } from './features/locations/pages/locations-page/locations-page.page';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'cases' },
   { path: 'cases', component: CaseListPageComponent },
+  { path: 'locations', component: LocationsPageComponent },
   {
     path: 'cases/:caseId',
     component: CaseDetailPageComponent,

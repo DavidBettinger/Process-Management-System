@@ -26,6 +26,18 @@
   border: 1px solid rgba(0, 0, 0, 0.15);
 }
 
+.hint {
+  font-size: 0.78rem;
+  color: rgba(16, 18, 24, 0.6);
+  margin: 0;
+}
+
+.link {
+  text-decoration: none;
+  color: #101218;
+  font-weight: 600;
+}
+
 .result {
   padding: 1rem;
   border-radius: 12px;

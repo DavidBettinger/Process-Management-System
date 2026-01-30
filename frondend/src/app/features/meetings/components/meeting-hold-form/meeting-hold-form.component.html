@@ -19,7 +19,7 @@
     <ng-container *ngIf="meetings.length > 0; else manualId">
       <label>
         Termin
-        <select formControlName="meetingId">
+        <select formControlName="meetingId" (change)="applyMeetingDefaults(form.controls.meetingId.value)">
           <option value="">Bitte waehlen</option>
           <option *ngFor="let meeting of meetings" [value]="meeting.id">{{ meetingLabel(meeting) }}</option>
         </select>
@@ -38,9 +38,18 @@
     </label>
 
     <label>
-      Standort-ID
-      <input type="text" formControlName="locationId" placeholder="UUID des Standorts" />
+      Standort
+      <select formControlName="locationId">
+        <option value="">Bitte waehlen</option>
+        <option *ngFor="let location of locations" [value]="location.id">
+          {{ location.label }} · {{ location.address.city }}
+        </option>
+      </select>
     </label>
+    <p class="hint" *ngIf="locations.length === 0">
+      Es sind noch keine Standorte vorhanden. Bitte zuerst einen Standort anlegen.
+    </p>
+    <a class="link" routerLink="/locations">Neuen Standort anlegen</a>
 
     <label>
       Teilnehmer-IDs (kommasepariert)

@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HoldMeetingRequest, HoldMeetingResponse, Meeting } from '../../../../core/models/meeting.model';
+import { Location } from '../../../../core/models/location.model';
 import { ActionItemDraft, ActionItemsEditorComponent } from '../action-items-editor/action-items-editor.component';
+import { RouterLink } from '@angular/router';
 
 export interface HoldMeetingPayload {
   meetingId: string;
@@ -12,14 +14,16 @@ export interface HoldMeetingPayload {
 @Component({
   selector: 'app-meeting-hold-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ActionItemsEditorComponent],
+  imports: [CommonModule, ReactiveFormsModule, ActionItemsEditorComponent, RouterLink],
   templateUrl: './meeting-hold-form.component.html',
   styleUrl: './meeting-hold-form.component.css'
 })
-export class MeetingHoldFormComponent {
+export class MeetingHoldFormComponent implements OnChanges {
   private readonly formBuilder = inject(FormBuilder);
 
   @Input() meetings: Meeting[] = [];
+  @Input() locations: Location[] = [];
+  @Input() defaultLocationId: string | null = null;
   @Input() isLoading = false;
   @Input() holdResult: HoldMeetingResponse | null = null;
 
@@ -74,9 +78,51 @@ export class MeetingHoldFormComponent {
     this.clearResult.emit();
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['defaultLocationId']) {
+      const locationControl = this.form.controls.locationId;
+      if (!locationControl.value && this.defaultLocationId) {
+        locationControl.setValue(this.defaultLocationId);
+      }
+    }
+  }
+
   meetingLabel(meeting: Meeting): string {
-    const statusLabel = meeting.status === 'SCHEDULED' ? 'Geplant' : meeting.status === 'HELD' ? 'Durchgefuehrt' : 'Abgesagt';
-    return `${meeting.id} (${statusLabel})`;
+    const statusLabel = meeting.status === 'SCHEDULED'
+      ? 'Geplant'
+      : meeting.status === 'HELD'
+        ? 'Durchgefuehrt'
+        : 'Abgesagt';
+    const dateLabel = this.formatDate(meeting.heldAt ?? meeting.scheduledAt ?? null);
+    const locationLabel = this.locationLabel(meeting.locationId);
+    return `${dateLabel} · ${locationLabel} (${statusLabel})`;
+  }
+
+  locationLabel(locationId: string): string {
+    const match = this.locations.find((location) => location.id === locationId);
+    return match ? match.label : 'Standort unbekannt';
+  }
+
+  applyMeetingDefaults(meetingId: string | null): void {
+    if (!meetingId) {
+      return;
+    }
+    const meeting = this.meetings.find((item) => item.id === meetingId);
+    if (!meeting) {
+      return;
+    }
+    this.form.controls.locationId.setValue(meeting.locationId);
+  }
+
+  private formatDate(value: string | null): string {
+    if (!value) {
+      return 'Datum offen';
+    }
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return 'Datum offen';
+    }
+    return parsed.toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' });
   }
 }
 

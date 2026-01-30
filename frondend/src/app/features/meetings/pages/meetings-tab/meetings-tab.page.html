@@ -22,9 +22,19 @@
           <input type="datetime-local" formControlName="scheduledAt" />
         </label>
         <label>
-          Standort-ID
-          <input type="text" formControlName="locationId" placeholder="UUID des Standorts" />
+          Standort
+          <select formControlName="locationId">
+            <option value="">Bitte waehlen</option>
+            <option *ngFor="let location of locations()" [value]="location.id">
+              {{ location.label }} · {{ location.address.city }}
+            </option>
+          </select>
         </label>
+        <div class="state" *ngIf="locationsStatus() === 'error'">
+          <p class="state-title">Standorte konnten nicht geladen werden</p>
+          <p class="state-text">{{ locationsError()?.message ?? 'Unbekannter Fehler' }}</p>
+          <button class="ghost-button" type="button" (click)="retryLocations()">Erneut versuchen</button>
+        </div>
         <label>
           Teilnehmer-IDs (kommasepariert)
           <input type="text" formControlName="participantIds" placeholder="z.B. u-101, u-201" />
@@ -41,9 +51,9 @@
         <article class="meeting-card" *ngFor="let meeting of meetings()">
           <div class="meeting-meta">
             <span class="status">{{ meetingStatusLabel(meeting.status) }}</span>
-            <span class="time">{{ meeting.id }}</span>
+            <span class="time">{{ meetingDateLabel(meeting) }}</span>
           </div>
-          <p>Standort-ID: {{ meeting.locationId }}</p>
+          <p>Standort: {{ locationLabel(meeting.locationId) }}</p>
         </article>
       </div>
     </section>
@@ -51,6 +61,8 @@
     <section class="panel">
       <app-meeting-hold-form
         [meetings]="meetings()"
+        [locations]="locations()"
+        [defaultLocationId]="defaultLocationId()"
         [isLoading]="isLoading()"
         [holdResult]="holdResult()"
         (hold)="handleHold($event)"

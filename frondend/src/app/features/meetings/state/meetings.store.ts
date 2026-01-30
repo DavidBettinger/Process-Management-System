@@ -46,10 +46,11 @@ export class MeetingsStore {
     this.meetingsState.update((current) => ({ ...current, status: 'loading', error: undefined }));
     try {
       const meeting = await firstValueFrom(this.meetingsApi.scheduleMeeting(caseId, req));
+      const meetingWithSchedule = { ...meeting, scheduledAt: req.scheduledAt };
       this.meetingsState.update((current) => ({
         ...current,
         status: 'success',
-        items: [meeting, ...current.items]
+        items: [meetingWithSchedule, ...current.items]
       }));
     } catch (error) {
       this.meetingsState.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));

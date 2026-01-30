@@ -16,6 +16,8 @@ export interface Meeting {
   id: string;
   status: MeetingStatus;
   locationId: string;
+  scheduledAt?: string | null;
+  heldAt?: string | null;
 }
 
 export interface ActionItemRequest {

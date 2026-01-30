@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { signal, computed } from '@angular/core';
 import { KitasPageComponent } from './kitas-page.page';
 import { KitasStore } from '../../state/kitas.store';
@@ -51,7 +52,8 @@ describe('KitasPageComponent', () => {
       imports: [KitasPageComponent],
       providers: [
         { provide: KitasStore, useValue: kitasStore },
-        { provide: LocationsStore, useValue: locationsStore }
+        { provide: LocationsStore, useValue: locationsStore },
+        provideRouter([])
       ]
     });
 
@@ -78,7 +80,8 @@ describe('KitasPageComponent', () => {
       imports: [KitasPageComponent],
       providers: [
         { provide: KitasStore, useValue: kitasStore },
-        { provide: LocationsStore, useValue: locationsStore }
+        { provide: LocationsStore, useValue: locationsStore },
+        provideRouter([])
       ]
     });
 
@@ -126,7 +129,8 @@ describe('KitasPageComponent', () => {
       imports: [KitasPageComponent],
       providers: [
         { provide: KitasStore, useValue: kitasStore },
-        { provide: LocationsStore, useValue: locationsStore }
+        { provide: LocationsStore, useValue: locationsStore },
+        provideRouter([])
       ]
     });
 

@@ -1,10 +1,12 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { HoldMeetingPayload, MeetingHoldFormComponent } from './meeting-hold-form.component';
 
 describe('MeetingHoldFormComponent', () => {
   it('emits a hold payload with action items', () => {
     TestBed.configureTestingModule({
-      imports: [MeetingHoldFormComponent]
+      imports: [MeetingHoldFormComponent],
+      providers: [provideRouter([])]
     });
 
     const fixture = TestBed.createComponent(MeetingHoldFormComponent);

@@ -1,10 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, effect, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MeetingsStore } from '../../state/meetings.store';
 import { MeetingHoldFormComponent, HoldMeetingPayload } from '../../components/meeting-hold-form/meeting-hold-form.component';
+import { LocationsStore } from '../../../locations/state/locations.store';
+import { KitasStore } from '../../../kitas/state/kitas.store';
+import { CaseDetailStore } from '../../../case-detail/state/case-detail.store';
+import { Meeting } from '../../../../core/models/meeting.model';
 
 @Component({
   selector: 'app-meetings-tab-page',
@@ -18,17 +22,31 @@ export class MeetingsTabPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly formBuilder = inject(FormBuilder);
   readonly meetingsStore = inject(MeetingsStore);
+  readonly locationsStore = inject(LocationsStore);
+  readonly kitasStore = inject(KitasStore);
+  readonly caseStore = inject(CaseDetailStore);
 
   readonly meetings = this.meetingsStore.meetings;
   readonly status = this.meetingsStore.status;
   readonly error = this.meetingsStore.error;
   readonly isLoading = this.meetingsStore.isLoading;
   readonly holdResult = this.meetingsStore.holdResult;
+  readonly locations = this.locationsStore.locations;
+  readonly locationsStatus = this.locationsStore.status;
+  readonly locationsError = this.locationsStore.error;
 
   readonly scheduleForm = this.formBuilder.group({
     scheduledAt: ['', [Validators.required]],
     locationId: ['', [Validators.required]],
     participantIds: ['', [Validators.required]]
+  });
+
+  private readonly defaultLocationEffect = effect(() => {
+    const defaultLocationId = this.defaultLocationId();
+    const locationControl = this.scheduleForm.controls.locationId;
+    if (!locationControl.value && defaultLocationId) {
+      locationControl.setValue(defaultLocationId, { emitEvent: false });
+    }
   });
 
   ngOnInit(): void {
@@ -40,6 +58,8 @@ export class MeetingsTabPageComponent implements OnInit {
       }
       this.meetingsStore.clearHoldResult();
     });
+    void this.locationsStore.loadLocations();
+    void this.kitasStore.loadKitas();
   }
 
   async submitSchedule(): Promise<void> {
@@ -72,6 +92,36 @@ export class MeetingsTabPageComponent implements OnInit {
       return 'Durchgefuehrt';
     }
     return 'Abgesagt';
+  }
+
+  meetingDateLabel(meeting: Meeting): string {
+    const dateValue = meeting.heldAt ?? meeting.scheduledAt ?? null;
+    if (!dateValue) {
+      return 'Datum offen';
+    }
+    const parsed = new Date(dateValue);
+    if (Number.isNaN(parsed.getTime())) {
+      return 'Datum offen';
+    }
+    return parsed.toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' });
+  }
+
+  locationLabel(locationId: string): string {
+    const match = this.locations().find((location) => location.id === locationId);
+    return match ? match.label : 'Standort unbekannt';
+  }
+
+  retryLocations(): void {
+    void this.locationsStore.loadLocations();
+  }
+
+  defaultLocationId(): string | null {
+    const caseData = this.caseStore.caseData();
+    if (!caseData?.kitaId) {
+      return null;
+    }
+    const kita = this.kitasStore.kitas().find((item) => item.id === caseData.kitaId);
+    return kita?.locationId ?? null;
   }
 }
 

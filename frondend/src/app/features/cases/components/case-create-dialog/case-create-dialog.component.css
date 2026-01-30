@@ -27,9 +27,35 @@ input {
   font-size: 0.95rem;
 }
 
+select {
+  border-radius: 12px;
+  border: 1px solid rgba(16, 18, 24, 0.2);
+  padding: 0.6rem 0.8rem;
+  font-size: 0.95rem;
+  background: #fff;
+}
+
 .error {
   color: #b24d4d;
   font-size: 0.8rem;
+}
+
+.hint {
+  margin: 0.2rem 0 0;
+  font-size: 0.78rem;
+  color: rgba(16, 18, 24, 0.6);
+}
+
+.links {
+  display: flex;
+  gap: 0.8rem;
+  font-size: 0.85rem;
+}
+
+.links a {
+  text-decoration: none;
+  color: #101218;
+  font-weight: 600;
 }
 
 .primary-button {

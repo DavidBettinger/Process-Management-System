@@ -8,11 +8,23 @@
   </div>
 
   <div class="field">
-    <label for="kitaId">Kita-ID</label>
-    <input id="kitaId" type="text" formControlName="kitaId" placeholder="Kita-ID eingeben" />
+    <label for="kitaId">Kita</label>
+    <select id="kitaId" formControlName="kitaId">
+      <option value="">Bitte waehlen</option>
+      <option *ngFor="let kita of kitas" [value]="kita.id">
+        {{ kita.name }} · {{ locationLabel(kita.locationId) }}
+      </option>
+    </select>
     <span class="error" *ngIf="form.controls.kitaId.touched && form.controls.kitaId.invalid">
-      Kita-ID ist erforderlich.
+      Bitte eine Kita auswaehlen.
     </span>
+    <p class="hint" *ngIf="kitas.length === 0">
+      Es sind noch keine Kitas vorhanden. Bitte zuerst eine Kita anlegen.
+    </p>
+    <div class="links">
+      <a routerLink="/kitas">Zu den Kitas</a>
+      <a routerLink="/locations">Standort anlegen</a>
+    </div>
   </div>
 
   <button class="primary-button" type="submit" [disabled]="submitting()">

@@ -691,7 +691,7 @@ How to test:
 
 ---
 
-[ ] F5 Create Kitas UI (Add + List, selecting a Location)
+[x] F5 Create Kitas UI (Add + List, selecting a Location)
 
 Objective: Create UI to add a Kita (name + location selection) and list Kitas.
 Files to touch:
@@ -715,7 +715,7 @@ How to test:
 
 ---
 
-[ ] F6 Update Case creation flow to select Kita (instead of typing kitaName)
+[x] F6 Update Case creation flow to select Kita (instead of typing kitaName)
 
 Objective: Update case create UI and store to use kitaId, and show selected Kita name + location in case header.
 Files to touch:
@@ -737,7 +737,7 @@ How to test:
 
 ---
 
-### [ ] F7Refactor Meetings UI: Create Meeting with Date + Location (Picker + Inline Create Location Overlay)
+### [ ] F7 Refactor Meetings UI: Create Meeting with Date + Location (Picker + Inline Create Location Overlay)
 
 **Objective:** Refactor the Meetings UI so that creating/scheduling a meeting requires **only**
 1) a **date/time** and

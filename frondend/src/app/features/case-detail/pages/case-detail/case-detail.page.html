@@ -33,10 +33,12 @@
       <div *ngIf="status() === 'success' && caseData() as data" class="details">
         <div class="meta">
           <span class="status">{{ statusLabel(data.status) }}</span>
-          <span class="time">Kita-ID: {{ data.kitaId }}</span>
+          <span class="time">Kita: {{ kitaName(data.kitaId) }}</span>
         </div>
         <h2>{{ data.title }}</h2>
         <p class="info">Erstellt am: {{ data.createdAt | date: 'dd.MM.yyyy' }}</p>
+        <p class="info">Standort: {{ locationLabelForKita(data.kitaId) }}</p>
+        <p class="info">Adresse: {{ locationAddressForKita(data.kitaId) }}</p>
       </div>
     </div>
 

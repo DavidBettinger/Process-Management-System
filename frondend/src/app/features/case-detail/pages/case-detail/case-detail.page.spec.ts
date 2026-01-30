@@ -7,6 +7,10 @@ import { CaseDetailStore } from '../../state/case-detail.store';
 import { CaseStatus, ProcessCase } from '../../../../core/models/case.model';
 import { RoleInCase, StakeholderResponse } from '../../../../core/models/stakeholder.model';
 import { LoadStatus, StoreError } from '../../../../core/state/state.types';
+import { KitasStore } from '../../../kitas/state/kitas.store';
+import { LocationsStore } from '../../../locations/state/locations.store';
+import { Kita } from '../../../../core/models/kita.model';
+import { Location } from '../../../../core/models/location.model';
 
 class CaseDetailStoreStub {
   caseData = signal<ProcessCase | null>(null);
@@ -36,6 +40,24 @@ class CaseDetailStoreStub {
   };
 }
 
+class KitasStoreStub {
+  kitas = signal<Kita[]>([]);
+  loadKitasCalls = 0;
+
+  loadKitas = () => {
+    this.loadKitasCalls += 1;
+  };
+}
+
+class LocationsStoreStub {
+  locations = signal<Location[]>([]);
+  loadLocationsCalls = 0;
+
+  loadLocations = () => {
+    this.loadLocationsCalls += 1;
+  };
+}
+
 describe('CaseDetailPageComponent', () => {
   const buildStore = (): CaseDetailStoreStub => {
     const store = new CaseDetailStoreStub();
@@ -56,11 +78,15 @@ describe('CaseDetailPageComponent', () => {
 
   it('submits stakeholder form', async () => {
     const store = buildStore();
+    const kitasStore = new KitasStoreStub();
+    const locationsStore = new LocationsStoreStub();
 
     TestBed.configureTestingModule({
       imports: [CaseDetailPageComponent],
       providers: [
         { provide: CaseDetailStore, useValue: store },
+        { provide: KitasStore, useValue: kitasStore },
+        { provide: LocationsStore, useValue: locationsStore },
         {
           provide: ActivatedRoute,
           useValue: { paramMap: of(convertToParamMap({ caseId: 'case-1' })) }
@@ -88,12 +114,16 @@ describe('CaseDetailPageComponent', () => {
 
   it('activates the case when allowed', async () => {
     const store = buildStore();
+    const kitasStore = new KitasStoreStub();
+    const locationsStore = new LocationsStoreStub();
     store.canActivate.set(true);
 
     TestBed.configureTestingModule({
       imports: [CaseDetailPageComponent],
       providers: [
         { provide: CaseDetailStore, useValue: store },
+        { provide: KitasStore, useValue: kitasStore },
+        { provide: LocationsStore, useValue: locationsStore },
         {
           provide: ActivatedRoute,
           useValue: { paramMap: of(convertToParamMap({ caseId: 'case-1' })) }
@@ -115,6 +145,8 @@ describe('CaseDetailPageComponent', () => {
 
   it('shows hint when activation is not allowed', () => {
     const store = buildStore();
+    const kitasStore = new KitasStoreStub();
+    const locationsStore = new LocationsStoreStub();
     store.canActivate.set(false);
     store.caseStatus.set('DRAFT');
 
@@ -122,6 +154,8 @@ describe('CaseDetailPageComponent', () => {
       imports: [CaseDetailPageComponent],
       providers: [
         { provide: CaseDetailStore, useValue: store },
+        { provide: KitasStore, useValue: kitasStore },
+        { provide: LocationsStore, useValue: locationsStore },
         {
           provide: ActivatedRoute,
           useValue: { paramMap: of(convertToParamMap({ caseId: 'case-1' })) }

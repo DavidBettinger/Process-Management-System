@@ -6,6 +6,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CaseDetailStore } from '../../state/case-detail.store';
 import { RoleInCase } from '../../../../core/models/stakeholder.model';
 import { StakeholderListComponent } from '../../components/stakeholder-list/stakeholder-list.component';
+import { KitasStore } from '../../../kitas/state/kitas.store';
+import { LocationsStore } from '../../../locations/state/locations.store';
+import { Kita } from '../../../../core/models/kita.model';
+import { Location } from '../../../../core/models/location.model';
 
 @Component({
   selector: 'app-case-detail-page',
@@ -19,6 +23,8 @@ export class CaseDetailPageComponent implements OnInit {
   private readonly formBuilder = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
   readonly caseStore = inject(CaseDetailStore);
+  readonly kitasStore = inject(KitasStore);
+  readonly locationsStore = inject(LocationsStore);
 
   readonly caseData = this.caseStore.caseData;
   readonly status = this.caseStore.status;
@@ -27,6 +33,8 @@ export class CaseDetailPageComponent implements OnInit {
   readonly stakeholders = this.caseStore.stakeholders;
   readonly caseStatus = this.caseStore.caseStatus;
   readonly canActivate = this.caseStore.canActivate;
+  readonly kitas = this.kitasStore.kitas;
+  readonly locations = this.locationsStore.locations;
 
   readonly form = this.formBuilder.group({
     userId: ['', [Validators.required]],
@@ -47,6 +55,8 @@ export class CaseDetailPageComponent implements OnInit {
       }
       void this.caseStore.loadCase();
     });
+    void this.kitasStore.loadKitas();
+    void this.locationsStore.loadLocations();
   }
 
   async submitStakeholder(): Promise<void> {
@@ -84,5 +94,44 @@ export class CaseDetailPageComponent implements OnInit {
       return 'Der Prozess ist bereits aktiv.';
     }
     return null;
+  }
+
+  kitaName(kitaId: string | null | undefined): string {
+    if (!kitaId) {
+      return 'Kita unbekannt';
+    }
+    const kita = this.findKita(kitaId);
+    return kita ? kita.name : `Kita-ID: ${kitaId}`;
+  }
+
+  locationLabelForKita(kitaId: string | null | undefined): string {
+    const location = this.findLocationForKita(kitaId);
+    return location ? location.label : 'Standort unbekannt';
+  }
+
+  locationAddressForKita(kitaId: string | null | undefined): string {
+    const location = this.findLocationForKita(kitaId);
+    if (!location) {
+      return 'Adresse nicht verfuegbar';
+    }
+    const address = location.address;
+    const country = address.country?.trim();
+    const countryLabel = country && country.length > 0 ? country : 'DE';
+    return `${address.street} ${address.houseNumber}, ${address.postalCode} ${address.city}, ${countryLabel}`;
+  }
+
+  private findKita(kitaId: string): Kita | undefined {
+    return this.kitas().find((kita) => kita.id === kitaId);
+  }
+
+  private findLocationForKita(kitaId: string | null | undefined): Location | undefined {
+    if (!kitaId) {
+      return undefined;
+    }
+    const kita = this.findKita(kitaId);
+    if (!kita) {
+      return undefined;
+    }
+    return this.locations().find((location) => location.id === kita.locationId);
   }
 }

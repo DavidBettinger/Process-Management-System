@@ -211,6 +211,38 @@ Fields:
 - UI identification rule:
   - Display label: `heldAt || scheduledAt` + resolved `Location.label`
 
+#### Stakeholder (global)
+```json
+{
+  "id": "8a4a1cf3-6bbf-4f44-b8b8-6a0a0e5b8d2f",
+  "tenantId": "tenant-001",
+  "firstName": "Maria",
+  "lastName": "Becker",
+  "role": "CONSULTANT",
+  "createdAt": "2026-01-30T10:00:00Z"
+}
+```
+Fields:
+- `id` (UUID string)
+- `tenantId` (string; may be implicit)
+- `firstName` (string, required, max 100)
+- `lastName` (string, required, max 100)
+- `role` (StakeholderRole, required)
+- `createdAt` (ISO timestamp, optional but recommended)
+
+#### CreateStakeholderRequest
+```json
+{
+  "firstName": "Maria",
+  "lastName": "Becker",
+  "role": "CONSULTANT"
+}
+```
+
+Stakeholder roles vs. case roles:
+- `Stakeholder.role` is the global role of a person/entity.
+- `ProcessCase.stakeholders[].role` is the role **in that case** (case-specific).
+
 Base path: `/api`
 
 ### Health

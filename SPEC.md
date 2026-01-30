@@ -81,10 +81,14 @@ A process management app for **Kita consulting** (Fachberatung) to document and 
 ### Core Entities (rough)
 - ProcessCase
     - id, tenantId, title, kitaId, status, createdAt
+- Kita
+    - id, tenantId, name, locationId, createdAt
+- Location
+    - id, tenantId, label, address, createdAt
 - CaseStakeholder
     - stakeholderId (userId), roleInCase
 - Meeting
-    - id, caseId, status, scheduledAt, heldAt, participants[], minutesText
+    - id, caseId, status, scheduledAt, heldAt, locationId, participants[], minutesText
 - Task
     - id, caseId, originMeetingId?, title, description, dueDate?
     - assigneeId?

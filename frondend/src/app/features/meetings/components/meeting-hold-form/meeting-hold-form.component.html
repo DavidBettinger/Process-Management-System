@@ -21,6 +21,7 @@
           <option value="">Bitte waehlen</option>
           <option *ngFor="let meeting of meetings" [value]="meeting.id">{{ meetingLabel(meeting) }}</option>
         </select>
+        <span class="error" *ngIf="isInvalid('meetingId')">{{ requiredMessage('Termin') }}</span>
       </label>
     </ng-container>
     <ng-template #manualId>
@@ -28,6 +29,7 @@
         Termin
         <input type="text" formControlName="meetingId" placeholder="Termin eingeben" />
       </label>
+      <span class="error" *ngIf="isInvalid('meetingId')">{{ requiredMessage('Termin') }}</span>
       <p class="hint">Kein Termin vorhanden? Bitte zuerst einen Termin planen.</p>
     </ng-template>
 
@@ -35,6 +37,7 @@
       Durchgefuehrt am
       <input type="datetime-local" formControlName="heldAt" />
     </label>
+    <span class="error" *ngIf="isInvalid('heldAt')">{{ requiredMessage('Durchgefuehrt am') }}</span>
 
     <label>
       Standort
@@ -45,6 +48,7 @@
         </option>
       </select>
     </label>
+    <span class="error" *ngIf="isInvalid('locationId')">{{ requiredMessage('Standort') }}</span>
     <p class="hint" *ngIf="locations.length === 0">
       Es sind noch keine Standorte vorhanden. Bitte zuerst einen Standort anlegen.
     </p>
@@ -86,6 +90,7 @@
       Protokoll
       <textarea formControlName="minutesText" rows="4" placeholder="Wichtige Ergebnisse und Beschluesse"></textarea>
     </label>
+    <span class="error" *ngIf="isInvalid('minutesText')">{{ requiredMessage('Protokoll') }}</span>
 
     <app-action-items-editor
       [items]="actionItems"

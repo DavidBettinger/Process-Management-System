@@ -2,8 +2,8 @@
   <div class="field">
     <label for="title">Prozess-Titel</label>
     <input id="title" type="text" formControlName="title" placeholder="Titel eingeben" />
-    <span class="error" *ngIf="form.controls.title.touched && form.controls.title.invalid">
-      Titel ist erforderlich.
+    <span class="error" *ngIf="isInvalid('title')">
+      {{ requiredMessage('Prozess-Titel') }}
     </span>
   </div>
 
@@ -15,8 +15,8 @@
         {{ kita.name }} · {{ locationLabel(kita.locationId) }}
       </option>
     </select>
-    <span class="error" *ngIf="form.controls.kitaId.touched && form.controls.kitaId.invalid">
-      Bitte eine Kita auswaehlen.
+    <span class="error" *ngIf="isInvalid('kitaId')">
+      {{ requiredMessage('Kita') }}
     </span>
     <p class="hint" *ngIf="kitas.length === 0">
       Es sind noch keine Kitas vorhanden. Bitte zuerst eine Kita anlegen.

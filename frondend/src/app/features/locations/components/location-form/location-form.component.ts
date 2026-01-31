@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CreateLocationRequest } from '../../../../core/models/location.model';
+import { isControlInvalid, requiredMessage } from '../../../../shared/forms/form-utils';
 
 @Component({
   selector: 'app-location-form',
@@ -15,6 +16,7 @@ export class LocationFormComponent {
   @Output() create = new EventEmitter<CreateLocationRequest>();
 
   private readonly formBuilder = inject(FormBuilder);
+  readonly requiredMessage = requiredMessage;
 
   readonly form = this.formBuilder.group({
     label: ['', Validators.required],
@@ -47,7 +49,6 @@ export class LocationFormComponent {
   }
 
   isInvalid(controlName: string): boolean {
-    const control = this.form.get(controlName);
-    return !!control && control.invalid && (control.dirty || control.touched);
+    return isControlInvalid(this.form, controlName);
   }
 }

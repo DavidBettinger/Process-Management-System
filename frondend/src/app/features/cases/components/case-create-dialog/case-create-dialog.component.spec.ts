@@ -22,6 +22,24 @@ describe('CaseCreateDialogComponent', () => {
     expect(emitted.length).toBe(0);
   });
 
+  it('shows required errors after submit', () => {
+    TestBed.configureTestingModule({
+      imports: [CaseCreateDialogComponent],
+      providers: [provideRouter([])]
+    });
+
+    const fixture = TestBed.createComponent(CaseCreateDialogComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    component.submit();
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Prozess-Titel ist erforderlich.');
+    expect(compiled.textContent).toContain('Kita ist erforderlich.');
+  });
+
   it('emits a create request when form is valid', () => {
     TestBed.configureTestingModule({
       imports: [CaseCreateDialogComponent],

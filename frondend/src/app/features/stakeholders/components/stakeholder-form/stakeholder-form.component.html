@@ -9,13 +9,13 @@
     <label>
       Vorname
       <input type="text" formControlName="firstName" placeholder="z.B. Maria" />
-      <span class="field-error" *ngIf="isInvalid('firstName')">Bitte Vorname angeben.</span>
+      <span class="field-error" *ngIf="isInvalid('firstName')">{{ requiredMessage('Vorname') }}</span>
     </label>
 
     <label>
       Nachname
       <input type="text" formControlName="lastName" placeholder="z.B. Becker" />
-      <span class="field-error" *ngIf="isInvalid('lastName')">Bitte Nachname angeben.</span>
+      <span class="field-error" *ngIf="isInvalid('lastName')">{{ requiredMessage('Nachname') }}</span>
     </label>
 
     <label>
@@ -24,7 +24,7 @@
         <option value="" disabled>Bitte waehlen</option>
         <option *ngFor="let role of roles" [value]="role.value">{{ role.label }}</option>
       </select>
-      <span class="field-error" *ngIf="isInvalid('role')">Bitte Rolle auswaehlen.</span>
+      <span class="field-error" *ngIf="isInvalid('role')">{{ requiredMessage('Rolle') }}</span>
     </label>
 
     <button class="primary-button" type="submit" [disabled]="isSubmitting">

@@ -7,6 +7,7 @@ import { Stakeholder } from '../../../../core/models/stakeholder.model';
 import { ActionItemDraft, ActionItemsEditorComponent } from '../action-items-editor/action-items-editor.component';
 import { RouterLink } from '@angular/router';
 import { StakeholderSelectComponent } from '../../../../shared/ui/stakeholder-select/stakeholder-select.component';
+import { isControlInvalid, requiredMessage } from '../../../../shared/forms/form-utils';
 
 export interface HoldMeetingPayload {
   meetingId: string;
@@ -22,6 +23,7 @@ export interface HoldMeetingPayload {
 })
 export class MeetingHoldFormComponent implements OnChanges {
   private readonly formBuilder = inject(FormBuilder);
+  readonly requiredMessage = requiredMessage;
 
   @Input() meetings: Meeting[] = [];
   @Input() locations: Location[] = [];
@@ -84,6 +86,10 @@ export class MeetingHoldFormComponent implements OnChanges {
     };
 
     this.hold.emit({ meetingId, request });
+  }
+
+  isInvalid(controlName: string): boolean {
+    return isControlInvalid(this.form, controlName);
   }
 
   updateActionItems(items: ActionItemDraft[]): void {

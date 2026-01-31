@@ -9,7 +9,7 @@
     <label>
       Name der Kita
       <input type="text" formControlName="name" placeholder="z.B. Kita Sonnenblume" />
-      <span class="field-error" *ngIf="isInvalid('name')">Bitte einen Namen eingeben.</span>
+      <span class="field-error" *ngIf="isInvalid('name')">{{ requiredMessage('Name der Kita') }}</span>
     </label>
 
     <label>
@@ -20,7 +20,7 @@
           {{ location.label }} · {{ location.address.city }}
         </option>
       </select>
-      <span class="field-error" *ngIf="isInvalid('locationId')">Bitte einen Standort auswaehlen.</span>
+      <span class="field-error" *ngIf="isInvalid('locationId')">{{ requiredMessage('Standort') }}</span>
     </label>
 
     <p class="hint" *ngIf="locations.length === 0">

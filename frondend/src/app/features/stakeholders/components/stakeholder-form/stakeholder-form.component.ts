@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CreateStakeholderRequest, StakeholderRole } from '../../../../core/models/stakeholder.model';
+import { isControlInvalid, requiredMessage } from '../../../../shared/forms/form-utils';
 
 interface RoleOption {
   value: StakeholderRole;
@@ -20,6 +21,7 @@ export class StakeholderFormComponent {
   @Output() create = new EventEmitter<CreateStakeholderRequest>();
 
   private readonly formBuilder = inject(FormBuilder);
+  readonly requiredMessage = requiredMessage;
 
   readonly roles: RoleOption[] = [
     { value: 'CONSULTANT', label: 'Beratung' },
@@ -50,7 +52,6 @@ export class StakeholderFormComponent {
   }
 
   isInvalid(controlName: string): boolean {
-    const control = this.form.get(controlName);
-    return !!control && control.invalid && (control.dirty || control.touched);
+    return isControlInvalid(this.form, controlName);
   }
 }

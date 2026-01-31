@@ -20,7 +20,7 @@ Make sure that you don't use deprecated features!
 
 ---
 
-### [ ] T2.12 Add UI feedback system: toasts + confirmation dialogs
+### [x] T2.12 Add UI feedback system: toasts + confirmation dialogs
 **Objective:** Make MVP usable and safe (confirm destructive actions).
 **Files to touch:**
 - `frontend/src/app/shared/ui/toast.service.ts`
@@ -35,7 +35,7 @@ Status: Done (2026-01-31).
 
 ---
 
-### [ ] T2.13 Add shared form utilities + validation helpers
+### [x] T2.13 Add shared form utilities + validation helpers
 **Objective:** Standardize required/enum validation and error display.
 **Files to touch:**
 - `frontend/src/app/shared/forms/*`
@@ -43,6 +43,7 @@ Status: Done (2026-01-31).
 - Consistent error messages for required fields.
   **How to test:**
 - Component test for create case form.
+Status: Done (2026-01-31).
 
 ---
 

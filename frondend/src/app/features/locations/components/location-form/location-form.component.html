@@ -9,32 +9,32 @@
     <label>
       Bezeichnung
       <input type="text" formControlName="label" placeholder="z.B. Kita Sonnenblume" />
-      <span class="field-error" *ngIf="isInvalid('label')">Bitte eine Bezeichnung eingeben.</span>
+      <span class="field-error" *ngIf="isInvalid('label')">{{ requiredMessage('Bezeichnung') }}</span>
     </label>
 
     <div class="grid">
       <label>
         Strasse
         <input type="text" formControlName="street" placeholder="Musterstrasse" />
-        <span class="field-error" *ngIf="isInvalid('street')">Strasse ist erforderlich.</span>
+        <span class="field-error" *ngIf="isInvalid('street')">{{ requiredMessage('Strasse') }}</span>
       </label>
 
       <label>
         Hausnummer
         <input type="text" formControlName="houseNumber" placeholder="12" />
-        <span class="field-error" *ngIf="isInvalid('houseNumber')">Hausnummer ist erforderlich.</span>
+        <span class="field-error" *ngIf="isInvalid('houseNumber')">{{ requiredMessage('Hausnummer') }}</span>
       </label>
 
       <label>
         PLZ
         <input type="text" formControlName="postalCode" placeholder="10115" />
-        <span class="field-error" *ngIf="isInvalid('postalCode')">PLZ ist erforderlich.</span>
+        <span class="field-error" *ngIf="isInvalid('postalCode')">{{ requiredMessage('PLZ') }}</span>
       </label>
 
       <label>
         Stadt
         <input type="text" formControlName="city" placeholder="Berlin" />
-        <span class="field-error" *ngIf="isInvalid('city')">Stadt ist erforderlich.</span>
+        <span class="field-error" *ngIf="isInvalid('city')">{{ requiredMessage('Stadt') }}</span>
       </label>
     </div>
 

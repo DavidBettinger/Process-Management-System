@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { CreateCaseRequest } from '../../../../core/models/case.model';
 import { Kita } from '../../../../core/models/kita.model';
 import { Location } from '../../../../core/models/location.model';
+import { isControlInvalid, requiredMessage } from '../../../../shared/forms/form-utils';
 
 @Component({
   selector: 'app-case-create-dialog',
@@ -19,6 +20,7 @@ export class CaseCreateDialogComponent {
   @Output() create = new EventEmitter<CreateCaseRequest>();
 
   readonly submitting = signal(false);
+  readonly requiredMessage = requiredMessage;
 
   private readonly formBuilder = inject(FormBuilder);
 
@@ -39,6 +41,10 @@ export class CaseCreateDialogComponent {
       kitaId: value.kitaId ?? ''
     });
     this.submitting.set(false);
+  }
+
+  isInvalid(controlName: string): boolean {
+    return isControlInvalid(this.form, controlName);
   }
 
   locationLabel(locationId: string): string {

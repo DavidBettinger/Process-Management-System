@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CreateKitaRequest } from '../../../../core/models/kita.model';
 import { Location } from '../../../../core/models/location.model';
+import { isControlInvalid, requiredMessage } from '../../../../shared/forms/form-utils';
 
 @Component({
   selector: 'app-kita-form',
@@ -18,6 +19,7 @@ export class KitaFormComponent {
   @Output() create = new EventEmitter<CreateKitaRequest>();
 
   private readonly formBuilder = inject(FormBuilder);
+  readonly requiredMessage = requiredMessage;
 
   readonly form = this.formBuilder.group({
     name: ['', Validators.required],
@@ -38,7 +40,6 @@ export class KitaFormComponent {
   }
 
   isInvalid(controlName: string): boolean {
-    const control = this.form.get(controlName);
-    return !!control && control.invalid && (control.dirty || control.touched);
+    return isControlInvalid(this.form, controlName);
   }
 }

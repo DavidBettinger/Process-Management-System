@@ -95,7 +95,7 @@ describe('CaseDetailPageComponent', () => {
     return store;
   };
 
-  it('submits stakeholder form', async () => {
+  it('submits stakeholder form', () => {
     const store = buildStore();
     const kitasStore = new KitasStoreStub();
     const locationsStore = new LocationsStoreStub();
@@ -131,12 +131,12 @@ describe('CaseDetailPageComponent', () => {
 
     const form = compiled.querySelector('form') as HTMLFormElement;
     form.dispatchEvent(new Event('submit'));
-    await fixture.whenStable();
-
-    expect(store.addStakeholderCalls).toEqual([{ userId: 's-1', role: 'CONSULTANT' }]);
+    return fixture.whenStable().then(() => {
+      expect(store.addStakeholderCalls).toEqual([{ userId: 's-1', role: 'CONSULTANT' }]);
+    });
   });
 
-  it('activates the case when allowed', async () => {
+  it('activates the case when allowed', () => {
     const store = buildStore();
     const kitasStore = new KitasStoreStub();
     const locationsStore = new LocationsStoreStub();
@@ -164,9 +164,9 @@ describe('CaseDetailPageComponent', () => {
     const button = Array.from(compiled.querySelectorAll('button'))
       .find((element) => element.textContent?.includes('Prozess aktivieren')) as HTMLButtonElement;
     button.click();
-    await fixture.whenStable();
-
-    expect(store.activateCaseCalls).toBe(1);
+    return fixture.whenStable().then(() => {
+      expect(store.activateCaseCalls).toBe(1);
+    });
   });
 
   it('shows hint when activation is not allowed', () => {

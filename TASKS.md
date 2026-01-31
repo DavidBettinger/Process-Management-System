@@ -17,37 +17,56 @@ Readmes should also be in english.
 Always make sure that the frontend matches the backend (API calls and DTOs)
 Make sure that you don't use deprecated features!
 
----Task ID: FE-RXJS-REF-002
-Objective: Refactor existing stores so all async methods return Observables, and internal state updates happen in RxJS operators.
+---
+# [ ] Task ID: FE-RXJS-REF-003
+Objective: Update components and tests so they don’t rely on await store.method().
 
-Target (start with one store: TasksStore, then apply pattern to others)
+Component rule
+•	Instead of:
+•	await store.assignTask(...)
+•	Do:
+•	store.assignTask(...).pipe(takeUntilDestroyed()).subscribe()
+•	If you need to react to success:
+•	use tap(() => toast.success(...))
+•	or return a result observable from store and handle it in component.
 
-Refactor methods like:
-•	loadTasks()
-•	createTask()
-•	assignTask(), startTask(), blockTask(), resolveTask() …
+Test refactor strategy (important)
 
-Required pattern for actions (busy id + error + refresh)
+Replace test patterns like:
+```
+const promise = store.assignTask(...);
+await promise;
+```
+with RxJS-friendly patterns:
 
-Example behavior (conceptual):
-•	on subscribe:
-•	mark status loading
-•	add id to busyTaskIds
-•	call API observable
-•	tap() update state / trigger refresh
-•	catchError() set store error + set status error
-•	finalize() remove id from busy set
+Option A (simple): use done
+```
+store.assignTask('task-1', { assigneeId: 'u-1' }).subscribe({
+  complete: () => {
+    expect(store.isBusy('task-1')).toBe(false);
+    done();
+  }
+});
+```
+Option B (Angular): fakeAsync + tick()
+•	Useful if store pipelines schedule microtasks/macrotasks.
+•	Still no await.
+
+Option C (best for RxJS-heavy stores): RxJS TestScheduler
+•	For deterministic marble tests (recommended if you do lots of stream logic).
 
 Files to touch
-•	frontend/src/app/features/tasks/state/tasks.store.ts
-•	Similar stores after pattern proven:
-•	case-detail.store.ts, meetings.store.ts, timeline.store.ts, kitas.store.ts, locations.store.ts, etc.
+•	Components calling store methods (search for await store.)
+•	Store specs (like the one you showed):
+•	frontend/src/app/features/tasks/state/tasks.store.spec.ts
+•	Any component specs using async/await
 
 DoD
-•	No store method returns Promise.
-•	No store method uses async / await.
-•	All store methods return Observable<...>.
-•	Busy-id logic uses finalize() (so it always clears).
+•	grep/search shows no await store. in frontend/src/app.
+•	Store specs no longer await store methods.
+•	npm test passes.
+Status: Done (2026-01-31).
+
 ---
 
 ### [ ] T2.12 Add UI feedback system: toasts + confirmation dialogs

@@ -33,12 +33,15 @@ class CaseDetailStoreStub {
   };
   loadCase = () => {
     this.loadCaseCalls += 1;
+    return of(void 0);
   };
-  addStakeholder = async (request: { userId: string; role: RoleInCase }) => {
+  addStakeholder = (request: { userId: string; role: RoleInCase }) => {
     this.addStakeholderCalls.push(request);
+    return of(void 0);
   };
-  activateCase = async () => {
+  activateCase = () => {
     this.activateCaseCalls += 1;
+    return of(void 0);
   };
 }
 
@@ -48,6 +51,7 @@ class KitasStoreStub {
 
   loadKitas = () => {
     this.loadKitasCalls += 1;
+    return of(void 0);
   };
 }
 
@@ -57,6 +61,7 @@ class LocationsStoreStub {
 
   loadLocations = () => {
     this.loadLocationsCalls += 1;
+    return of(void 0);
   };
 }
 
@@ -68,6 +73,7 @@ class StakeholdersStoreStub {
 
   loadStakeholders = () => {
     this.loadCalls += 1;
+    return of(void 0);
   };
 }
 

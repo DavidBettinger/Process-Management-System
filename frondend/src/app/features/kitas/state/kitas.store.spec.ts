@@ -22,42 +22,42 @@ describe('KitasStore', () => {
     } as KitasApi;
   };
 
-  it('loads kitas into state', async () => {
+  it('loads kitas into state', () => {
     const store = new KitasStore(createApi());
 
-    await store.loadKitas();
+    store.loadKitas().subscribe();
 
     expect(store.status()).toBe('success');
     expect(store.kitas()).toHaveLength(1);
   });
 
-  it('stores errors when load fails', async () => {
+  it('stores errors when load fails', () => {
     const store = new KitasStore(createApi({
       listKitas: () => throwError(() => new Error('Fehler'))
     }));
 
-    await store.loadKitas();
+    store.loadKitas().subscribe();
 
     expect(store.status()).toBe('error');
     expect(store.error()?.message).toBe('Fehler');
   });
 
-  it('creates a kita and refreshes list', async () => {
+  it('creates a kita and refreshes list', () => {
     const store = new KitasStore(createApi());
     const request: CreateKitaRequest = { name: 'Kita Sonnenblume', locationId: 'location-1' };
 
-    await store.createKita(request);
+    store.createKita(request).subscribe();
 
     expect(store.status()).toBe('success');
     expect(store.kitas()).toHaveLength(1);
   });
 
-  it('stores errors when create fails', async () => {
+  it('stores errors when create fails', () => {
     const store = new KitasStore(createApi({
       createKita: () => throwError(() => new Error('Fehler beim Speichern'))
     }));
 
-    await store.createKita({ name: 'Kita', locationId: 'location-1' });
+    store.createKita({ name: 'Kita', locationId: 'location-1' }).subscribe();
 
     expect(store.status()).toBe('error');
     expect(store.error()?.message).toBe('Fehler beim Speichern');

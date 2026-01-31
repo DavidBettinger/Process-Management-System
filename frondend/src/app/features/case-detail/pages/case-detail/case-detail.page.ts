@@ -67,14 +67,14 @@ export class CaseDetailPageComponent implements OnInit {
       if (caseId) {
         this.caseStore.setCaseId(caseId);
       }
-      void this.caseStore.loadCase();
+      this.caseStore.loadCase().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
     });
-    void this.kitasStore.loadKitas();
-    void this.locationsStore.loadLocations();
-    void this.stakeholdersStore.loadStakeholders();
+    this.kitasStore.loadKitas().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+    this.locationsStore.loadLocations().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+    this.stakeholdersStore.loadStakeholders().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
-  async submitStakeholder(): Promise<void> {
+  submitStakeholder(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -83,18 +83,24 @@ export class CaseDetailPageComponent implements OnInit {
       return;
     }
     const value = this.form.getRawValue();
-    await this.caseStore.addStakeholder({
-      userId: value.stakeholderId ?? '',
-      role: value.role ?? 'CONSULTANT'
-    });
-    this.form.reset({ stakeholderId: '', role: 'CONSULTANT' });
+    this.caseStore
+      .addStakeholder({
+        userId: value.stakeholderId ?? '',
+        role: value.role ?? 'CONSULTANT'
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        if (this.caseStore.status() === 'success') {
+          this.form.reset({ stakeholderId: '', role: 'CONSULTANT' });
+        }
+      });
   }
 
-  async activateCase(): Promise<void> {
+  activateCase(): void {
     if (!this.canActivate()) {
       return;
     }
-    await this.caseStore.activateCase();
+    this.caseStore.activateCase().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
   statusLabel(status: string | null): string {

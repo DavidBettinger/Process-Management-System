@@ -1,5 +1,6 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
 import { StakeholdersApi } from '../../../core/api/stakeholders.api';
 import { Stakeholder, StakeholdersListResponse } from '../../../core/models/stakeholder.model';
 import { StakeholderTaskSummary, StakeholderTasksResponse } from '../../../core/models/task.model';
@@ -58,38 +59,39 @@ export class StakeholderDetailStore {
     this.tasksState.set(initialTasksState());
   }
 
-  async loadProfile(): Promise<void> {
+  loadProfile(): Observable<void> {
     const stakeholderId = this.stakeholderId();
     if (!stakeholderId) {
       this.profileState.set({ data: null, status: 'error', error: missingStakeholderIdError() });
-      return;
+      return of(void 0);
     }
     this.profileState.update((current) => ({ ...current, status: 'loading', error: undefined }));
-    try {
-      // TODO: Replace list lookup with /stakeholders/{id} once backend supports it.
-      const response: StakeholdersListResponse = await firstValueFrom(
-        this.stakeholdersApi.getStakeholders(0, 100, 'lastName,asc')
-      );
-      const stakeholder = response.items.find((item) => item.id === stakeholderId);
-      if (!stakeholder) {
-        this.profileState.set({
-          data: null,
-          status: 'error',
-          error: { code: 'NOT_FOUND', message: 'Beteiligte nicht gefunden' }
-        });
-        return;
-      }
-      this.profileState.set({ data: stakeholder, status: 'success', error: undefined });
-    } catch (error) {
-      this.profileState.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
-    }
+    return this.stakeholdersApi.getStakeholders(0, 100, 'lastName,asc').pipe(
+      tap((response: StakeholdersListResponse) => {
+        const stakeholder = response.items.find((item) => item.id === stakeholderId);
+        if (!stakeholder) {
+          this.profileState.set({
+            data: null,
+            status: 'error',
+            error: { code: 'NOT_FOUND', message: 'Beteiligte nicht gefunden' }
+          });
+          return;
+        }
+        this.profileState.set({ data: stakeholder, status: 'success', error: undefined });
+      }),
+      map(() => void 0),
+      catchError((error) => {
+        this.profileState.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+        return of(void 0);
+      })
+    );
   }
 
-  async loadTasks(page?: number, size?: number, sort?: string): Promise<void> {
+  loadTasks(page?: number, size?: number, sort?: string): Observable<void> {
     const stakeholderId = this.stakeholderId();
     if (!stakeholderId) {
       this.tasksState.update((current) => ({ ...current, status: 'error', error: missingStakeholderIdError() }));
-      return;
+      return of(void 0);
     }
     const targetPage = page ?? this.tasksState().page;
     const targetSize = size ?? this.tasksState().size;
@@ -101,42 +103,44 @@ export class StakeholderDetailStore {
       page: targetPage,
       size: targetSize
     }));
-    try {
-      const response: StakeholderTasksResponse = await firstValueFrom(
-        this.stakeholdersApi.getStakeholderTasks(stakeholderId, targetPage, targetSize, targetSort)
-      );
-      this.tasksState.set({
-        items: response.items,
-        status: 'success',
-        error: undefined,
-        page: response.page,
-        size: response.size,
-        totalItems: response.totalItems,
-        totalPages: response.totalPages
-      });
-    } catch (error) {
-      this.tasksState.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
-    }
+    return this.stakeholdersApi.getStakeholderTasks(stakeholderId, targetPage, targetSize, targetSort).pipe(
+      tap((response: StakeholderTasksResponse) => {
+        this.tasksState.set({
+          items: response.items,
+          status: 'success',
+          error: undefined,
+          page: response.page,
+          size: response.size,
+          totalItems: response.totalItems,
+          totalPages: response.totalPages
+        });
+      }),
+      map(() => void 0),
+      catchError((error) => {
+        this.tasksState.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+        return of(void 0);
+      })
+    );
   }
 
-  async nextPage(): Promise<void> {
+  nextPage(): Observable<void> {
     const { page, totalPages, size } = this.tasksState();
     if (page + 1 >= totalPages) {
-      return;
+      return of(void 0);
     }
-    await this.loadTasks(page + 1, size);
+    return this.loadTasks(page + 1, size);
   }
 
-  async prevPage(): Promise<void> {
+  prevPage(): Observable<void> {
     const { page, size } = this.tasksState();
     if (page <= 0) {
-      return;
+      return of(void 0);
     }
-    await this.loadTasks(page - 1, size);
+    return this.loadTasks(page - 1, size);
   }
 
-  async setPageSize(size: number): Promise<void> {
-    await this.loadTasks(0, size);
+  setPageSize(size: number): Observable<void> {
+    return this.loadTasks(0, size);
   }
 }
 

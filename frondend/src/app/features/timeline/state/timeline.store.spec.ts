@@ -19,33 +19,33 @@ describe('TimelineStore', () => {
     } as AnalyticsApi;
   };
 
-  it('loads timeline entries', async () => {
+  it('loads timeline entries', () => {
     const store = new TimelineStore(createApi());
 
     store.setCaseId('case-1');
-    await store.loadTimeline();
+    store.loadTimeline().subscribe();
 
     expect(store.timeline()?.entries.length).toBe(1);
     expect(store.timeline()?.entries[0].type).toBe('TASK_CREATED');
     expect(store.status()).toBe('success');
   });
 
-  it('stores errors', async () => {
+  it('stores errors', () => {
     const store = new TimelineStore(createApi({
       getTimeline: () => throwError(() => new Error('Fehler'))
     }));
 
     store.setCaseId('case-1');
-    await store.loadTimeline();
+    store.loadTimeline().subscribe();
 
     expect(store.status()).toBe('error');
     expect(store.error()?.message).toBe('Fehler');
   });
 
-  it('sets error when caseId is missing', async () => {
+  it('sets error when caseId is missing', () => {
     const store = new TimelineStore(createApi());
 
-    await store.loadTimeline();
+    store.loadTimeline().subscribe();
 
     expect(store.status()).toBe('error');
     expect(store.error()?.code).toBe('MISSING_CASE_ID');

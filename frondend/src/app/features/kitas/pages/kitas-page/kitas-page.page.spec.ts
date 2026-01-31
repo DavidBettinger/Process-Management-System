@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { signal, computed } from '@angular/core';
+import { of } from 'rxjs';
 import { KitasPageComponent } from './kitas-page.page';
 import { KitasStore } from '../../state/kitas.store';
 import { LocationsStore } from '../../../locations/state/locations.store';
@@ -20,10 +21,12 @@ class KitasStoreStub {
 
   loadKitas = () => {
     this.loadKitasCalls += 1;
+    return of(void 0);
   };
 
-  createKita = async () => {
+  createKita = () => {
     this.createKitaCalls += 1;
+    return of(void 0);
   };
 }
 
@@ -38,6 +41,7 @@ class LocationsStoreStub {
 
   loadLocations = () => {
     this.loadLocationsCalls += 1;
+    return of(void 0);
   };
 }
 

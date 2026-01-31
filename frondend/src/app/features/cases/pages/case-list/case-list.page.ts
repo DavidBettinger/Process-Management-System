@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { from } from 'rxjs';
 import { CasesStore } from '../../state/cases.store';
 import { CaseCreateDialogComponent } from '../../components/case-create-dialog/case-create-dialog.component';
 import { CreateCaseRequest } from '../../../../core/models/case.model';
@@ -19,6 +21,7 @@ export class CaseListPageComponent implements OnInit {
   readonly kitasStore = inject(KitasStore);
   readonly locationsStore = inject(LocationsStore);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly cases = this.casesStore.cases;
   readonly status = this.casesStore.status;
@@ -29,18 +32,25 @@ export class CaseListPageComponent implements OnInit {
   readonly locations = this.locationsStore.locations;
 
   ngOnInit(): void {
-    void this.casesStore.loadCases();
-    void this.kitasStore.loadKitas();
-    void this.locationsStore.loadLocations();
+    this.casesStore.loadCases().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+    this.kitasStore.loadKitas().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+    this.locationsStore.loadLocations().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
-  async handleCreate(request: CreateCaseRequest): Promise<void> {
-    await this.casesStore.createCase(request);
-    const createdId = this.casesStore.lastCreatedId();
-    if (createdId) {
-      this.casesStore.clearCreatedId();
-      await this.router.navigate(['/cases', createdId]);
-    }
+  handleCreate(request: CreateCaseRequest): void {
+    this.casesStore
+      .createCase(request)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        if (this.casesStore.status() !== 'success') {
+          return;
+        }
+        const createdId = this.casesStore.lastCreatedId();
+        if (createdId) {
+          this.casesStore.clearCreatedId();
+          from(this.router.navigate(['/cases', createdId])).pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+        }
+      });
   }
 
   statusLabel(status: string): string {

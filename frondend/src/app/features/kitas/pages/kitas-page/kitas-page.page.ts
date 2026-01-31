@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { KitasStore } from '../../state/kitas.store';
 import { LocationsStore } from '../../../locations/state/locations.store';
 import { CreateKitaRequest } from '../../../../core/models/kita.model';
@@ -16,6 +17,7 @@ import { KitaListComponent } from '../../components/kita-list/kita-list.componen
 export class KitasPageComponent implements OnInit {
   readonly kitasStore = inject(KitasStore);
   readonly locationsStore = inject(LocationsStore);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly kitas = this.kitasStore.kitas;
   readonly status = this.kitasStore.status;
@@ -32,19 +34,23 @@ export class KitasPageComponent implements OnInit {
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   ngOnInit(): void {
-    void this.kitasStore.loadKitas();
-    void this.locationsStore.loadLocations();
+    this.kitasStore.loadKitas().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+    this.locationsStore.loadLocations().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
-  async handleCreate(request: CreateKitaRequest): Promise<void> {
-    await this.kitasStore.createKita(request);
-    if (this.kitasStore.status() === 'success') {
-      this.showToast('Kita wurde gespeichert.');
-    }
+  handleCreate(request: CreateKitaRequest): void {
+    this.kitasStore
+      .createKita(request)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        if (this.kitasStore.status() === 'success') {
+          this.showToast('Kita wurde gespeichert.');
+        }
+      });
   }
 
   retryLocations(): void {
-    void this.locationsStore.loadLocations();
+    this.locationsStore.loadLocations().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
   private showToast(message: string): void {

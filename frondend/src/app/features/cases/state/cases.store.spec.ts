@@ -26,44 +26,44 @@ describe('CasesStore', () => {
     } as CasesApi;
   };
 
-  it('creates a case, records created id, and refreshes list', async () => {
+  it('creates a case, records created id, and refreshes list', () => {
     const store = new CasesStore(createApi());
     const request: CreateCaseRequest = { title: 'Titel', kitaId: 'kita-1' };
 
-    await store.createCase(request);
+    store.createCase(request).subscribe();
 
     expect(store.status()).toBe('success');
     expect(store.cases()).toHaveLength(1);
     expect(store.lastCreatedId()).toBe('case-1');
   });
 
-  it('stores errors from create case', async () => {
+  it('stores errors from create case', () => {
     const store = new CasesStore(createApi({
       createCase: () => throwError(() => new Error('Fehler'))
     }));
 
-    await store.createCase({ title: 'Titel', kitaId: 'kita-1' });
+    store.createCase({ title: 'Titel', kitaId: 'kita-1' }).subscribe();
 
     expect(store.status()).toBe('error');
     expect(store.error()?.message).toBe('Fehler');
   });
 
-  it('loadCases stores items on success', async () => {
+  it('loadCases stores items on success', () => {
     const store = new CasesStore(createApi());
 
-    await store.loadCases();
+    store.loadCases().subscribe();
 
     expect(store.status()).toBe('success');
     expect(store.cases()).toHaveLength(1);
     expect(store.error()).toBeUndefined();
   });
 
-  it('loadCases stores errors from api', async () => {
+  it('loadCases stores errors from api', () => {
     const store = new CasesStore(createApi({
       getCases: () => throwError(() => new Error('Fehler beim Laden'))
     }));
 
-    await store.loadCases();
+    store.loadCases().subscribe();
 
     expect(store.status()).toBe('error');
     expect(store.error()?.message).toBe('Fehler beim Laden');

@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { StakeholdersStore } from '../../state/stakeholders.store';
 import { CreateStakeholderRequest } from '../../../../core/models/stakeholder.model';
 import { StakeholderFormComponent } from '../../components/stakeholder-form/stakeholder-form.component';
@@ -14,6 +15,7 @@ import { StakeholderListComponent } from '../../components/stakeholder-list/stak
 })
 export class StakeholdersPageComponent implements OnInit {
   readonly stakeholdersStore = inject(StakeholdersStore);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly stakeholders = this.stakeholdersStore.stakeholders;
   readonly status = this.stakeholdersStore.status;
@@ -26,14 +28,18 @@ export class StakeholdersPageComponent implements OnInit {
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   ngOnInit(): void {
-    void this.stakeholdersStore.loadStakeholders();
+    this.stakeholdersStore.loadStakeholders().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
-  async handleCreate(request: CreateStakeholderRequest): Promise<void> {
-    await this.stakeholdersStore.createStakeholder(request);
-    if (this.stakeholdersStore.status() === 'success') {
-      this.showToast('Beteiligte wurden gespeichert.');
-    }
+  handleCreate(request: CreateStakeholderRequest): void {
+    this.stakeholdersStore
+      .createStakeholder(request)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        if (this.stakeholdersStore.status() === 'success') {
+          this.showToast('Beteiligte wurden gespeichert.');
+        }
+      });
   }
 
   private showToast(message: string): void {

@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LocationsStore } from '../../state/locations.store';
 import { CreateLocationRequest } from '../../../../core/models/location.model';
 import { LocationFormComponent } from '../../components/location-form/location-form.component';
@@ -14,6 +15,7 @@ import { LocationListComponent } from '../../components/location-list/location-l
 })
 export class LocationsPageComponent implements OnInit {
   readonly locationsStore = inject(LocationsStore);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly locations = this.locationsStore.locations;
   readonly status = this.locationsStore.status;
@@ -26,14 +28,18 @@ export class LocationsPageComponent implements OnInit {
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   ngOnInit(): void {
-    void this.locationsStore.loadLocations();
+    this.locationsStore.loadLocations().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
-  async handleCreate(request: CreateLocationRequest): Promise<void> {
-    await this.locationsStore.createLocation(request);
-    if (this.locationsStore.status() === 'success') {
-      this.showToast('Standort wurde gespeichert.');
-    }
+  handleCreate(request: CreateLocationRequest): void {
+    this.locationsStore
+      .createLocation(request)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        if (this.locationsStore.status() === 'success') {
+          this.showToast('Standort wurde gespeichert.');
+        }
+      });
   }
 
   private showToast(message: string): void {

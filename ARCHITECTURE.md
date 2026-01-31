@@ -675,7 +675,7 @@ Principles
 •	Stores own:
 •	state signals
 •	computed selectors
-•	async methods calling typed API clients
+•	Observable-returning methods calling typed API clients
 •	Components are mostly “dumb”: they call store methods and read signals/computed.
 •	Each store exposes the same base signals: loading, error, lastUpdatedAt.
 
@@ -716,7 +716,9 @@ Store method naming
 •	createX() for POST create
 •	updateX() for updates (if needed)
 •	performXAction() for command endpoints (assign/resolve/decline/etc.)
-•	Always return Promise<void> (store updates are in signals)
+•	Always return Observable<void> (store updates are in signals)
+•	No async/await in the app layer (features/** and shared/**); use RxJS operators instead
+•	Components subscribe with takeUntilDestroyed()
 
 Store signals
 
@@ -755,9 +757,9 @@ export class CasesStore {
   readonly isEmpty = computed(() => this.state().status === 'success' && this.state().items.length === 0);
 
   // methods
-  loadCases(): Promise<void>;
+  loadCases(): Observable<void>;
 
-  createCase(req: CreateCaseRequest): Promise<void>;
+  createCase(req: CreateCaseRequest): Observable<void>;
 }
 ```
 
@@ -810,16 +812,16 @@ export class CaseDetailStore {
   // methods
   setCaseId(caseId: string): void;
 
-  loadCase(): Promise<void>; // uses caseId()
-  addStakeholder(req: AddStakeholderRequest): Promise<void>;
-  activateCase(): Promise<void>;
+  loadCase(): Observable<void>; // uses caseId()
+  addStakeholder(req: AddStakeholderRequest): Observable<void>;
+  activateCase(): Observable<void>;
 }
 ```
 Behavior rules
 •	setCaseId() sets caseId and resets state to idle (optional).
 •	loadCase() requires caseId not null; otherwise set error with code MISSING_CASE_ID.
 •	After addStakeholder() and activateCase():
-•	simplest is await loadCase() to refresh canonical state.
+•	simplest is switchMap to loadCase() (or trigger loadCase() in the component subscription).
 
 ⸻
 
@@ -854,16 +856,16 @@ export class TasksStore {
 
   setCaseId(caseId: string): void;
 
-  loadTasks(): Promise<void>; // GET tasks by case
+  loadTasks(): Observable<void>; // GET tasks by case
 
-  createTask(req: CreateTaskRequest): Promise<void>;
+  createTask(req: CreateTaskRequest): Observable<void>;
 
-  assignTask(taskId: string, req: AssignTaskRequest): Promise<void>;
-  startTask(taskId: string): Promise<void>;
-  blockTask(taskId: string, reason: string): Promise<void>;
-  unblockTask(taskId: string): Promise<void>;
-  declineTask(taskId: string, req: DeclineTaskRequest): Promise<void>;
-  resolveTask(taskId: string, req: ResolveTaskRequest): Promise<void>;
+  assignTask(taskId: string, req: AssignTaskRequest): Observable<void>;
+  startTask(taskId: string): Observable<void>;
+  blockTask(taskId: string, reason: string): Observable<void>;
+  unblockTask(taskId: string): Observable<void>;
+  declineTask(taskId: string, req: DeclineTaskRequest): Observable<void>;
+  resolveTask(taskId: string, req: ResolveTaskRequest): Observable<void>;
 
   // helpers
   isBusy(taskId: string): boolean;
@@ -884,8 +886,8 @@ Behavior rules
 •	Every action method:
 1.	marks task busy (busyTaskIds.add(taskId))
 2.	calls API
-3.	on success refreshes tasks (await loadTasks()) or patch updates locally
-4.	clears busy in finally block
+3.	on success refreshes tasks (switchMap(() => loadTasks())) or patch updates locally
+4.	clears busy in finalize()
 •	On invalid transition:
 •	API returns 400/409 → show toast via component using errorMapper.
 
@@ -921,10 +923,10 @@ export class MeetingsStore {
 
   setCaseId(caseId: string): void;
 
-  loadMeetings(): Promise<void>; // TODO if endpoint not ready
-  scheduleMeeting(req: ScheduleMeetingRequest): Promise<void>; // TODO if endpoint not ready
+  loadMeetings(): Observable<void>; // TODO if endpoint not ready
+  scheduleMeeting(req: ScheduleMeetingRequest): Observable<void>; // TODO if endpoint not ready
 
-  holdMeeting(meetingId: string, req: HoldMeetingRequest): Promise<void>;
+  holdMeeting(meetingId: string, req: HoldMeetingRequest): Observable<void>;
   clearHoldResult(): void;
 }
 ```
@@ -961,23 +963,23 @@ export class TimelineStore {
   readonly isEmpty = computed(() => this.state().status === 'success' && (this.state().data?.entries?.length ?? 0) === 0);
 
   setCaseId(caseId: string): void;
-  loadTimeline(): Promise<void>;
+  loadTimeline(): Observable<void>;
 }
 ```
 
 Cross-Store Coordination (Case Detail Page)
 
 On the Case Detail route (/cases/:caseId), do:
-•	caseDetailStore.setCaseId(id); caseDetailStore.loadCase();
-•	tasksStore.setCaseId(id); tasksStore.loadTasks();
-•	meetingsStore.setCaseId(id); meetingsStore.loadMeetings(); (if supported)
-•	timelineStore.setCaseId(id); timelineStore.loadTimeline();
+•	caseDetailStore.setCaseId(id); caseDetailStore.loadCase().subscribe(...)
+•	tasksStore.setCaseId(id); tasksStore.loadTasks().subscribe(...)
+•	meetingsStore.setCaseId(id); meetingsStore.loadMeetings().subscribe(...) (if supported)
+•	timelineStore.setCaseId(id); timelineStore.loadTimeline().subscribe(...)
 
 When holding a meeting:
-•	await meetingsStore.holdMeeting(...)
-•	then refresh:
-•	await tasksStore.loadTasks()
-•	await timelineStore.loadTimeline()
+•	meetingsStore.holdMeeting(...).pipe(
+•	  switchMap(() => tasksStore.loadTasks()),
+•	  switchMap(() => timelineStore.loadTimeline())
+•	).subscribe(...)
 
 ⸻
 

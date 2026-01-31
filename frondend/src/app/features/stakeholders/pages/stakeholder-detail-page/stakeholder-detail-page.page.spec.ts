@@ -57,21 +57,23 @@ class StakeholderDetailStoreStub {
     this.stakeholderId.set(id);
   };
 
-  loadProfile = async () => {
+  loadProfile = () => {
     this.loadProfileCalls += 1;
+    return of(void 0);
   };
 
-  loadTasks = async () => {
+  loadTasks = () => {
     this.loadTasksCalls += 1;
+    return of(void 0);
   };
 
-  nextPage = async () => {};
-  prevPage = async () => {};
-  setPageSize = async () => {};
+  nextPage = () => of(void 0);
+  prevPage = () => of(void 0);
+  setPageSize = () => of(void 0);
 }
 
 class CasesStoreStub {
-  loadCases = async () => {};
+  loadCases = () => of(void 0);
 }
 
 class LabelResolverServiceStub {

@@ -66,12 +66,12 @@ export class MeetingsTabPageComponent implements OnInit {
       }
       this.meetingsStore.clearHoldResult();
     });
-    void this.locationsStore.loadLocations();
-    void this.kitasStore.loadKitas();
-    void this.stakeholdersStore.loadStakeholders();
+    this.locationsStore.loadLocations().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+    this.kitasStore.loadKitas().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+    this.stakeholdersStore.loadStakeholders().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
-  async submitSchedule(): Promise<void> {
+  submitSchedule(): void {
     this.scheduleParticipantsError = null;
     if (this.scheduleForm.invalid) {
       this.scheduleForm.markAllAsTouched();
@@ -87,17 +87,26 @@ export class MeetingsTabPageComponent implements OnInit {
       return;
     }
     const value = this.scheduleForm.getRawValue();
-    await this.meetingsStore.scheduleMeeting({
-      scheduledAt: toIsoDateTime(value.scheduledAt ?? ''),
-      locationId: value.locationId ?? '',
-      participantIds
-    });
-    this.scheduleForm.reset({ scheduledAt: '', locationId: '' });
-    this.scheduleParticipants = [''];
+    this.meetingsStore
+      .scheduleMeeting({
+        scheduledAt: toIsoDateTime(value.scheduledAt ?? ''),
+        locationId: value.locationId ?? '',
+        participantIds
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        if (this.meetingsStore.status() !== 'error') {
+          this.scheduleForm.reset({ scheduledAt: '', locationId: '' });
+          this.scheduleParticipants = [''];
+        }
+      });
   }
 
-  async handleHold(payload: HoldMeetingPayload): Promise<void> {
-    await this.meetingsStore.holdMeeting(payload.meetingId, payload.request);
+  handleHold(payload: HoldMeetingPayload): void {
+    this.meetingsStore
+      .holdMeeting(payload.meetingId, payload.request)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe();
   }
 
   clearHoldResult(): void {

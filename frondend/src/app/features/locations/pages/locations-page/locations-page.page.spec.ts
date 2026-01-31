@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { signal, computed } from '@angular/core';
+import { of } from 'rxjs';
 import { LocationsPageComponent } from './locations-page.page';
 import { LocationsStore } from '../../state/locations.store';
 import { initialListState, ListState } from '../../../../core/state/state.types';
@@ -17,10 +18,12 @@ class LocationsStoreStub {
 
   loadLocations = () => {
     this.loadLocationsCalls += 1;
+    return of(void 0);
   };
 
-  createLocation = async () => {
+  createLocation = () => {
     this.createLocationCalls += 1;
+    return of(void 0);
   };
 }
 

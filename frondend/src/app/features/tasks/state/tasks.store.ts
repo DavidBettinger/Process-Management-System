@@ -1,5 +1,6 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { firstValueFrom, Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { catchError, finalize, map, switchMap, tap } from 'rxjs/operators';
 import { TasksApi } from '../../../core/api/tasks.api';
 import {
   AssignTaskRequest,
@@ -28,83 +29,88 @@ export class TasksStore {
     this.caseId.set(caseId);
   }
 
-  async loadTasks(): Promise<void> {
+  loadTasks(): Observable<void> {
     const caseId = this.caseId();
     if (!caseId) {
       this.state.update((current) => ({ ...current, status: 'error', error: missingCaseIdError() }));
-      return;
+      return of(void 0);
     }
     this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
-    try {
-      const response = await firstValueFrom(this.tasksApi.getTasks(caseId));
-      this.state.update(() => ({
-        items: response.items,
-        status: 'success',
-        error: undefined
-      }));
-    } catch (error) {
-      this.state.update((current) => ({
-        ...current,
-        status: 'error',
-        error: toStoreError(error)
-      }));
-    }
+    return this.tasksApi.getTasks(caseId).pipe(
+      tap((response) => {
+        this.state.update(() => ({
+          items: response.items,
+          status: 'success',
+          error: undefined
+        }));
+      }),
+      map(() => void 0),
+      catchError((error) => {
+        this.state.update((current) => ({
+          ...current,
+          status: 'error',
+          error: toStoreError(error)
+        }));
+        return of(void 0);
+      })
+    );
   }
 
-  async createTask(req: CreateTaskRequest): Promise<void> {
+  createTask(req: CreateTaskRequest): Observable<void> {
     const caseId = this.caseId();
     if (!caseId) {
       this.state.update((current) => ({ ...current, status: 'error', error: missingCaseIdError() }));
-      return;
+      return of(void 0);
     }
     this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
-    try {
-      await firstValueFrom(this.tasksApi.createTask(caseId, req));
-      await this.loadTasks();
-    } catch (error) {
-      this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
-    }
+    return this.tasksApi.createTask(caseId, req).pipe(
+      switchMap(() => this.loadTasks()),
+      catchError((error) => {
+        this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+        return of(void 0);
+      })
+    );
   }
 
-  async assignTask(taskId: string, req: AssignTaskRequest): Promise<void> {
-    await this.runTaskAction(taskId, () => this.tasksApi.assignTask(taskId, req));
+  assignTask(taskId: string, req: AssignTaskRequest): Observable<void> {
+    return this.runTaskAction(taskId, () => this.tasksApi.assignTask(taskId, req));
   }
 
-  async startTask(taskId: string): Promise<void> {
-    await this.runTaskAction(taskId, () => this.tasksApi.startTask(taskId));
+  startTask(taskId: string): Observable<void> {
+    return this.runTaskAction(taskId, () => this.tasksApi.startTask(taskId));
   }
 
-  async blockTask(taskId: string, reason: string): Promise<void> {
+  blockTask(taskId: string, reason: string): Observable<void> {
     const req: BlockTaskRequest = { reason };
-    await this.runTaskAction(taskId, () => this.tasksApi.blockTask(taskId, req));
+    return this.runTaskAction(taskId, () => this.tasksApi.blockTask(taskId, req));
   }
 
-  async unblockTask(taskId: string): Promise<void> {
-    await this.runTaskAction(taskId, () => this.tasksApi.unblockTask(taskId));
+  unblockTask(taskId: string): Observable<void> {
+    return this.runTaskAction(taskId, () => this.tasksApi.unblockTask(taskId));
   }
 
-  async declineTask(taskId: string, req: DeclineTaskRequest): Promise<void> {
-    await this.runTaskAction(taskId, () => this.tasksApi.declineTask(taskId, req));
+  declineTask(taskId: string, req: DeclineTaskRequest): Observable<void> {
+    return this.runTaskAction(taskId, () => this.tasksApi.declineTask(taskId, req));
   }
 
-  async resolveTask(taskId: string, req: ResolveTaskRequest): Promise<void> {
-    await this.runTaskAction(taskId, () => this.tasksApi.resolveTask(taskId, req));
+  resolveTask(taskId: string, req: ResolveTaskRequest): Observable<void> {
+    return this.runTaskAction(taskId, () => this.tasksApi.resolveTask(taskId, req));
   }
 
   isBusy(taskId: string): boolean {
     return this.busyTaskIds().has(taskId);
   }
 
-  private async runTaskAction(taskId: string, action: () => Observable<unknown>): Promise<void> {
+  private runTaskAction(taskId: string, action: () => Observable<unknown>): Observable<void> {
     this.addBusy(taskId);
-    try {
-      await firstValueFrom(action());
-      await this.loadTasks();
-    } catch (error) {
-      this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
-    } finally {
-      this.removeBusy(taskId);
-    }
+    return action().pipe(
+      switchMap(() => this.loadTasks()),
+      catchError((error) => {
+        this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+        return of(void 0);
+      }),
+      finalize(() => this.removeBusy(taskId))
+    );
   }
 
   private addBusy(taskId: string): void {

@@ -9,6 +9,7 @@
 ## Coding Style
 - Backend: Java 21, Spring Boot, Gradle, Checkstyle/Spotless (TODO if not configured yet), prefer records for DTOs.
 - Frontend: Angular (latest LTS), TypeScript strict mode, ESLint + Prettier (TODO if not configured yet).
+- Frontend app layer (features/** and shared/**) uses RxJS end-to-end: stores return Observables, components subscribe with takeUntilDestroyed(), and async/await is not used.
 - Use consistent naming:
     - REST paths: kebab-case
     - JSON fields: camelCase

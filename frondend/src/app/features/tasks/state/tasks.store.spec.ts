@@ -18,73 +18,76 @@ describe('TasksStore', () => {
     } as TasksApi;
   };
 
-  it('marks busy task ids during actions', async () => {
+  it('marks busy task ids during actions', () => {
     const subject = new Subject<TaskStatusResponse>();
     const store = new TasksStore(createApi({
       assignTask: () => subject.asObservable()
     }));
     store.setCaseId('case-1');
-    (store as { loadTasks: () => Promise<void> }).loadTasks = async () => {};
 
-    const promise = store.assignTask('task-1', { assigneeId: 'u-1' });
+    let completed = false;
+    store.assignTask('task-1', { assigneeId: 'u-1' }).subscribe({
+      complete: () => {
+        completed = true;
+      }
+    });
     expect(store.isBusy('task-1')).toBe(true);
 
     subject.next({ id: 'task-1', state: 'ASSIGNED', assigneeId: 'u-1' });
     subject.complete();
-    await promise;
 
+    expect(completed).toBe(true);
     expect(store.isBusy('task-1')).toBe(false);
   });
 
-  it('sets error when caseId is missing for createTask', async () => {
+  it('sets error when caseId is missing for createTask', () => {
     const store = new TasksStore(createApi());
 
-    await store.createTask({ title: 'Titel', description: 'Desc', dueDate: null });
+    store.createTask({ title: 'Titel', description: 'Desc', dueDate: null }).subscribe();
 
     expect(store.status()).toBe('error');
     expect(store.error()?.code).toBe('MISSING_CASE_ID');
   });
 
-  it('sets error when caseId is missing for loadTasks', async () => {
+  it('sets error when caseId is missing for loadTasks', () => {
     const store = new TasksStore(createApi());
 
-    await store.loadTasks();
+    store.loadTasks().subscribe();
 
     expect(store.status()).toBe('error');
     expect(store.error()?.code).toBe('MISSING_CASE_ID');
   });
 
-  it('sets error on action failure', async () => {
+  it('sets error on action failure', () => {
     const store = new TasksStore(createApi({
       assignTask: () => throwError(() => new Error('Fehler'))
     }));
     store.setCaseId('case-1');
-    (store as { loadTasks: () => Promise<void> }).loadTasks = async () => {};
 
-    await store.assignTask('task-1', { assigneeId: 'u-1' });
+    store.assignTask('task-1', { assigneeId: 'u-1' }).subscribe();
 
     expect(store.status()).toBe('error');
     expect(store.error()?.message).toBe('Fehler');
   });
 
-  it('loadTasks stores items on success', async () => {
+  it('loadTasks stores items on success', () => {
     const store = new TasksStore(createApi());
     store.setCaseId('case-1');
 
-    await store.loadTasks();
+    store.loadTasks().subscribe();
 
     expect(store.status()).toBe('success');
     expect(store.tasks()).toHaveLength(1);
     expect(store.error()).toBeUndefined();
   });
 
-  it('loadTasks stores error from api', async () => {
+  it('loadTasks stores error from api', () => {
     const store = new TasksStore(createApi({
       getTasks: () => throwError(() => new Error('Fehler beim Laden'))
     }));
     store.setCaseId('case-1');
 
-    await store.loadTasks();
+    store.loadTasks().subscribe();
 
     expect(store.status()).toBe('error');
     expect(store.error()?.message).toBe('Fehler beim Laden');

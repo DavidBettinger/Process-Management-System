@@ -1,5 +1,6 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { LocationsApi } from '../../../core/api/locations.api';
 import { CreateLocationRequest, Location } from '../../../core/models/location.model';
 import { initialListState, ListState, toStoreError } from '../../../core/state/state.types';
@@ -16,27 +17,32 @@ export class LocationsStore {
 
   constructor(private readonly locationsApi: LocationsApi) {}
 
-  async loadLocations(): Promise<void> {
+  loadLocations(): Observable<void> {
     this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
-    try {
-      const response = await firstValueFrom(this.locationsApi.listLocations());
-      this.state.update((current) => ({
-        ...current,
-        status: 'success',
-        items: response.items
-      }));
-    } catch (error) {
-      this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
-    }
+    return this.locationsApi.listLocations().pipe(
+      tap((response) => {
+        this.state.update((current) => ({
+          ...current,
+          status: 'success',
+          items: response.items
+        }));
+      }),
+      map(() => void 0),
+      catchError((error) => {
+        this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+        return of(void 0);
+      })
+    );
   }
 
-  async createLocation(request: CreateLocationRequest): Promise<void> {
+  createLocation(request: CreateLocationRequest): Observable<void> {
     this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
-    try {
-      await firstValueFrom(this.locationsApi.createLocation(request));
-      await this.loadLocations();
-    } catch (error) {
-      this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
-    }
+    return this.locationsApi.createLocation(request).pipe(
+      switchMap(() => this.loadLocations()),
+      catchError((error) => {
+        this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+        return of(void 0);
+      })
+    );
   }
 }

@@ -41,16 +41,16 @@ export class TimelineTabPageComponent implements OnInit {
       if (caseId) {
         this.timelineStore.setCaseId(caseId);
         this.tasksStore.setCaseId(caseId);
-        void this.tasksStore.loadTasks();
+        this.tasksStore.loadTasks().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
       }
-      void this.timelineStore.loadTimeline();
+      this.timelineStore.loadTimeline().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
     });
-    void this.stakeholdersStore.loadStakeholders();
-    void this.locationsStore.loadLocations();
+    this.stakeholdersStore.loadStakeholders().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+    this.locationsStore.loadLocations().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
   retry(): void {
-    void this.timelineStore.loadTimeline();
+    this.timelineStore.loadTimeline().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 }
 

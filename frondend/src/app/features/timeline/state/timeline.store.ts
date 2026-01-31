@@ -1,5 +1,6 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
 import { AnalyticsApi } from '../../../core/api/analytics.api';
 import { CaseTimeline } from '../../../core/models/timeline.model';
 import { EntityState, initialEntityState, StoreError, toStoreError } from '../../../core/state/state.types';
@@ -21,19 +22,21 @@ export class TimelineStore {
     this.caseId.set(caseId);
   }
 
-  async loadTimeline(): Promise<void> {
+  loadTimeline(): Observable<void> {
     const caseId = this.caseId();
     if (!caseId) {
       this.state.set({ data: null, status: 'error', error: missingCaseIdError() });
-      return;
+      return of(void 0);
     }
     this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
-    try {
-      const data = await firstValueFrom(this.analyticsApi.getTimeline(caseId));
-      this.state.set({ data, status: 'success', error: undefined });
-    } catch (error) {
-      this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
-    }
+    return this.analyticsApi.getTimeline(caseId).pipe(
+      tap((data) => this.state.set({ data, status: 'success', error: undefined })),
+      map(() => void 0),
+      catchError((error) => {
+        this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+        return of(void 0);
+      })
+    );
   }
 }
 

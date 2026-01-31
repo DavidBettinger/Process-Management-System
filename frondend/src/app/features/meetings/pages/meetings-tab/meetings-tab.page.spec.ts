@@ -29,9 +29,9 @@ class MeetingsStoreStub {
   clearHoldResult = () => {
     this.clearHoldResultCalls += 1;
   };
-  loadMeetings = async () => {};
-  scheduleMeeting = async () => {};
-  holdMeeting = async () => {};
+  loadMeetings = () => of(void 0);
+  scheduleMeeting = () => of(void 0);
+  holdMeeting = () => of(void 0);
 }
 
 class LocationsStoreStub {
@@ -43,6 +43,7 @@ class LocationsStoreStub {
 
   loadLocations = () => {
     this.loadCalls += 1;
+    return of(void 0);
   };
 }
 
@@ -52,6 +53,7 @@ class KitasStoreStub {
 
   loadKitas = () => {
     this.loadCalls += 1;
+    return of(void 0);
   };
 }
 
@@ -68,6 +70,7 @@ class StakeholdersStoreStub {
 
   loadStakeholders = () => {
     this.loadCalls += 1;
+    return of(void 0);
   };
 }
 

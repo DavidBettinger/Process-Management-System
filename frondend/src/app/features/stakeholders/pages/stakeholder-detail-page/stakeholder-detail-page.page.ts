@@ -43,10 +43,10 @@ export class StakeholderDetailPageComponent implements OnInit {
         return;
       }
       this.store.setStakeholderId(stakeholderId);
-      void this.store.loadProfile();
-      void this.store.loadTasks();
+      this.store.loadProfile().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+      this.store.loadTasks().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
     });
-    void this.casesStore.loadCases();
+    this.casesStore.loadCases().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
   headerTitle(): string {
@@ -101,19 +101,19 @@ export class StakeholderDetailPageComponent implements OnInit {
     return dueDate && dueDate.length > 0 ? dueDate : 'Kein Termin';
   }
 
-  async prevPage(): Promise<void> {
-    await this.store.prevPage();
+  prevPage(): void {
+    this.store.prevPage().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
-  async nextPage(): Promise<void> {
-    await this.store.nextPage();
+  nextPage(): void {
+    this.store.nextPage().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
-  async handlePageSizeChange(event: Event): Promise<void> {
+  handlePageSizeChange(event: Event): void {
     const value = Number((event.target as HTMLSelectElement).value);
     if (Number.isNaN(value)) {
       return;
     }
-    await this.store.setPageSize(value);
+    this.store.setPageSize(value).pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 }

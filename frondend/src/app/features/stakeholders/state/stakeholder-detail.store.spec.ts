@@ -33,7 +33,7 @@ describe('StakeholderDetailStore', () => {
     } as StakeholdersApi;
   };
 
-  it('loads tasks and updates pagination fields', async () => {
+  it('loads tasks and updates pagination fields', () => {
     const store = new StakeholderDetailStore(createApi({
       getStakeholderTasks: (_id, page = 0, size = 10) => of({
         stakeholderId: 's-1',
@@ -46,7 +46,7 @@ describe('StakeholderDetailStore', () => {
     }));
 
     store.setStakeholderId('s-1');
-    await store.loadTasks(1, 10, 'dueDate,asc');
+    store.loadTasks(1, 10, 'dueDate,asc').subscribe();
 
     expect(store.tasksStatus()).toBe('success');
     expect(store.page()).toBe(1);
@@ -55,19 +55,19 @@ describe('StakeholderDetailStore', () => {
     expect(store.totalPages()).toBe(5);
   });
 
-  it('sets error when loadTasks fails', async () => {
+  it('sets error when loadTasks fails', () => {
     const store = new StakeholderDetailStore(createApi({
       getStakeholderTasks: () => throwError(() => new Error('Fehler'))
     }));
 
     store.setStakeholderId('s-1');
-    await store.loadTasks();
+    store.loadTasks().subscribe();
 
     expect(store.tasksStatus()).toBe('error');
     expect(store.tasksError()?.message).toBe('Fehler');
   });
 
-  it('nextPage increments and reloads when available', async () => {
+  it('nextPage increments and reloads when available', () => {
     let lastPage = 0;
     const store = new StakeholderDetailStore(createApi({
       getStakeholderTasks: (_id, page = 0, size = 10) => {
@@ -84,8 +84,8 @@ describe('StakeholderDetailStore', () => {
     }));
 
     store.setStakeholderId('s-1');
-    await store.loadTasks(0, 10);
-    await store.nextPage();
+    store.loadTasks(0, 10).subscribe();
+    store.nextPage().subscribe();
 
     expect(lastPage).toBe(1);
     expect(store.page()).toBe(1);

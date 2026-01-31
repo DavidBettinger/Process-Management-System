@@ -27,6 +27,7 @@ class TimelineStoreStub {
 
   loadTimeline = () => {
     this.loadTimelineCalls += 1;
+    return of(void 0);
   };
 }
 
@@ -40,6 +41,7 @@ class TasksStoreStub {
 
   loadTasks = () => {
     this.loadTasksCalls += 1;
+    return of(void 0);
   };
 }
 
@@ -48,6 +50,7 @@ class StakeholdersStoreStub {
 
   loadStakeholders = () => {
     this.loadStakeholdersCalls += 1;
+    return of(void 0);
   };
 }
 
@@ -56,6 +59,7 @@ class LocationsStoreStub {
 
   loadLocations = () => {
     this.loadLocationsCalls += 1;
+    return of(void 0);
   };
 }
 

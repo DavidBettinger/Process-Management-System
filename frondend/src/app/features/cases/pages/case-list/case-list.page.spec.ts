@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { signal, computed } from '@angular/core';
+import { of } from 'rxjs';
 import { CaseListPageComponent } from './case-list.page';
 import { CasesStore } from '../../state/cases.store';
 import { initialListState, ListState } from '../../../../core/state/state.types';
@@ -23,9 +24,11 @@ class CasesStoreStub {
   clearCreatedIdCalls = 0;
   loadCases = () => {
     this.loadCasesCalls += 1;
+    return of(void 0);
   };
-  createCase = async () => {
+  createCase = () => {
     this.createCaseCalls += 1;
+    return of(void 0);
   };
   clearCreatedId = () => {
     this.clearCreatedIdCalls += 1;
@@ -43,6 +46,7 @@ class KitasStoreStub {
 
   loadKitas = () => {
     this.loadKitasCalls += 1;
+    return of(void 0);
   };
 }
 
@@ -56,6 +60,7 @@ class LocationsStoreStub {
 
   loadLocations = () => {
     this.loadLocationsCalls += 1;
+    return of(void 0);
   };
 }
 

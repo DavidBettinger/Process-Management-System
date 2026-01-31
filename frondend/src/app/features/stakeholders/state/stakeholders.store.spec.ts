@@ -26,27 +26,27 @@ describe('StakeholdersStore', () => {
     } as StakeholdersApi;
   };
 
-  it('loads stakeholders into state', async () => {
+  it('loads stakeholders into state', () => {
     const store = new StakeholdersStore(createApi());
 
-    await store.loadStakeholders();
+    store.loadStakeholders().subscribe();
 
     expect(store.status()).toBe('success');
     expect(store.stakeholders()).toHaveLength(1);
   });
 
-  it('stores errors when load fails', async () => {
+  it('stores errors when load fails', () => {
     const store = new StakeholdersStore(createApi({
       getStakeholders: () => throwError(() => new Error('Fehler'))
     }));
 
-    await store.loadStakeholders();
+    store.loadStakeholders().subscribe();
 
     expect(store.status()).toBe('error');
     expect(store.error()?.message).toBe('Fehler');
   });
 
-  it('creates a stakeholder and refreshes list', async () => {
+  it('creates a stakeholder and refreshes list', () => {
     const store = new StakeholdersStore(createApi());
     const request: CreateStakeholderRequest = {
       firstName: 'Maria',
@@ -54,22 +54,22 @@ describe('StakeholdersStore', () => {
       role: 'CONSULTANT'
     };
 
-    await store.createStakeholder(request);
+    store.createStakeholder(request).subscribe();
 
     expect(store.status()).toBe('success');
     expect(store.stakeholders()).toHaveLength(1);
   });
 
-  it('stores errors when create fails', async () => {
+  it('stores errors when create fails', () => {
     const store = new StakeholdersStore(createApi({
       createStakeholder: () => throwError(() => new Error('Fehler beim Speichern'))
     }));
 
-    await store.createStakeholder({
+    store.createStakeholder({
       firstName: 'Maria',
       lastName: 'Becker',
       role: 'CONSULTANT'
-    });
+    }).subscribe();
 
     expect(store.status()).toBe('error');
     expect(store.error()?.message).toBe('Fehler beim Speichern');

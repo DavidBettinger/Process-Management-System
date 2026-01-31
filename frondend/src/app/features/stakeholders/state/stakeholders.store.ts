@@ -1,5 +1,6 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { StakeholdersApi } from '../../../core/api/stakeholders.api';
 import {
   CreateStakeholderRequest,
@@ -20,29 +21,32 @@ export class StakeholdersStore {
 
   constructor(private readonly stakeholdersApi: StakeholdersApi) {}
 
-  async loadStakeholders(): Promise<void> {
+  loadStakeholders(): Observable<void> {
     this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
-    try {
-      const response: StakeholdersListResponse = await firstValueFrom(
-        this.stakeholdersApi.getStakeholders(0, 50, 'lastName,asc')
-      );
-      this.state.update((current) => ({
-        ...current,
-        status: 'success',
-        items: response.items
-      }));
-    } catch (error) {
-      this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
-    }
+    return this.stakeholdersApi.getStakeholders(0, 50, 'lastName,asc').pipe(
+      tap((response: StakeholdersListResponse) => {
+        this.state.update((current) => ({
+          ...current,
+          status: 'success',
+          items: response.items
+        }));
+      }),
+      map(() => void 0),
+      catchError((error) => {
+        this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+        return of(void 0);
+      })
+    );
   }
 
-  async createStakeholder(request: CreateStakeholderRequest): Promise<void> {
+  createStakeholder(request: CreateStakeholderRequest): Observable<void> {
     this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
-    try {
-      await firstValueFrom(this.stakeholdersApi.createStakeholder(request));
-      await this.loadStakeholders();
-    } catch (error) {
-      this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
-    }
+    return this.stakeholdersApi.createStakeholder(request).pipe(
+      switchMap(() => this.loadStakeholders()),
+      catchError((error) => {
+        this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+        return of(void 0);
+      })
+    );
   }
 }

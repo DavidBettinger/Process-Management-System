@@ -28,27 +28,27 @@ describe('LocationsStore', () => {
     } as LocationsApi;
   };
 
-  it('loads locations into state', async () => {
+  it('loads locations into state', () => {
     const store = new LocationsStore(createApi());
 
-    await store.loadLocations();
+    store.loadLocations().subscribe();
 
     expect(store.status()).toBe('success');
     expect(store.locations()).toHaveLength(1);
   });
 
-  it('stores errors when load fails', async () => {
+  it('stores errors when load fails', () => {
     const store = new LocationsStore(createApi({
       listLocations: () => throwError(() => new Error('Fehler'))
     }));
 
-    await store.loadLocations();
+    store.loadLocations().subscribe();
 
     expect(store.status()).toBe('error');
     expect(store.error()?.message).toBe('Fehler');
   });
 
-  it('creates a location and refreshes list', async () => {
+  it('creates a location and refreshes list', () => {
     const store = new LocationsStore(createApi());
     const request: CreateLocationRequest = {
       label: 'Kita Sonnenblume',
@@ -61,18 +61,18 @@ describe('LocationsStore', () => {
       }
     };
 
-    await store.createLocation(request);
+    store.createLocation(request).subscribe();
 
     expect(store.status()).toBe('success');
     expect(store.locations()).toHaveLength(1);
   });
 
-  it('stores errors when create fails', async () => {
+  it('stores errors when create fails', () => {
     const store = new LocationsStore(createApi({
       createLocation: () => throwError(() => new Error('Fehler beim Speichern'))
     }));
 
-    await store.createLocation({
+    store.createLocation({
       label: 'Kita',
       address: {
         street: 'Musterstrasse',
@@ -81,7 +81,7 @@ describe('LocationsStore', () => {
         city: 'Berlin',
         country: 'DE'
       }
-    });
+    }).subscribe();
 
     expect(store.status()).toBe('error');
     expect(store.error()?.message).toBe('Fehler beim Speichern');

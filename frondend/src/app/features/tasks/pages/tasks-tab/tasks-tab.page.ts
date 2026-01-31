@@ -6,6 +6,8 @@ import { TasksStore } from '../../state/tasks.store';
 import { TaskListComponent } from '../../components/task-list/task-list.component';
 import { AssignTaskRequest, DeclineTaskRequest, ResolveTaskRequest } from '../../../../core/models/task.model';
 import { StakeholdersStore } from '../../../stakeholders/state/stakeholders.store';
+import { Observable } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-tasks-tab-page',
@@ -40,47 +42,53 @@ export class TasksTabPageComponent implements OnInit {
       if (caseId) {
         this.tasksStore.setCaseId(caseId);
       }
-      void this.tasksStore.loadTasks();
+      this.tasksStore.loadTasks().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
     });
-    void this.stakeholdersStore.loadStakeholders();
+    this.stakeholdersStore.loadStakeholders().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
-  async handleAssign(payload: { taskId: string; assigneeId: string }): Promise<void> {
+  handleAssign(payload: { taskId: string; assigneeId: string }): void {
     const req: AssignTaskRequest = { assigneeId: payload.assigneeId };
-    await this.runAction(() => this.tasksStore.assignTask(payload.taskId, req));
+    this.runAction(this.tasksStore.assignTask(payload.taskId, req));
   }
 
-  async handleStart(taskId: string): Promise<void> {
-    await this.runAction(() => this.tasksStore.startTask(taskId));
+  handleStart(taskId: string): void {
+    this.runAction(this.tasksStore.startTask(taskId));
   }
 
-  async handleBlock(payload: { taskId: string; reason: string }): Promise<void> {
-    await this.runAction(() => this.tasksStore.blockTask(payload.taskId, payload.reason));
+  handleBlock(payload: { taskId: string; reason: string }): void {
+    this.runAction(this.tasksStore.blockTask(payload.taskId, payload.reason));
   }
 
-  async handleUnblock(taskId: string): Promise<void> {
-    await this.runAction(() => this.tasksStore.unblockTask(taskId));
+  handleUnblock(taskId: string): void {
+    this.runAction(this.tasksStore.unblockTask(taskId));
   }
 
-  async handleDecline(payload: { taskId: string; reason: string; suggestedAssigneeId?: string | null }): Promise<void> {
+  handleDecline(payload: { taskId: string; reason: string; suggestedAssigneeId?: string | null }): void {
     const req: DeclineTaskRequest = {
       reason: payload.reason,
       suggestedAssigneeId: payload.suggestedAssigneeId ?? null
     };
-    await this.runAction(() => this.tasksStore.declineTask(payload.taskId, req));
+    this.runAction(this.tasksStore.declineTask(payload.taskId, req));
   }
 
-  async handleResolve(payload: { taskId: string; kind: ResolveTaskRequest['kind']; reason: string }): Promise<void> {
+  handleResolve(payload: { taskId: string; kind: ResolveTaskRequest['kind']; reason: string }): void {
     const req: ResolveTaskRequest = { kind: payload.kind, reason: payload.reason };
-    await this.runAction(() => this.tasksStore.resolveTask(payload.taskId, req));
+    this.runAction(this.tasksStore.resolveTask(payload.taskId, req));
   }
 
-  private async runAction(action: () => Promise<void>): Promise<void> {
-    await action();
-    if (this.tasksStore.status() === 'error') {
-      const message = this.tasksStore.error()?.message ?? 'Aktion konnte nicht ausgefuehrt werden.';
-      this.showToast(message);
-    }
+  private runAction(action$: Observable<void>): void {
+    action$
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => {
+          if (this.tasksStore.status() === 'error') {
+            const message = this.tasksStore.error()?.message ?? 'Aktion konnte nicht ausgefuehrt werden.';
+            this.showToast(message);
+          }
+        })
+      )
+      .subscribe();
   }
 
   private showToast(message: string): void {

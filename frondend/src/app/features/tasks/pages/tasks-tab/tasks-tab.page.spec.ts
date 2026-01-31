@@ -26,17 +26,20 @@ class TasksStoreStub {
   };
   loadTasks = () => {
     this.loadCalls += 1;
+    return of(void 0);
   };
-  assignTask = async (taskId: string, req: { assigneeId: string }) => {
+  assignTask = (taskId: string, req: { assigneeId: string }) => {
     this.assignCalls.push({ taskId, assigneeId: req.assigneeId });
+    return of(void 0);
   };
-  startTask = async (taskId: string) => {
+  startTask = (taskId: string) => {
     this.startCalls.push(taskId);
+    return of(void 0);
   };
-  blockTask = async () => {};
-  unblockTask = async () => {};
-  declineTask = async () => {};
-  resolveTask = async () => {};
+  blockTask = () => of(void 0);
+  unblockTask = () => of(void 0);
+  declineTask = () => of(void 0);
+  resolveTask = () => of(void 0);
 }
 
 class StakeholdersStoreStub {
@@ -48,6 +51,7 @@ class StakeholdersStoreStub {
 
   loadStakeholders = () => {
     this.loadCalls += 1;
+    return of(void 0);
   };
 }
 
@@ -99,7 +103,7 @@ describe('TasksTabPageComponent', () => {
     expect(compiled.textContent).toContain('Fehler');
   });
 
-  it('calls store when assigning task', async () => {
+  it('calls store when assigning task', () => {
     const store = new TasksStoreStub();
     const stakeholdersStore = new StakeholdersStoreStub();
 
@@ -114,12 +118,12 @@ describe('TasksTabPageComponent', () => {
 
     const fixture = TestBed.createComponent(TasksTabPageComponent);
     const component = fixture.componentInstance;
-    await component.handleAssign({ taskId: 'task-1', assigneeId: 's-1' });
+    component.handleAssign({ taskId: 'task-1', assigneeId: 's-1' });
 
     expect(store.assignCalls).toEqual([{ taskId: 'task-1', assigneeId: 's-1' }]);
   });
 
-  it('calls store when starting task', async () => {
+  it('calls store when starting task', () => {
     const store = new TasksStoreStub();
     const stakeholdersStore = new StakeholdersStoreStub();
 
@@ -134,7 +138,7 @@ describe('TasksTabPageComponent', () => {
 
     const fixture = TestBed.createComponent(TasksTabPageComponent);
     const component = fixture.componentInstance;
-    await component.handleStart('task-9');
+    component.handleStart('task-9');
 
     expect(store.startCalls).toEqual(['task-9']);
   });

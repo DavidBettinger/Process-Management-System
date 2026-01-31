@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { computed, signal } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { of } from 'rxjs';
 import { StakeholdersPageComponent } from './stakeholders-page.page';
 import { StakeholdersStore } from '../../state/stakeholders.store';
 import { initialListState, ListState } from '../../../../core/state/state.types';
@@ -18,10 +19,12 @@ class StakeholdersStoreStub {
 
   loadStakeholders = () => {
     this.loadStakeholdersCalls += 1;
+    return of(void 0);
   };
 
-  createStakeholder = async () => {
+  createStakeholder = () => {
     this.createStakeholderCalls += 1;
+    return of(void 0);
   };
 }
 
@@ -91,7 +94,7 @@ describe('StakeholdersPageComponent', () => {
     expect(compiled.textContent).toContain('Beratung');
   });
 
-  it('calls store when creating stakeholder', async () => {
+  it('calls store when creating stakeholder', () => {
     const store = new StakeholdersStoreStub();
 
     TestBed.configureTestingModule({
@@ -102,7 +105,7 @@ describe('StakeholdersPageComponent', () => {
     const fixture = TestBed.createComponent(StakeholdersPageComponent);
     const component = fixture.componentInstance;
 
-    await component.handleCreate({
+    component.handleCreate({
       firstName: 'Maria',
       lastName: 'Becker',
       role: 'CONSULTANT'

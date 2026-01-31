@@ -32,53 +32,53 @@ describe('CaseDetailStore', () => {
     } as CasesApi;
   };
 
-  it('loads case details', async () => {
+  it('loads case details', () => {
     const store = new CaseDetailStore(createApi());
 
     store.setCaseId('case-1');
-    await store.loadCase();
+    store.loadCase().subscribe();
 
     expect(store.caseData()?.id).toBe('case-1');
     expect(store.status()).toBe('success');
   });
 
-  it('adds stakeholder and updates state', async () => {
+  it('adds stakeholder and updates state', () => {
     const store = new CaseDetailStore(createApi());
 
     store.setCaseId('case-1');
-    await store.loadCase();
-    await store.addStakeholder({ userId: 'u-1', role: 'CONSULTANT' });
+    store.loadCase().subscribe();
+    store.addStakeholder({ userId: 'u-1', role: 'CONSULTANT' }).subscribe();
 
     expect(store.caseData()?.stakeholders.length).toBe(1);
     expect(store.caseData()?.stakeholders[0].userId).toBe('u-1');
   });
 
-  it('activates case and updates status', async () => {
+  it('activates case and updates status', () => {
     const store = new CaseDetailStore(createApi());
 
     store.setCaseId('case-1');
-    await store.loadCase();
-    await store.activateCase();
+    store.loadCase().subscribe();
+    store.activateCase().subscribe();
 
     expect(store.caseData()?.status).toBe('ACTIVE');
   });
 
-  it('stores errors', async () => {
+  it('stores errors', () => {
     const store = new CaseDetailStore(createApi({
       getCase: () => throwError(() => new Error('Fehler'))
     }));
 
     store.setCaseId('case-1');
-    await store.loadCase();
+    store.loadCase().subscribe();
 
     expect(store.status()).toBe('error');
     expect(store.error()?.message).toBe('Fehler');
   });
 
-  it('sets error when caseId is missing', async () => {
+  it('sets error when caseId is missing', () => {
     const store = new CaseDetailStore(createApi());
 
-    await store.loadCase();
+    store.loadCase().subscribe();
 
     expect(store.status()).toBe('error');
     expect(store.error()?.code).toBe('MISSING_CASE_ID');

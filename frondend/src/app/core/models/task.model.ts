@@ -29,6 +29,24 @@ export interface TasksResponse {
   items: Task[];
 }
 
+export interface StakeholderTaskSummary {
+  id: string;
+  caseId: string;
+  title: string;
+  state: TaskState;
+  assigneeId?: string | null;
+  dueDate?: string | null;
+}
+
+export interface StakeholderTasksResponse {
+  stakeholderId: string;
+  items: StakeholderTaskSummary[];
+  page: number;
+  size: number;
+  totalItems: number;
+  totalPages: number;
+}
+
 export interface AssignTaskRequest {
   assigneeId: string;
 }

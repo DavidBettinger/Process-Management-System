@@ -1,0 +1,89 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Beteiligte</p>
+      <h1>{{ headerTitle() }}</h1>
+      <p class="subtitle">Aufgaben und Rollen in Prozessen auf einen Blick.</p>
+    </div>
+    <div class="profile-card" *ngIf="profileStatus() === 'success'">
+      <p class="profile-label">Rolle</p>
+      <p class="profile-value">{{ roleLabel(profile()?.role) }}</p>
+      <p class="profile-meta">ID {{ profile()?.id }}</p>
+    </div>
+  </header>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <h2>Zugeordnete Aufgaben</h2>
+        <p>Diese Aufgaben sind der Person in Prozessen zugewiesen.</p>
+      </div>
+      <div class="panel-meta" *ngIf="tasksStatus() === 'success'">
+        {{ totalItems() }} Aufgaben
+      </div>
+    </div>
+
+    <div class="state" *ngIf="profileStatus() === 'error'">
+      <p class="state-title">Profil konnte nicht geladen werden</p>
+      <p class="state-text">{{ profileError()?.message ?? 'Unbekannter Fehler' }}</p>
+    </div>
+
+    <div class="state" *ngIf="tasksStatus() === 'loading'">
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+    </div>
+
+    <div class="state" *ngIf="tasksStatus() === 'error'">
+      <p class="state-title">Aufgaben konnten nicht geladen werden</p>
+      <p class="state-text">{{ tasksError()?.message ?? 'Unbekannter Fehler' }}</p>
+      <button class="ghost-button" type="button" (click)="store.loadTasks()">Erneut versuchen</button>
+    </div>
+
+    <div class="state" *ngIf="tasksStatus() === 'success' && tasks().length === 0">
+      <p class="state-title">Keine Aufgaben zugeordnet</p>
+      <p class="state-text">Aktuell sind dieser Person keine Aufgaben in Prozessen zugewiesen.</p>
+    </div>
+
+    <div class="tasks-table" *ngIf="tasksStatus() === 'success' && tasks().length > 0">
+      <div class="tasks-row header">
+        <span>Titel</span>
+        <span>Status</span>
+        <span>Faellig</span>
+        <span>Prozess-ID</span>
+      </div>
+      <div class="tasks-row" *ngFor="let task of tasks()">
+        <span class="task-title">{{ task.title }}</span>
+        <span>{{ stateLabel(task.state) }}</span>
+        <span>{{ dueDateLabel(task.dueDate) }}</span>
+        <span class="mono">{{ task.caseId }}</span>
+      </div>
+    </div>
+
+    <div class="pagination" *ngIf="tasksStatus() === 'success' && tasks().length > 0">
+      <button
+        class="ghost-button pagination-button"
+        type="button"
+        [disabled]="!hasPrev()"
+        (click)="prevPage()"
+      >
+        Zurueck
+      </button>
+      <span class="page-indicator">Seite {{ page() + 1 }} von {{ totalPages() }}</span>
+      <button
+        class="ghost-button pagination-button"
+        type="button"
+        [disabled]="!hasNext()"
+        (click)="nextPage()"
+      >
+        Weiter
+      </button>
+      <label class="page-size">
+        <span>Pro Seite</span>
+        <select [value]="size()" (change)="handlePageSizeChange($event)">
+          <option *ngFor="let option of pageSizes" [value]="option">{{ option }}</option>
+        </select>
+      </label>
+    </div>
+  </div>
+</section>

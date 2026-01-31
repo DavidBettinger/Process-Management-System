@@ -13,10 +13,14 @@ describe('StakeholdersStore', () => {
           lastName: 'Becker',
           role: 'CONSULTANT'
         }
-      ]
+      ],
+      page: 0,
+      size: 20,
+      totalItems: 1,
+      totalPages: 1
     };
     return {
-      listStakeholders: () => of(response),
+      getStakeholders: () => of(response),
       createStakeholder: () => of({ id: 's-1' }),
       ...overrides
     } as StakeholdersApi;
@@ -33,7 +37,7 @@ describe('StakeholdersStore', () => {
 
   it('stores errors when load fails', async () => {
     const store = new StakeholdersStore(createApi({
-      listStakeholders: () => throwError(() => new Error('Fehler'))
+      getStakeholders: () => throwError(() => new Error('Fehler'))
     }));
 
     await store.loadStakeholders();

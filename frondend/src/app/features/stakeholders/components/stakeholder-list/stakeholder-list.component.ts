@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { Stakeholder, StakeholderRole } from '../../../../core/models/stakeholder.model';
 
 @Component({
   selector: 'app-stakeholder-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './stakeholder-list.component.html',
   styleUrl: './stakeholder-list.component.css'
 })

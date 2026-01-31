@@ -1,3 +1,5 @@
+import { PageResponse } from './paging.model';
+
 export type RoleInCase = 'CONSULTANT' | 'DIRECTOR' | 'TEAM_MEMBER';
 export type StakeholderRole = 'CONSULTANT' | 'DIRECTOR' | 'TEAM_MEMBER' | 'SPONSOR' | 'EXTERNAL';
 
@@ -25,9 +27,7 @@ export interface CreateStakeholderResponse {
   id: string;
 }
 
-export interface StakeholdersListResponse {
-  items: Stakeholder[];
-}
+export interface StakeholdersListResponse extends PageResponse<Stakeholder> {}
 
 export interface StakeholdersResponse {
   caseId: string;

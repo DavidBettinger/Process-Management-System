@@ -1,10 +1,13 @@
 <ul class="stakeholder-list">
   <li class="stakeholder-card" *ngFor="let stakeholder of stakeholders">
-    <div class="stakeholder-header">
-      <div>
-        <h3>{{ stakeholder.firstName }} {{ stakeholder.lastName }}</h3>
-        <p class="meta">Rolle: {{ roleLabel(stakeholder.role) }}</p>
+    <a class="stakeholder-link" [routerLink]="['/stakeholders', stakeholder.id]">
+      <div class="stakeholder-header">
+        <div>
+          <h3>{{ stakeholder.firstName }} {{ stakeholder.lastName }}</h3>
+          <p class="meta">Rolle: {{ roleLabel(stakeholder.role) }}</p>
+        </div>
+        <span class="detail-hint">Details</span>
       </div>
-    </div>
+    </a>
   </li>
 </ul>

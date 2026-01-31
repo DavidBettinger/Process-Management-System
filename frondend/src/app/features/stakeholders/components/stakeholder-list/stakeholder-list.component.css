@@ -9,9 +9,27 @@
 
 .stakeholder-card {
   border-radius: 18px;
-  padding: 1.1rem 1.2rem;
   border: 1px solid rgba(16, 18, 24, 0.08);
   background: rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+}
+
+.stakeholder-link {
+  display: flex;
+  padding: 1.1rem 1.2rem;
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stakeholder-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(16, 18, 24, 0.12);
+}
+
+.stakeholder-link:focus-visible {
+  outline: 2px solid rgba(16, 18, 24, 0.6);
+  outline-offset: 2px;
 }
 
 .stakeholder-header {
@@ -30,4 +48,12 @@
   font-size: 0.75rem;
   color: rgba(16, 18, 24, 0.55);
   margin: 0.35rem 0 0;
+}
+
+.detail-hint {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(16, 18, 24, 0.4);
 }

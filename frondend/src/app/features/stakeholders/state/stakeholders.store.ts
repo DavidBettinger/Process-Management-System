@@ -23,7 +23,9 @@ export class StakeholdersStore {
   async loadStakeholders(): Promise<void> {
     this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
     try {
-      const response: StakeholdersListResponse = await firstValueFrom(this.stakeholdersApi.listStakeholders());
+      const response: StakeholdersListResponse = await firstValueFrom(
+        this.stakeholdersApi.getStakeholders(0, 50, 'lastName,asc')
+      );
       this.state.update((current) => ({
         ...current,
         status: 'success',

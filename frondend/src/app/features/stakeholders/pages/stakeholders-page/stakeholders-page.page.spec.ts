@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { computed, signal } from '@angular/core';
+import { provideRouter } from '@angular/router';
 import { StakeholdersPageComponent } from './stakeholders-page.page';
 import { StakeholdersStore } from '../../state/stakeholders.store';
 import { initialListState, ListState } from '../../../../core/state/state.types';
@@ -31,7 +32,7 @@ describe('StakeholdersPageComponent', () => {
 
     TestBed.configureTestingModule({
       imports: [StakeholdersPageComponent],
-      providers: [{ provide: StakeholdersStore, useValue: store }]
+      providers: [{ provide: StakeholdersStore, useValue: store }, provideRouter([])]
     });
 
     const fixture = TestBed.createComponent(StakeholdersPageComponent);
@@ -52,7 +53,7 @@ describe('StakeholdersPageComponent', () => {
 
     TestBed.configureTestingModule({
       imports: [StakeholdersPageComponent],
-      providers: [{ provide: StakeholdersStore, useValue: store }]
+      providers: [{ provide: StakeholdersStore, useValue: store }, provideRouter([])]
     });
 
     const fixture = TestBed.createComponent(StakeholdersPageComponent);
@@ -79,7 +80,7 @@ describe('StakeholdersPageComponent', () => {
 
     TestBed.configureTestingModule({
       imports: [StakeholdersPageComponent],
-      providers: [{ provide: StakeholdersStore, useValue: store }]
+      providers: [{ provide: StakeholdersStore, useValue: store }, provideRouter([])]
     });
 
     const fixture = TestBed.createComponent(StakeholdersPageComponent);
@@ -95,7 +96,7 @@ describe('StakeholdersPageComponent', () => {
 
     TestBed.configureTestingModule({
       imports: [StakeholdersPageComponent],
-      providers: [{ provide: StakeholdersStore, useValue: store }]
+      providers: [{ provide: StakeholdersStore, useValue: store }, provideRouter([])]
     });
 
     const fixture = TestBed.createComponent(StakeholdersPageComponent);

@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LocationsStore } from '../../state/locations.store';
 import { CreateLocationRequest } from '../../../../core/models/location.model';
 import { LocationFormComponent } from '../../components/location-form/location-form.component';
 import { LocationListComponent } from '../../components/location-list/location-list.component';
+import { ToastService } from '../../../../shared/ui/toast.service';
 
 @Component({
   selector: 'app-locations-page',
@@ -16,16 +17,13 @@ import { LocationListComponent } from '../../components/location-list/location-l
 export class LocationsPageComponent implements OnInit {
   readonly locationsStore = inject(LocationsStore);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly toastService = inject(ToastService);
 
   readonly locations = this.locationsStore.locations;
   readonly status = this.locationsStore.status;
   readonly error = this.locationsStore.error;
   readonly isLoading = this.locationsStore.isLoading;
   readonly isEmpty = this.locationsStore.isEmpty;
-
-  readonly toastMessage = signal<string | null>(null);
-
-  private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   ngOnInit(): void {
     this.locationsStore.loadLocations().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
@@ -37,18 +35,13 @@ export class LocationsPageComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         if (this.locationsStore.status() === 'success') {
-          this.showToast('Standort wurde gespeichert.');
+          this.toastService.success('Standort wurde gespeichert.');
+          return;
+        }
+        if (this.locationsStore.status() === 'error') {
+          const message = this.locationsStore.error()?.message ?? 'Standort konnte nicht gespeichert werden.';
+          this.toastService.error(message);
         }
       });
-  }
-
-  private showToast(message: string): void {
-    if (this.toastTimer) {
-      window.clearTimeout(this.toastTimer);
-    }
-    this.toastMessage.set(message);
-    this.toastTimer = window.setTimeout(() => {
-      this.toastMessage.set(null);
-    }, 3000);
   }
 }

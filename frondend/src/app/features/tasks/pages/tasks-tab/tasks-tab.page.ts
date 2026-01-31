@@ -1,13 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TasksStore } from '../../state/tasks.store';
 import { TaskListComponent } from '../../components/task-list/task-list.component';
 import { AssignTaskRequest, DeclineTaskRequest, ResolveTaskRequest } from '../../../../core/models/task.model';
 import { StakeholdersStore } from '../../../stakeholders/state/stakeholders.store';
-import { Observable } from 'rxjs';
-import { finalize } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { finalize, switchMap } from 'rxjs/operators';
+import { ToastService } from '../../../../shared/ui/toast.service';
+import { ConfirmDialogService } from '../../../../shared/ui/confirm-dialog/confirm-dialog.service';
 
 @Component({
   selector: 'app-tasks-tab-page',
@@ -21,6 +23,8 @@ export class TasksTabPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   readonly tasksStore = inject(TasksStore);
   readonly stakeholdersStore = inject(StakeholdersStore);
+  private readonly toastService = inject(ToastService);
+  private readonly confirmDialog = inject(ConfirmDialogService);
 
   readonly tasks = this.tasksStore.tasks;
   readonly status = this.tasksStore.status;
@@ -30,10 +34,6 @@ export class TasksTabPageComponent implements OnInit {
   readonly stakeholders = this.stakeholdersStore.stakeholders;
   readonly stakeholdersStatus = this.stakeholdersStore.status;
   readonly stakeholdersError = this.stakeholdersStore.error;
-
-  readonly toastMessage = signal<string | null>(null);
-
-  private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   ngOnInit(): void {
     const parentRoute = this.route.parent ?? this.route;
@@ -74,7 +74,26 @@ export class TasksTabPageComponent implements OnInit {
 
   handleResolve(payload: { taskId: string; kind: ResolveTaskRequest['kind']; reason: string }): void {
     const req: ResolveTaskRequest = { kind: payload.kind, reason: payload.reason };
-    this.runAction(this.tasksStore.resolveTask(payload.taskId, req));
+    const message =
+      payload.kind === 'CANCELLED'
+        ? 'Moechtest du diese Aufgabe wirklich abbrechen?'
+        : 'Moechtest du diese Aufgabe wirklich abschliessen?';
+    const title = payload.kind === 'CANCELLED' ? 'Aufgabe abbrechen' : 'Aufgabe abschliessen';
+    const confirmLabel = payload.kind === 'CANCELLED' ? 'Abbrechen' : 'Bestaetigen';
+    const cancelLabel = payload.kind === 'CANCELLED' ? 'Zurueck' : 'Abbrechen';
+    const action$ = this.confirmDialog
+      .confirm({
+        title,
+        message,
+        confirmLabel,
+        cancelLabel,
+        destructive: payload.kind === 'CANCELLED'
+      })
+      .pipe(
+      takeUntilDestroyed(this.destroyRef),
+      switchMap((confirmed) => (confirmed ? this.tasksStore.resolveTask(payload.taskId, req) : of(void 0)))
+    );
+    this.runAction(action$);
   }
 
   private runAction(action$: Observable<void>): void {
@@ -84,20 +103,10 @@ export class TasksTabPageComponent implements OnInit {
         finalize(() => {
           if (this.tasksStore.status() === 'error') {
             const message = this.tasksStore.error()?.message ?? 'Aktion konnte nicht ausgefuehrt werden.';
-            this.showToast(message);
+            this.toastService.error(message);
           }
         })
       )
       .subscribe();
-  }
-
-  private showToast(message: string): void {
-    if (this.toastTimer) {
-      window.clearTimeout(this.toastTimer);
-    }
-    this.toastMessage.set(message);
-    this.toastTimer = window.setTimeout(() => {
-      this.toastMessage.set(null);
-    }, 3000);
   }
 }

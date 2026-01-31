@@ -1,0 +1,58 @@
+.confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: grid;
+  place-items: center;
+  z-index: 1001;
+  padding: 16px;
+}
+
+.confirm-dialog {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 1.5rem;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 24px 40px rgba(15, 23, 42, 0.25);
+  border: 1px solid rgba(15, 23, 42, 0.1);
+}
+
+.confirm-dialog h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.2rem;
+}
+
+.confirm-dialog p {
+  margin: 0 0 1.5rem;
+  color: rgba(15, 23, 42, 0.7);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.ghost-button {
+  border: 1px solid rgba(15, 23, 42, 0.2);
+  background: transparent;
+  padding: 0.45rem 1.1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primary-button {
+  border: none;
+  background: rgba(15, 23, 42, 0.92);
+  color: #ffffff;
+  padding: 0.5rem 1.2rem;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primary-button.destructive {
+  background: rgba(185, 28, 28, 0.92);
+}

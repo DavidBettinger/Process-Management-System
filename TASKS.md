@@ -17,55 +17,6 @@ Readmes should also be in english.
 Always make sure that the frontend matches the backend (API calls and DTOs)
 Make sure that you don't use deprecated features!
 
----
-# [ ] Task ID: FE-RXJS-REF-003
-Objective: Update components and tests so they don’t rely on await store.method().
-
-Component rule
-•	Instead of:
-•	await store.assignTask(...)
-•	Do:
-•	store.assignTask(...).pipe(takeUntilDestroyed()).subscribe()
-•	If you need to react to success:
-•	use tap(() => toast.success(...))
-•	or return a result observable from store and handle it in component.
-
-Test refactor strategy (important)
-
-Replace test patterns like:
-```
-const promise = store.assignTask(...);
-await promise;
-```
-with RxJS-friendly patterns:
-
-Option A (simple): use done
-```
-store.assignTask('task-1', { assigneeId: 'u-1' }).subscribe({
-  complete: () => {
-    expect(store.isBusy('task-1')).toBe(false);
-    done();
-  }
-});
-```
-Option B (Angular): fakeAsync + tick()
-•	Useful if store pipelines schedule microtasks/macrotasks.
-•	Still no await.
-
-Option C (best for RxJS-heavy stores): RxJS TestScheduler
-•	For deterministic marble tests (recommended if you do lots of stream logic).
-
-Files to touch
-•	Components calling store methods (search for await store.)
-•	Store specs (like the one you showed):
-•	frontend/src/app/features/tasks/state/tasks.store.spec.ts
-•	Any component specs using async/await
-
-DoD
-•	grep/search shows no await store. in frontend/src/app.
-•	Store specs no longer await store methods.
-•	npm test passes.
-Status: Done (2026-01-31).
 
 ---
 
@@ -80,6 +31,7 @@ Status: Done (2026-01-31).
 - Confirm dialog for resolve/cancel actions (optional).
   **How to test:**
 - Unit tests for toast service; manual smoke test.
+Status: Done (2026-01-31).
 
 ---
 

@@ -8,6 +8,7 @@ import { CaseCreateDialogComponent } from '../../components/case-create-dialog/c
 import { CreateCaseRequest } from '../../../../core/models/case.model';
 import { KitasStore } from '../../../kitas/state/kitas.store';
 import { LocationsStore } from '../../../locations/state/locations.store';
+import { ToastService } from '../../../../shared/ui/toast.service';
 
 @Component({
   selector: 'app-case-list-page',
@@ -22,6 +23,7 @@ export class CaseListPageComponent implements OnInit {
   readonly locationsStore = inject(LocationsStore);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly toastService = inject(ToastService);
 
   readonly cases = this.casesStore.cases;
   readonly status = this.casesStore.status;
@@ -43,8 +45,13 @@ export class CaseListPageComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         if (this.casesStore.status() !== 'success') {
+          if (this.casesStore.status() === 'error') {
+            const message = this.casesStore.error()?.message ?? 'Prozess konnte nicht gespeichert werden.';
+            this.toastService.error(message);
+          }
           return;
         }
+        this.toastService.success('Prozess wurde gespeichert.');
         const createdId = this.casesStore.lastCreatedId();
         if (createdId) {
           this.casesStore.clearCreatedId();

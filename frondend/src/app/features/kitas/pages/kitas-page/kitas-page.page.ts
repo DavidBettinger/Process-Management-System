@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { KitasStore } from '../../state/kitas.store';
 import { LocationsStore } from '../../../locations/state/locations.store';
 import { CreateKitaRequest } from '../../../../core/models/kita.model';
 import { KitaFormComponent } from '../../components/kita-form/kita-form.component';
 import { KitaListComponent } from '../../components/kita-list/kita-list.component';
+import { ToastService } from '../../../../shared/ui/toast.service';
 
 @Component({
   selector: 'app-kitas-page',
@@ -18,6 +19,7 @@ export class KitasPageComponent implements OnInit {
   readonly kitasStore = inject(KitasStore);
   readonly locationsStore = inject(LocationsStore);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly toastService = inject(ToastService);
 
   readonly kitas = this.kitasStore.kitas;
   readonly status = this.kitasStore.status;
@@ -28,10 +30,6 @@ export class KitasPageComponent implements OnInit {
   readonly locations = this.locationsStore.locations;
   readonly locationsStatus = this.locationsStore.status;
   readonly locationsError = this.locationsStore.error;
-
-  readonly toastMessage = signal<string | null>(null);
-
-  private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   ngOnInit(): void {
     this.kitasStore.loadKitas().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
@@ -44,22 +42,17 @@ export class KitasPageComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         if (this.kitasStore.status() === 'success') {
-          this.showToast('Kita wurde gespeichert.');
+          this.toastService.success('Kita wurde gespeichert.');
+          return;
+        }
+        if (this.kitasStore.status() === 'error') {
+          const message = this.kitasStore.error()?.message ?? 'Kita konnte nicht gespeichert werden.';
+          this.toastService.error(message);
         }
       });
   }
 
   retryLocations(): void {
     this.locationsStore.loadLocations().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
-  }
-
-  private showToast(message: string): void {
-    if (this.toastTimer) {
-      window.clearTimeout(this.toastTimer);
-    }
-    this.toastMessage.set(message);
-    this.toastTimer = window.setTimeout(() => {
-      this.toastMessage.set(null);
-    }, 3000);
   }
 }

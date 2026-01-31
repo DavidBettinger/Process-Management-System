@@ -6,10 +6,6 @@
     </div>
   </header>
 
-  <div class="toast" *ngIf="toastMessage()" aria-live="polite">
-    {{ toastMessage() }}
-  </div>
-
   <div class="panel">
     <div class="state" *ngIf="stakeholdersStatus() === 'loading'">
       <p class="state-title">Beteiligte werden geladen</p>

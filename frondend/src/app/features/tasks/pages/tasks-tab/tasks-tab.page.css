@@ -26,16 +26,6 @@
   padding: 16px;
 }
 
-.toast {
-  align-self: flex-end;
-  background: rgba(16, 18, 24, 0.9);
-  color: #f7f2ea;
-  padding: 0.6rem 1.2rem;
-  border-radius: 999px;
-  font-size: 0.85rem;
-  box-shadow: 0 12px 28px rgba(16, 18, 24, 0.2);
-}
-
 .skeleton {
   height: 18px;
   border-radius: 10px;

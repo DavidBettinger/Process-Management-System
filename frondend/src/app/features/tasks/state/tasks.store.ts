@@ -1,5 +1,5 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable, defer, of } from 'rxjs';
 import { catchError, finalize, map, switchMap, tap } from 'rxjs/operators';
 import { TasksApi } from '../../../core/api/tasks.api';
 import {
@@ -30,46 +30,50 @@ export class TasksStore {
   }
 
   loadTasks(): Observable<void> {
-    const caseId = this.caseId();
-    if (!caseId) {
-      this.state.update((current) => ({ ...current, status: 'error', error: missingCaseIdError() }));
-      return of(void 0);
-    }
-    this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
-    return this.tasksApi.getTasks(caseId).pipe(
-      tap((response) => {
-        this.state.update(() => ({
-          items: response.items,
-          status: 'success',
-          error: undefined
-        }));
-      }),
-      map(() => void 0),
-      catchError((error) => {
-        this.state.update((current) => ({
-          ...current,
-          status: 'error',
-          error: toStoreError(error)
-        }));
+    return defer(() => {
+      const caseId = this.caseId();
+      if (!caseId) {
+        this.state.update((current) => ({ ...current, status: 'error', error: missingCaseIdError() }));
         return of(void 0);
-      })
-    );
+      }
+      this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
+      return this.tasksApi.getTasks(caseId).pipe(
+        tap((response) => {
+          this.state.update(() => ({
+            items: response.items,
+            status: 'success',
+            error: undefined
+          }));
+        }),
+        map(() => void 0),
+        catchError((error) => {
+          this.state.update((current) => ({
+            ...current,
+            status: 'error',
+            error: toStoreError(error)
+          }));
+          return of(void 0);
+        })
+      );
+    });
   }
 
   createTask(req: CreateTaskRequest): Observable<void> {
-    const caseId = this.caseId();
-    if (!caseId) {
-      this.state.update((current) => ({ ...current, status: 'error', error: missingCaseIdError() }));
-      return of(void 0);
-    }
-    this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
-    return this.tasksApi.createTask(caseId, req).pipe(
-      switchMap(() => this.loadTasks()),
-      catchError((error) => {
-        this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+    return defer(() => {
+      const caseId = this.caseId();
+      if (!caseId) {
+        this.state.update((current) => ({ ...current, status: 'error', error: missingCaseIdError() }));
         return of(void 0);
-      })
-    );
+      }
+      this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
+      return this.tasksApi.createTask(caseId, req).pipe(
+        switchMap(() => this.loadTasks()),
+        catchError((error) => {
+          this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+          return of(void 0);
+        })
+      );
+    });
   }
 
   assignTask(taskId: string, req: AssignTaskRequest): Observable<void> {
@@ -102,15 +106,18 @@ export class TasksStore {
   }
 
   private runTaskAction(taskId: string, action: () => Observable<unknown>): Observable<void> {
-    this.addBusy(taskId);
-    return action().pipe(
-      switchMap(() => this.loadTasks()),
-      catchError((error) => {
-        this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
-        return of(void 0);
-      }),
-      finalize(() => this.removeBusy(taskId))
-    );
+    return defer(() => {
+      this.addBusy(taskId);
+      this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
+      return action().pipe(
+        switchMap(() => this.loadTasks()),
+        catchError((error) => {
+          this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+          return of(void 0);
+        }),
+        finalize(() => this.removeBusy(taskId))
+      );
+    });
   }
 
   private addBusy(taskId: string): void {

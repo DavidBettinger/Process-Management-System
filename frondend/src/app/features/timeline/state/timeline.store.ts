@@ -1,5 +1,5 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable, defer, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { AnalyticsApi } from '../../../core/api/analytics.api';
 import { CaseTimeline } from '../../../core/models/timeline.model';
@@ -23,20 +23,22 @@ export class TimelineStore {
   }
 
   loadTimeline(): Observable<void> {
-    const caseId = this.caseId();
-    if (!caseId) {
-      this.state.set({ data: null, status: 'error', error: missingCaseIdError() });
-      return of(void 0);
-    }
-    this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
-    return this.analyticsApi.getTimeline(caseId).pipe(
-      tap((data) => this.state.set({ data, status: 'success', error: undefined })),
-      map(() => void 0),
-      catchError((error) => {
-        this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+    return defer(() => {
+      const caseId = this.caseId();
+      if (!caseId) {
+        this.state.set({ data: null, status: 'error', error: missingCaseIdError() });
         return of(void 0);
-      })
-    );
+      }
+      this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
+      return this.analyticsApi.getTimeline(caseId).pipe(
+        tap((data) => this.state.set({ data, status: 'success', error: undefined })),
+        map(() => void 0),
+        catchError((error) => {
+          this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+          return of(void 0);
+        })
+      );
+    });
   }
 }
 

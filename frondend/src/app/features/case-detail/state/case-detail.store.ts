@@ -1,5 +1,5 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable, defer, of } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { CasesApi } from '../../../core/api/cases.api';
 import { AddStakeholderRequest } from '../../../core/models/stakeholder.model';
@@ -33,56 +33,62 @@ export class CaseDetailStore {
   }
 
   loadCase(): Observable<void> {
-    const caseId = this.caseId();
-    if (!caseId) {
-      this.state.set({ data: null, status: 'error', error: missingCaseIdError() });
-      return of(void 0);
-    }
-    this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
-    return this.casesApi.getCase(caseId).pipe(
-      tap((data) => this.state.set({ data, status: 'success', error: undefined })),
-      map(() => void 0),
-      catchError((error) => {
-        this.state.update((current) => ({
-          ...current,
-          status: 'error',
-          error: toStoreError(error)
-        }));
+    return defer(() => {
+      const caseId = this.caseId();
+      if (!caseId) {
+        this.state.set({ data: null, status: 'error', error: missingCaseIdError() });
         return of(void 0);
-      })
-    );
+      }
+      this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
+      return this.casesApi.getCase(caseId).pipe(
+        tap((data) => this.state.set({ data, status: 'success', error: undefined })),
+        map(() => void 0),
+        catchError((error) => {
+          this.state.update((current) => ({
+            ...current,
+            status: 'error',
+            error: toStoreError(error)
+          }));
+          return of(void 0);
+        })
+      );
+    });
   }
 
   addStakeholder(request: AddStakeholderRequest): Observable<void> {
-    const caseId = this.caseId();
-    if (!caseId) {
-      this.state.update((current) => ({ ...current, status: 'error', error: missingCaseIdError() }));
-      return of(void 0);
-    }
-    this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
-    return this.casesApi.addStakeholder(caseId, request).pipe(
-      switchMap(() => this.loadCase()),
-      catchError((error) => {
-        this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+    return defer(() => {
+      const caseId = this.caseId();
+      if (!caseId) {
+        this.state.update((current) => ({ ...current, status: 'error', error: missingCaseIdError() }));
         return of(void 0);
-      })
-    );
+      }
+      this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
+      return this.casesApi.addStakeholder(caseId, request).pipe(
+        switchMap(() => this.loadCase()),
+        catchError((error) => {
+          this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+          return of(void 0);
+        })
+      );
+    });
   }
 
   activateCase(): Observable<void> {
-    const caseId = this.caseId();
-    if (!caseId) {
-      this.state.update((current) => ({ ...current, status: 'error', error: missingCaseIdError() }));
-      return of(void 0);
-    }
-    this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
-    return this.casesApi.activateCase(caseId).pipe(
-      switchMap(() => this.loadCase()),
-      catchError((error) => {
-        this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+    return defer(() => {
+      const caseId = this.caseId();
+      if (!caseId) {
+        this.state.update((current) => ({ ...current, status: 'error', error: missingCaseIdError() }));
         return of(void 0);
-      })
-    );
+      }
+      this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
+      return this.casesApi.activateCase(caseId).pipe(
+        switchMap(() => this.loadCase()),
+        catchError((error) => {
+          this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+          return of(void 0);
+        })
+      );
+    });
   }
 }
 

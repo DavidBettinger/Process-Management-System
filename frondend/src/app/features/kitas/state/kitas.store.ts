@@ -1,5 +1,5 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable, defer, of } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { KitasApi } from '../../../core/api/kitas.api';
 import { CreateKitaRequest, Kita } from '../../../core/models/kita.model';
@@ -18,31 +18,35 @@ export class KitasStore {
   constructor(private readonly kitasApi: KitasApi) {}
 
   loadKitas(): Observable<void> {
-    this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
-    return this.kitasApi.listKitas().pipe(
-      tap((response) => {
-        this.state.update((current) => ({
-          ...current,
-          status: 'success',
-          items: response.items
-        }));
-      }),
-      map(() => void 0),
-      catchError((error) => {
-        this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
-        return of(void 0);
-      })
-    );
+    return defer(() => {
+      this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
+      return this.kitasApi.listKitas().pipe(
+        tap((response) => {
+          this.state.update((current) => ({
+            ...current,
+            status: 'success',
+            items: response.items
+          }));
+        }),
+        map(() => void 0),
+        catchError((error) => {
+          this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+          return of(void 0);
+        })
+      );
+    });
   }
 
   createKita(request: CreateKitaRequest): Observable<void> {
-    this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
-    return this.kitasApi.createKita(request).pipe(
-      switchMap(() => this.loadKitas()),
-      catchError((error) => {
-        this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
-        return of(void 0);
-      })
-    );
+    return defer(() => {
+      this.state.update((current) => ({ ...current, status: 'loading', error: undefined }));
+      return this.kitasApi.createKita(request).pipe(
+        switchMap(() => this.loadKitas()),
+        catchError((error) => {
+          this.state.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+          return of(void 0);
+        })
+      );
+    });
   }
 }

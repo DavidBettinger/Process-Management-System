@@ -1,5 +1,5 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, defer, of, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { MeetingsApi } from '../../../core/api/meetings.api';
 import {
@@ -28,58 +28,64 @@ export class MeetingsStore {
   }
 
   loadMeetings(): Observable<void> {
-    // TODO: Implement GET meetings for case once backend provides an endpoint.
-    const error = new Error('TODO: Implement GET meetings for case');
-    this.meetingsState.update((current) => ({
-      ...current,
-      status: 'error',
-      error: toStoreError(error)
-    }));
-    return throwError(() => error);
+    return defer(() => {
+      // TODO: Implement GET meetings for case once backend provides an endpoint.
+      const error = new Error('TODO: Implement GET meetings for case');
+      this.meetingsState.update((current) => ({
+        ...current,
+        status: 'error',
+        error: toStoreError(error)
+      }));
+      return throwError(() => error);
+    });
   }
 
   scheduleMeeting(req: ScheduleMeetingRequest): Observable<void> {
-    const caseId = this.caseId();
-    if (!caseId) {
-      this.meetingsState.update((current) => ({ ...current, status: 'error', error: missingCaseIdError() }));
-      return of(void 0);
-    }
-    this.meetingsState.update((current) => ({ ...current, status: 'loading', error: undefined }));
-    return this.meetingsApi.scheduleMeeting(caseId, req).pipe(
-      tap((meeting) => {
-        const meetingWithSchedule = { ...meeting, scheduledAt: req.scheduledAt };
-        this.meetingsState.update((current) => ({
-          ...current,
-          status: 'success',
-          items: [meetingWithSchedule, ...current.items]
-        }));
-      }),
-      map(() => void 0),
-      catchError((error) => {
-        this.meetingsState.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+    return defer(() => {
+      const caseId = this.caseId();
+      if (!caseId) {
+        this.meetingsState.update((current) => ({ ...current, status: 'error', error: missingCaseIdError() }));
         return of(void 0);
-      })
-    );
+      }
+      this.meetingsState.update((current) => ({ ...current, status: 'loading', error: undefined }));
+      return this.meetingsApi.scheduleMeeting(caseId, req).pipe(
+        tap((meeting) => {
+          const meetingWithSchedule = { ...meeting, scheduledAt: req.scheduledAt };
+          this.meetingsState.update((current) => ({
+            ...current,
+            status: 'success',
+            items: [meetingWithSchedule, ...current.items]
+          }));
+        }),
+        map(() => void 0),
+        catchError((error) => {
+          this.meetingsState.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+          return of(void 0);
+        })
+      );
+    });
   }
 
   holdMeeting(meetingId: string, req: HoldMeetingRequest): Observable<void> {
-    const caseId = this.caseId();
-    if (!caseId) {
-      this.meetingsState.update((current) => ({ ...current, status: 'error', error: missingCaseIdError() }));
-      return of(void 0);
-    }
-    this.meetingsState.update((current) => ({ ...current, status: 'loading', error: undefined }));
-    return this.meetingsApi.holdMeeting(caseId, meetingId, req).pipe(
-      tap((result) => {
-        this.holdResult.set(result);
-        this.meetingsState.update((current) => ({ ...current, status: 'success' }));
-      }),
-      map(() => void 0),
-      catchError((error) => {
-        this.meetingsState.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+    return defer(() => {
+      const caseId = this.caseId();
+      if (!caseId) {
+        this.meetingsState.update((current) => ({ ...current, status: 'error', error: missingCaseIdError() }));
         return of(void 0);
-      })
-    );
+      }
+      this.meetingsState.update((current) => ({ ...current, status: 'loading', error: undefined }));
+      return this.meetingsApi.holdMeeting(caseId, meetingId, req).pipe(
+        tap((result) => {
+          this.holdResult.set(result);
+          this.meetingsState.update((current) => ({ ...current, status: 'success' }));
+        }),
+        map(() => void 0),
+        catchError((error) => {
+          this.meetingsState.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+          return of(void 0);
+        })
+      );
+    });
   }
 
   clearHoldResult(): void {

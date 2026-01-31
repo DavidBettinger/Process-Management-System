@@ -2,10 +2,12 @@
   <li class="task-card" *ngFor="let task of tasks">
     <div class="task-header">
       <div>
-        <p class="task-id">Aufgabe {{ task.id }}</p>
+        <p class="task-title">{{ task.title || 'Unbenannte Aufgabe' }}</p>
         <p class="task-meta">Status: {{ statusLabel(task.state) }}</p>
       </div>
-      <span class="assignee" *ngIf="task.assigneeId">Zustaendig: {{ task.assigneeId }}</span>
+      <span class="assignee" *ngIf="task.assigneeId">
+        Zustaendig: {{ task.assigneeId | stakeholderLabel }}
+      </span>
     </div>
     <app-task-actions
       [task]="task"

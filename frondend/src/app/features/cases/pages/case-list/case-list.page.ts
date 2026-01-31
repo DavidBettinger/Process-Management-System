@@ -55,6 +55,6 @@ export class CaseListPageComponent implements OnInit {
 
   kitaLabel(kitaId: string): string {
     const match = this.kitas().find((kita) => kita.id === kitaId);
-    return match ? match.name : `Kita-ID: ${kitaId}`;
+    return match ? match.name : 'Kita unbekannt';
   }
 }

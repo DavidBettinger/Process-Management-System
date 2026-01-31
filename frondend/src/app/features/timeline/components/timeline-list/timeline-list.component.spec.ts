@@ -1,6 +1,21 @@
 import { TestBed } from '@angular/core/testing';
 import { TimelineListComponent } from './timeline-list.component';
 import { TimelineEntry } from '../../../../core/models/timeline.model';
+import { LabelResolverService } from '../../../../shared/labels/label-resolver.service';
+
+class LabelResolverServiceStub {
+  stakeholderLabel(id?: string | null): string {
+    return id === 'u-1' ? 'Maria Becker — Beratung' : 'Unbekannt';
+  }
+
+  taskLabel(id?: string | null): string {
+    return id === 't-1' ? 'Kinderschutz-Konzept' : 'Unbekannt';
+  }
+
+  meetingLabel(): string {
+    return '01.02.2026, 11:00 — Kita Sonnenblume';
+  }
+}
 
 describe('TimelineListComponent', () => {
   it('renders labels for timeline entry types', () => {
@@ -12,7 +27,8 @@ describe('TimelineListComponent', () => {
     ];
 
     TestBed.configureTestingModule({
-      imports: [TimelineListComponent]
+      imports: [TimelineListComponent],
+      providers: [{ provide: LabelResolverService, useClass: LabelResolverServiceStub }]
     });
 
     const fixture = TestBed.createComponent(TimelineListComponent);
@@ -24,5 +40,11 @@ describe('TimelineListComponent', () => {
     expect(compiled.textContent).toContain('Aufgabe erstellt');
     expect(compiled.textContent).toContain('Aufgabe zugewiesen');
     expect(compiled.textContent).toContain('Aufgabe abgeschlossen');
+    expect(compiled.textContent).toContain('Kinderschutz-Konzept');
+    expect(compiled.textContent).toContain('Maria Becker');
+    expect(compiled.textContent).toContain('Kita Sonnenblume');
+    expect(compiled.textContent).not.toContain('m-1');
+    expect(compiled.textContent).not.toContain('t-1');
+    expect(compiled.textContent).not.toContain('u-1');
   });
 });

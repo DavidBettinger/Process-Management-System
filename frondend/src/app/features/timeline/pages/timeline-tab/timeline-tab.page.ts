@@ -4,6 +4,9 @@ import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TimelineStore } from '../../state/timeline.store';
 import { TimelineListComponent } from '../../components/timeline-list/timeline-list.component';
+import { TasksStore } from '../../../tasks/state/tasks.store';
+import { StakeholdersStore } from '../../../stakeholders/state/stakeholders.store';
+import { LocationsStore } from '../../../locations/state/locations.store';
 
 @Component({
   selector: 'app-timeline-tab-page',
@@ -16,6 +19,9 @@ export class TimelineTabPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   readonly timelineStore = inject(TimelineStore);
+  readonly tasksStore = inject(TasksStore);
+  readonly stakeholdersStore = inject(StakeholdersStore);
+  readonly locationsStore = inject(LocationsStore);
 
   readonly timeline = this.timelineStore.timeline;
   readonly status = this.timelineStore.status;
@@ -34,9 +40,13 @@ export class TimelineTabPageComponent implements OnInit {
       const caseId = params.get('caseId');
       if (caseId) {
         this.timelineStore.setCaseId(caseId);
+        this.tasksStore.setCaseId(caseId);
+        void this.tasksStore.loadTasks();
       }
       void this.timelineStore.loadTimeline();
     });
+    void this.stakeholdersStore.loadStakeholders();
+    void this.locationsStore.loadLocations();
   }
 
   retry(): void {

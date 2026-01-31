@@ -21,6 +21,7 @@ export interface TaskStatusResponse {
 
 export interface Task {
   id: string;
+  title: string;
   state: TaskState;
   assigneeId?: string | null;
 }

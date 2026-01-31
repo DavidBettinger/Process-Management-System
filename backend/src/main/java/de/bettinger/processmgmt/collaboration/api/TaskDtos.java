@@ -34,7 +34,7 @@ public final class TaskDtos {
 	public record ResolveTaskRequest(@NotNull TaskResolutionKind kind, @NotBlank String reason, List<String> evidenceRefs) {
 	}
 
-	public record TaskSummaryResponse(UUID id, TaskState state, String assigneeId) {
+	public record TaskSummaryResponse(UUID id, String title, TaskState state, String assigneeId) {
 	}
 
 	public record TasksResponse(List<TaskSummaryResponse> items) {

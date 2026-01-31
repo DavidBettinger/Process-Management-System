@@ -9,9 +9,7 @@
   <div class="result" *ngIf="holdResult">
     <p class="result-title">Termin abgeschlossen</p>
     <p class="result-text">Erstellte Aufgaben: {{ holdResult.createdTaskIds.length }}</p>
-    <ul class="result-list">
-      <li *ngFor="let taskId of holdResult.createdTaskIds">{{ taskId }}</li>
-    </ul>
+    <p class="result-hint">Die Aufgaben findest du in der Aufgabenliste dieses Prozesses.</p>
     <button class="ghost-button" type="button" (click)="clearHoldResult()">Hinweis schliessen</button>
   </div>
 
@@ -27,9 +25,10 @@
     </ng-container>
     <ng-template #manualId>
       <label>
-        Termin-ID
-        <input type="text" formControlName="meetingId" placeholder="UUID des Termins" />
+        Termin
+        <input type="text" formControlName="meetingId" placeholder="Termin eingeben" />
       </label>
+      <p class="hint">Kein Termin vorhanden? Bitte zuerst einen Termin planen.</p>
     </ng-template>
 
     <label>

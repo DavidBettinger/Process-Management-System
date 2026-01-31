@@ -5,11 +5,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { StakeholderDetailStore } from '../../state/stakeholder-detail.store';
 import { StakeholderRole } from '../../../../core/models/stakeholder.model';
 import { TaskState } from '../../../../core/models/task.model';
+import { CasesStore } from '../../../cases/state/cases.store';
+import { ProcessLabelPipe } from '../../../../shared/labels/process-label.pipe';
 
 @Component({
   selector: 'app-stakeholder-detail-page',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ProcessLabelPipe],
   templateUrl: './stakeholder-detail-page.page.html',
   styleUrl: './stakeholder-detail-page.page.css'
 })
@@ -17,6 +19,7 @@ export class StakeholderDetailPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   readonly store = inject(StakeholderDetailStore);
+  readonly casesStore = inject(CasesStore);
 
   readonly profile = this.store.profile;
   readonly profileStatus = this.store.profileStatus;
@@ -43,6 +46,7 @@ export class StakeholderDetailPageComponent implements OnInit {
       void this.store.loadProfile();
       void this.store.loadTasks();
     });
+    void this.casesStore.loadCases();
   }
 
   headerTitle(): string {

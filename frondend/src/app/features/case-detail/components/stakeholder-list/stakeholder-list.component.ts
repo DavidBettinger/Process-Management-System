@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { RoleInCase, StakeholderResponse } from '../../../../core/models/stakeholder.model';
+import { StakeholderLabelPipe } from '../../../../shared/labels/stakeholder-label.pipe';
 
 @Component({
   selector: 'app-stakeholder-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, StakeholderLabelPipe],
   templateUrl: './stakeholder-list.component.html',
   styleUrl: './stakeholder-list.component.css'
 })

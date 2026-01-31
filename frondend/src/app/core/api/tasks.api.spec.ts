@@ -41,7 +41,7 @@ describe('TasksApi', () => {
 
     const req = httpMock.expectOne('/api/cases/case-1/tasks');
     expect(req.request.method).toBe('GET');
-    req.flush({ items: [] });
+    req.flush({ items: [{ id: 'task-1', title: 'Titel', state: 'OPEN', assigneeId: null }] });
   });
 
   it('assigns a task', () => {

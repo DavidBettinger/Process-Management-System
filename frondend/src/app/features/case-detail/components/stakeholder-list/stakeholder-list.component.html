@@ -2,8 +2,7 @@
   <p class="empty" *ngIf="stakeholders.length === 0">Keine Beteiligten vorhanden.</p>
   <ul *ngIf="stakeholders.length > 0">
     <li *ngFor="let stakeholder of stakeholders">
-      <span class="name">{{ stakeholder.userId }}</span>
-      <span class="role">{{ roleLabel(stakeholder.role) }}</span>
+      <span class="name">{{ stakeholder.userId | stakeholderLabel: roleLabel(stakeholder.role) }}</span>
     </li>
   </ul>
 </div>

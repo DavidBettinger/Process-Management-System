@@ -527,7 +527,7 @@ Response 200:
 ```json
 {
   "items": [
-    { "id": "uuid", "state": "OPEN", "assigneeId": null }
+    { "id": "uuid", "title": "Prepare checklist", "state": "OPEN", "assigneeId": null }
   ]
 }
 ```

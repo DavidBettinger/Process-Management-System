@@ -7,7 +7,7 @@ describe('TasksStore', () => {
   const createApi = (overrides?: Partial<TasksApi>): TasksApi => {
     return {
       createTask: () => of({ id: 'task-1', state: 'OPEN' }),
-      getTasks: () => of({ items: [{ id: 'task-1', state: 'OPEN', assigneeId: null }] }),
+      getTasks: () => of({ items: [{ id: 'task-1', title: 'Titel', state: 'OPEN', assigneeId: null }] }),
       assignTask: () => of({ id: 'task-1', state: 'ASSIGNED', assigneeId: 'u-1' }),
       startTask: () => of({ id: 'task-1', state: 'IN_PROGRESS', assigneeId: 'u-1' }),
       blockTask: () => of({ id: 'task-1', state: 'BLOCKED', assigneeId: 'u-1' }),

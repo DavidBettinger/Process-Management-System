@@ -1,11 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { TimelineEntry, TimelineEntryType } from '../../../../core/models/timeline.model';
+import { TimelineEntry } from '../../../../core/models/timeline.model';
+import { MeetingLabelPipe } from '../../../../shared/labels/meeting-label.pipe';
+import { StakeholderLabelPipe } from '../../../../shared/labels/stakeholder-label.pipe';
+import { TaskLabelPipe } from '../../../../shared/labels/task-label.pipe';
 
 @Component({
   selector: 'app-timeline-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MeetingLabelPipe, TaskLabelPipe, StakeholderLabelPipe],
   templateUrl: './timeline-list.component.html',
   styleUrl: './timeline-list.component.css'
 })
@@ -27,20 +30,8 @@ export class TimelineListComponent {
     }
   }
 
-  metaFor(entry: TimelineEntry): string {
-    const date = formatDate(entry.occurredAt);
-    switch (entry.type) {
-      case 'MEETING_HELD':
-        return `${date} • Termin-ID: ${entry.meetingId ?? 'unbekannt'}`;
-      case 'TASK_CREATED':
-        return `${date} • Aufgabe-ID: ${entry.taskId ?? 'unbekannt'}`;
-      case 'TASK_ASSIGNED':
-        return `${date} • Aufgabe-ID: ${entry.taskId ?? 'unbekannt'} • Zugewiesen an ${entry.assigneeId ?? 'unbekannt'}`;
-      case 'TASK_RESOLVED':
-        return `${date} • Aufgabe-ID: ${entry.taskId ?? 'unbekannt'}`;
-      default:
-        return `${date} • Typ: ${entry.type as TimelineEntryType}`;
-    }
+  dateLabel(value: string): string {
+    return formatDate(value);
   }
 }
 

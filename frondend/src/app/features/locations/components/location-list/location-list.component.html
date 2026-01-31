@@ -2,7 +2,6 @@
   <li class="location-card" *ngFor="let location of locations">
     <div class="location-header">
       <h3>{{ location.label }}</h3>
-      <span class="meta">ID: {{ location.id }}</span>
     </div>
     <div class="address">
       <span>{{ location.address.street }} {{ location.address.houseNumber }}</span>

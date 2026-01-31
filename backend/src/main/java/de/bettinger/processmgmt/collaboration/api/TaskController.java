@@ -51,7 +51,7 @@ public class TaskController {
 	@GetMapping("/cases/{caseId}/tasks")
 	public TasksResponse listTasks(@PathVariable UUID caseId) {
 		List<TaskSummaryResponse> items = taskQueryService.listTasks(caseId).stream()
-				.map(task -> new TaskSummaryResponse(task.getId(), task.getState(), task.getAssigneeId()))
+				.map(task -> new TaskSummaryResponse(task.getId(), task.getTitle(), task.getState(), task.getAssigneeId()))
 				.toList();
 		return new TasksResponse(items);
 	}

@@ -122,7 +122,7 @@ export class CaseDetailPageComponent implements OnInit {
       return 'Kita unbekannt';
     }
     const kita = this.findKita(kitaId);
-    return kita ? kita.name : `Kita-ID: ${kitaId}`;
+    return kita ? kita.name : 'Kita unbekannt';
   }
 
   locationLabelForKita(kitaId: string | null | undefined): string {

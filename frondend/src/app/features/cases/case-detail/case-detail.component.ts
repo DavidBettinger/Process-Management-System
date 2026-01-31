@@ -1,5 +1,5 @@
-import { Component, computed, inject } from '@angular/core';
-import { ActivatedRoute, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Component } from '@angular/core';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-case-detail',
@@ -9,7 +9,4 @@ import { ActivatedRoute, RouterLink, RouterLinkActive, RouterOutlet } from '@ang
   styleUrl: './case-detail.component.css'
 })
 export class CaseDetailComponent {
-  private readonly route = inject(ActivatedRoute);
-
-  readonly caseId = computed(() => this.route.snapshot.paramMap.get('caseId') ?? 'unknown');
 }

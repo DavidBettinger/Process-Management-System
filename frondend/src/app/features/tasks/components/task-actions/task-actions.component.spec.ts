@@ -5,6 +5,7 @@ import { Task } from '../../../../core/models/task.model';
 describe('TaskActionsComponent', () => {
   const buildTask = (state: Task['state']): Task => ({
     id: 'task-1',
+    title: 'Konzept',
     state,
     assigneeId: 'u-1'
   });

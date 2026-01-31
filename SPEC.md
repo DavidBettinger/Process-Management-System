@@ -141,6 +141,15 @@ A process management app for **Kita consulting** (Fachberatung) to document and 
   "resolvedAt": "2026-02-10T12:00:00Z"
 }
 ```
+#### Task summary (list response)
+```json
+{
+  "id": "1d4e6c8a-6dc3-4a1b-9a68-5c4e5d2c84f0",
+  "title": "Draft child protection concept v1",
+  "state": "ASSIGNED",
+  "assigneeId": "u-201"
+}
+```
 #### Task assignment declined (not responsible)
 ```json
 {

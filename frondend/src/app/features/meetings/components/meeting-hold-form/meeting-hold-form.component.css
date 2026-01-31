@@ -54,6 +54,11 @@
   margin: 0 0 0.5rem;
 }
 
+.result-hint {
+  margin: 0 0 0.75rem;
+  color: rgba(16, 18, 24, 0.7);
+}
+
 .result-list {
   margin: 0 0 0.75rem;
   padding-left: 1rem;

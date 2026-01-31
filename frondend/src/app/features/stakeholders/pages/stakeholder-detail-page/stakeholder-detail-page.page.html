@@ -8,7 +8,6 @@
     <div class="profile-card" *ngIf="profileStatus() === 'success'">
       <p class="profile-label">Rolle</p>
       <p class="profile-value">{{ roleLabel(profile()?.role) }}</p>
-      <p class="profile-meta">ID {{ profile()?.id }}</p>
     </div>
   </header>
 
@@ -50,13 +49,13 @@
         <span>Titel</span>
         <span>Status</span>
         <span>Faellig</span>
-        <span>Prozess-ID</span>
+        <span>Prozess</span>
       </div>
       <div class="tasks-row" *ngFor="let task of tasks()">
         <span class="task-title">{{ task.title }}</span>
         <span>{{ stateLabel(task.state) }}</span>
         <span>{{ dueDateLabel(task.dueDate) }}</span>
-        <span class="mono">{{ task.caseId }}</span>
+        <span>{{ task.caseId | processLabel }}</span>
       </div>
     </div>
 

@@ -44,6 +44,7 @@ class TaskControllerListTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.items.length()").value(1))
 				.andExpect(jsonPath("$.items[0].id").value(taskId.toString()))
+				.andExpect(jsonPath("$.items[0].title").value("Titel 1"))
 				.andExpect(jsonPath("$.items[0].state").value("OPEN"));
 	}
 }

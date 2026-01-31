@@ -7,6 +7,8 @@ import { StakeholderDetailStore } from '../../state/stakeholder-detail.store';
 import { EntityState, initialEntityState, LoadStatus, StoreError } from '../../../../core/state/state.types';
 import { Stakeholder } from '../../../../core/models/stakeholder.model';
 import { StakeholderTaskSummary } from '../../../../core/models/task.model';
+import { CasesStore } from '../../../cases/state/cases.store';
+import { LabelResolverService } from '../../../../shared/labels/label-resolver.service';
 
 type TasksState = {
   status: LoadStatus;
@@ -68,6 +70,16 @@ class StakeholderDetailStoreStub {
   setPageSize = async () => {};
 }
 
+class CasesStoreStub {
+  loadCases = async () => {};
+}
+
+class LabelResolverServiceStub {
+  processLabel(caseId?: string | null): string {
+    return caseId === 'case-1' ? 'Kinderschutz' : 'Unbekannt';
+  }
+}
+
 describe('StakeholderDetailPageComponent', () => {
   it('renders header label', () => {
     const store = new StakeholderDetailStoreStub();
@@ -81,6 +93,8 @@ describe('StakeholderDetailPageComponent', () => {
       imports: [StakeholderDetailPageComponent],
       providers: [
         { provide: StakeholderDetailStore, useValue: store },
+        { provide: CasesStore, useValue: new CasesStoreStub() },
+        { provide: LabelResolverService, useClass: LabelResolverServiceStub },
         { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ stakeholderId: 's-1' })) } }
       ]
     });
@@ -105,6 +119,8 @@ describe('StakeholderDetailPageComponent', () => {
       imports: [StakeholderDetailPageComponent],
       providers: [
         { provide: StakeholderDetailStore, useValue: store },
+        { provide: CasesStore, useValue: new CasesStoreStub() },
+        { provide: LabelResolverService, useClass: LabelResolverServiceStub },
         { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ stakeholderId: 's-1' })) } }
       ]
     });
@@ -143,6 +159,8 @@ describe('StakeholderDetailPageComponent', () => {
       imports: [StakeholderDetailPageComponent],
       providers: [
         { provide: StakeholderDetailStore, useValue: store },
+        { provide: CasesStore, useValue: new CasesStoreStub() },
+        { provide: LabelResolverService, useClass: LabelResolverServiceStub },
         { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ stakeholderId: 's-1' })) } }
       ]
     });
@@ -155,5 +173,46 @@ describe('StakeholderDetailPageComponent', () => {
     expect(buttons.length).toBe(2);
     expect(buttons[0].disabled).toBe(true);
     expect(buttons[1].disabled).toBe(false);
+  });
+
+  it('renders process title instead of case id', () => {
+    const store = new StakeholderDetailStoreStub();
+    store.profileState.set({
+      data: { id: 's-1', firstName: 'Maria', lastName: 'Becker', role: 'CONSULTANT' },
+      status: 'success'
+    });
+    store.tasksState.set({
+      status: 'success',
+      items: [{
+        id: 't-1',
+        caseId: 'case-1',
+        title: 'Konzept',
+        state: 'ASSIGNED',
+        assigneeId: 's-1',
+        dueDate: '2026-02-10'
+      }],
+      page: 0,
+      size: 20,
+      totalItems: 1,
+      totalPages: 1,
+      error: undefined
+    });
+
+    TestBed.configureTestingModule({
+      imports: [StakeholderDetailPageComponent],
+      providers: [
+        { provide: StakeholderDetailStore, useValue: store },
+        { provide: CasesStore, useValue: new CasesStoreStub() },
+        { provide: LabelResolverService, useClass: LabelResolverServiceStub },
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ stakeholderId: 's-1' })) } }
+      ]
+    });
+
+    const fixture = TestBed.createComponent(StakeholderDetailPageComponent);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Kinderschutz');
+    expect(compiled.textContent).not.toContain('case-1');
   });
 });

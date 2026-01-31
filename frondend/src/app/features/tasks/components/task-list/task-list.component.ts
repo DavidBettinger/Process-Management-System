@@ -3,11 +3,12 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Task, TaskResolutionKind } from '../../../../core/models/task.model';
 import { Stakeholder } from '../../../../core/models/stakeholder.model';
 import { TaskActionsComponent } from '../task-actions/task-actions.component';
+import { StakeholderLabelPipe } from '../../../../shared/labels/stakeholder-label.pipe';
 
 @Component({
   selector: 'app-task-list',
   standalone: true,
-  imports: [CommonModule, TaskActionsComponent],
+  imports: [CommonModule, TaskActionsComponent, StakeholderLabelPipe],
   templateUrl: './task-list.component.html',
   styleUrl: './task-list.component.css'
 })

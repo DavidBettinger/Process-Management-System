@@ -3,7 +3,26 @@
     <div class="dot"></div>
     <div>
       <p class="entry-title">{{ titleFor(entry) }}</p>
-      <p class="entry-meta">{{ metaFor(entry) }}</p>
+      <p class="entry-meta">
+        <ng-container [ngSwitch]="entry.type">
+          <ng-container *ngSwitchCase="'MEETING_HELD'">
+            {{ entry.meetingId | meetingLabel: entry.occurredAt : entry.locationId }}
+          </ng-container>
+          <ng-container *ngSwitchCase="'TASK_CREATED'">
+            {{ dateLabel(entry.occurredAt) }} • Aufgabe: {{ entry.taskId | taskLabel }}
+          </ng-container>
+          <ng-container *ngSwitchCase="'TASK_ASSIGNED'">
+            {{ dateLabel(entry.occurredAt) }} • Aufgabe: {{ entry.taskId | taskLabel }} • Zugewiesen an
+            {{ entry.assigneeId | stakeholderLabel }}
+          </ng-container>
+          <ng-container *ngSwitchCase="'TASK_RESOLVED'">
+            {{ dateLabel(entry.occurredAt) }} • Aufgabe: {{ entry.taskId | taskLabel }}
+          </ng-container>
+          <ng-container *ngSwitchDefault>
+            {{ dateLabel(entry.occurredAt) }} • Typ: {{ entry.type }}
+          </ng-container>
+        </ng-container>
+      </p>
     </div>
   </div>
 </div>

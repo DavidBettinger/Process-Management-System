@@ -6,6 +6,10 @@ import { TimelineTabPageComponent } from './timeline-tab.page';
 import { TimelineStore } from '../../state/timeline.store';
 import { CaseTimeline } from '../../../../core/models/timeline.model';
 import { LoadStatus, StoreError } from '../../../../core/state/state.types';
+import { TasksStore } from '../../../tasks/state/tasks.store';
+import { StakeholdersStore } from '../../../stakeholders/state/stakeholders.store';
+import { LocationsStore } from '../../../locations/state/locations.store';
+import { LabelResolverService } from '../../../../shared/labels/label-resolver.service';
 
 class TimelineStoreStub {
   timeline = signal<CaseTimeline | null>(null);
@@ -26,9 +30,53 @@ class TimelineStoreStub {
   };
 }
 
+class TasksStoreStub {
+  setCaseIdCalls: string[] = [];
+  loadTasksCalls = 0;
+
+  setCaseId = (caseId: string) => {
+    this.setCaseIdCalls.push(caseId);
+  };
+
+  loadTasks = () => {
+    this.loadTasksCalls += 1;
+  };
+}
+
+class StakeholdersStoreStub {
+  loadStakeholdersCalls = 0;
+
+  loadStakeholders = () => {
+    this.loadStakeholdersCalls += 1;
+  };
+}
+
+class LocationsStoreStub {
+  loadLocationsCalls = 0;
+
+  loadLocations = () => {
+    this.loadLocationsCalls += 1;
+  };
+}
+
+class LabelResolverServiceStub {
+  taskLabel(): string {
+    return 'Aufgabe';
+  }
+
+  stakeholderLabel(): string {
+    return 'Person';
+  }
+
+  meetingLabel(): string {
+    return 'Termin';
+  }
+}
+
 describe('TimelineTabPageComponent', () => {
   it('shows empty state', () => {
     const store = new TimelineStoreStub();
+    const tasksStore = new TasksStoreStub();
     store.timeline.set({ caseId: 'case-1', entries: [] });
     store.status.set('success');
 
@@ -36,6 +84,10 @@ describe('TimelineTabPageComponent', () => {
       imports: [TimelineTabPageComponent],
       providers: [
         { provide: TimelineStore, useValue: store },
+        { provide: TasksStore, useValue: tasksStore },
+        { provide: StakeholdersStore, useValue: new StakeholdersStoreStub() },
+        { provide: LocationsStore, useValue: new LocationsStoreStub() },
+        { provide: LabelResolverService, useClass: LabelResolverServiceStub },
         { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ caseId: 'case-1' })) } }
       ]
     });
@@ -46,6 +98,7 @@ describe('TimelineTabPageComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Noch keine Eintraege vorhanden');
     expect(store.loadTimelineCalls).toBe(1);
+    expect(tasksStore.loadTasksCalls).toBe(1);
   });
 
   it('shows error state', () => {
@@ -57,6 +110,10 @@ describe('TimelineTabPageComponent', () => {
       imports: [TimelineTabPageComponent],
       providers: [
         { provide: TimelineStore, useValue: store },
+        { provide: TasksStore, useValue: new TasksStoreStub() },
+        { provide: StakeholdersStore, useValue: new StakeholdersStoreStub() },
+        { provide: LocationsStore, useValue: new LocationsStoreStub() },
+        { provide: LabelResolverService, useClass: LabelResolverServiceStub },
         { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ caseId: 'case-1' })) } }
       ]
     });
@@ -85,6 +142,10 @@ describe('TimelineTabPageComponent', () => {
       imports: [TimelineTabPageComponent],
       providers: [
         { provide: TimelineStore, useValue: store },
+        { provide: TasksStore, useValue: new TasksStoreStub() },
+        { provide: StakeholdersStore, useValue: new StakeholdersStoreStub() },
+        { provide: LocationsStore, useValue: new LocationsStoreStub() },
+        { provide: LabelResolverService, useClass: LabelResolverServiceStub },
         { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ caseId: 'case-1' })) } }
       ]
     });

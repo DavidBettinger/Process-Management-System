@@ -1,0 +1,32 @@
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.timeline-entry {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f4845f, #f7b267);
+  margin-top: 0.3rem;
+  box-shadow: 0 6px 12px rgba(244, 132, 95, 0.3);
+}
+
+.entry-title {
+  font-weight: 600;
+  margin: 0 0 0.2rem;
+}
+
+.entry-meta {
+  margin: 0;
+  color: rgba(11, 15, 25, 0.6);
+  font-size: 0.9rem;
+}

@@ -1,0 +1,9 @@
+<div class="timeline">
+  <div class="timeline-entry" *ngFor="let entry of entries">
+    <div class="dot"></div>
+    <div>
+      <p class="entry-title">{{ titleFor(entry) }}</p>
+      <p class="entry-meta">{{ metaFor(entry) }}</p>
+    </div>
+  </div>
+</div>

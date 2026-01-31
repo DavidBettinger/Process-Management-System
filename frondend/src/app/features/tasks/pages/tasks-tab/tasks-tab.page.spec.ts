@@ -17,6 +17,8 @@ class TasksStoreStub {
   isLoading = signal(false);
   busyTaskIds = signal<Set<string>>(new Set());
   loadCalls = 0;
+  assignCalls: { taskId: string; assigneeId: string }[] = [];
+  startCalls: string[] = [];
   setCaseIdValue: string | null = null;
 
   setCaseId = (caseId: string) => {
@@ -25,8 +27,12 @@ class TasksStoreStub {
   loadTasks = () => {
     this.loadCalls += 1;
   };
-  assignTask = async () => {};
-  startTask = async () => {};
+  assignTask = async (taskId: string, req: { assigneeId: string }) => {
+    this.assignCalls.push({ taskId, assigneeId: req.assigneeId });
+  };
+  startTask = async (taskId: string) => {
+    this.startCalls.push(taskId);
+  };
   blockTask = async () => {};
   unblockTask = async () => {};
   declineTask = async () => {};
@@ -91,5 +97,45 @@ describe('TasksTabPageComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Aufgaben konnten nicht geladen werden');
     expect(compiled.textContent).toContain('Fehler');
+  });
+
+  it('calls store when assigning task', async () => {
+    const store = new TasksStoreStub();
+    const stakeholdersStore = new StakeholdersStoreStub();
+
+    TestBed.configureTestingModule({
+      imports: [TasksTabPageComponent],
+      providers: [
+        { provide: TasksStore, useValue: store },
+        { provide: StakeholdersStore, useValue: stakeholdersStore },
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ caseId: 'case-1' })) } }
+      ]
+    });
+
+    const fixture = TestBed.createComponent(TasksTabPageComponent);
+    const component = fixture.componentInstance;
+    await component.handleAssign({ taskId: 'task-1', assigneeId: 's-1' });
+
+    expect(store.assignCalls).toEqual([{ taskId: 'task-1', assigneeId: 's-1' }]);
+  });
+
+  it('calls store when starting task', async () => {
+    const store = new TasksStoreStub();
+    const stakeholdersStore = new StakeholdersStoreStub();
+
+    TestBed.configureTestingModule({
+      imports: [TasksTabPageComponent],
+      providers: [
+        { provide: TasksStore, useValue: store },
+        { provide: StakeholdersStore, useValue: stakeholdersStore },
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ caseId: 'case-1' })) } }
+      ]
+    });
+
+    const fixture = TestBed.createComponent(TasksTabPageComponent);
+    const component = fixture.componentInstance;
+    await component.handleStart('task-9');
+
+    expect(store.startCalls).toEqual(['task-9']);
   });
 });

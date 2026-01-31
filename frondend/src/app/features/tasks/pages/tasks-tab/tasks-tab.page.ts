@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TasksStore } from '../../state/tasks.store';
@@ -29,6 +29,10 @@ export class TasksTabPageComponent implements OnInit {
   readonly stakeholdersStatus = this.stakeholdersStore.status;
   readonly stakeholdersError = this.stakeholdersStore.error;
 
+  readonly toastMessage = signal<string | null>(null);
+
+  private toastTimer: ReturnType<typeof setTimeout> | null = null;
+
   ngOnInit(): void {
     const parentRoute = this.route.parent ?? this.route;
     parentRoute.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
@@ -43,19 +47,19 @@ export class TasksTabPageComponent implements OnInit {
 
   async handleAssign(payload: { taskId: string; assigneeId: string }): Promise<void> {
     const req: AssignTaskRequest = { assigneeId: payload.assigneeId };
-    await this.tasksStore.assignTask(payload.taskId, req);
+    await this.runAction(() => this.tasksStore.assignTask(payload.taskId, req));
   }
 
   async handleStart(taskId: string): Promise<void> {
-    await this.tasksStore.startTask(taskId);
+    await this.runAction(() => this.tasksStore.startTask(taskId));
   }
 
   async handleBlock(payload: { taskId: string; reason: string }): Promise<void> {
-    await this.tasksStore.blockTask(payload.taskId, payload.reason);
+    await this.runAction(() => this.tasksStore.blockTask(payload.taskId, payload.reason));
   }
 
   async handleUnblock(taskId: string): Promise<void> {
-    await this.tasksStore.unblockTask(taskId);
+    await this.runAction(() => this.tasksStore.unblockTask(taskId));
   }
 
   async handleDecline(payload: { taskId: string; reason: string; suggestedAssigneeId?: string | null }): Promise<void> {
@@ -63,11 +67,29 @@ export class TasksTabPageComponent implements OnInit {
       reason: payload.reason,
       suggestedAssigneeId: payload.suggestedAssigneeId ?? null
     };
-    await this.tasksStore.declineTask(payload.taskId, req);
+    await this.runAction(() => this.tasksStore.declineTask(payload.taskId, req));
   }
 
   async handleResolve(payload: { taskId: string; kind: ResolveTaskRequest['kind']; reason: string }): Promise<void> {
     const req: ResolveTaskRequest = { kind: payload.kind, reason: payload.reason };
-    await this.tasksStore.resolveTask(payload.taskId, req);
+    await this.runAction(() => this.tasksStore.resolveTask(payload.taskId, req));
+  }
+
+  private async runAction(action: () => Promise<void>): Promise<void> {
+    await action();
+    if (this.tasksStore.status() === 'error') {
+      const message = this.tasksStore.error()?.message ?? 'Aktion konnte nicht ausgefuehrt werden.';
+      this.showToast(message);
+    }
+  }
+
+  private showToast(message: string): void {
+    if (this.toastTimer) {
+      window.clearTimeout(this.toastTimer);
+    }
+    this.toastMessage.set(message);
+    this.toastTimer = window.setTimeout(() => {
+      this.toastMessage.set(null);
+    }, 3000);
   }
 }

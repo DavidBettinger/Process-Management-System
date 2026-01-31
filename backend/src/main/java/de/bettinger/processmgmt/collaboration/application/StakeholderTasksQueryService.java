@@ -6,6 +6,8 @@ import de.bettinger.processmgmt.collaboration.infrastructure.persistence.TaskEnt
 import de.bettinger.processmgmt.collaboration.infrastructure.persistence.TaskRepository;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,13 +23,13 @@ public class StakeholderTasksQueryService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<TaskEntity> listAssignedTasks(String tenantId, UUID stakeholderId) {
+	public Page<TaskEntity> listAssignedTasks(String tenantId, UUID stakeholderId, Pageable pageable) {
 		List<UUID> caseIds = processCaseRepository.findAllByTenantIdOrderByCreatedAtDesc(tenantId).stream()
 				.map(ProcessCaseEntity::getId)
 				.toList();
 		if (caseIds.isEmpty()) {
-			return List.of();
+			return Page.empty(pageable);
 		}
-		return taskRepository.findAllByAssigneeIdAndCaseIdInOrderByCreatedAtDesc(stakeholderId.toString(), caseIds);
+		return taskRepository.findAllByAssigneeIdAndCaseIdIn(stakeholderId.toString(), caseIds, pageable);
 	}
 }

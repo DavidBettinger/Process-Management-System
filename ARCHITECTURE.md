@@ -370,7 +370,11 @@ Response 201:
 ```
 
 #### List Stakeholders
-GET `/api/stakeholders`
+GET `/api/stakeholders?page=0&size=20&sort=lastName,asc`
+Query params:
+- `page` (int, default `0`, min `0`)
+- `size` (int, default `20`, min `1`, max `100`)
+- `sort` (optional): `lastName,asc|desc` • `firstName,asc|desc` • `createdAt,asc|desc`
 Response 200:
 ```json
 {
@@ -381,12 +385,20 @@ Response 200:
       "lastName": "Becker",
       "role": "CONSULTANT"
     }
-  ]
+  ],
+  "page": 0,
+  "size": 20,
+  "totalItems": 1,
+  "totalPages": 1
 }
 ```
 
 #### List Tasks for Stakeholder
-GET `/api/stakeholders/{stakeholderId}/tasks`
+GET `/api/stakeholders/{stakeholderId}/tasks?page=0&size=20&sort=dueDate,asc`
+Query params:
+- `page` (int, default `0`, min `0`)
+- `size` (int, default `20`, min `1`, max `100`)
+- `sort` (optional): `dueDate,asc|desc` • `createdAt,asc|desc` • `state,asc|desc`
 Response 200:
 ```json
 {
@@ -400,7 +412,11 @@ Response 200:
       "assigneeId": "8a4a1cf3-6bbf-4f44-b8b8-6a0a0e5b8d2f",
       "dueDate": "2026-02-10"
     }
-  ]
+  ],
+  "page": 0,
+  "size": 20,
+  "totalItems": 1,
+  "totalPages": 1
 }
 ```
 

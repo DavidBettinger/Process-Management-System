@@ -8,6 +8,8 @@ import de.bettinger.processmgmt.common.infrastructure.persistence.StakeholderRep
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +47,11 @@ public class StakeholderService {
 	@Transactional(readOnly = true)
 	public List<StakeholderEntity> listStakeholders(String tenantId) {
 		return stakeholderRepository.findByTenantId(tenantId);
+	}
+
+	@Transactional(readOnly = true)
+	public Page<StakeholderEntity> listStakeholders(String tenantId, Pageable pageable) {
+		return stakeholderRepository.findByTenantId(tenantId, pageable);
 	}
 
 	@Transactional(readOnly = true)

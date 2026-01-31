@@ -13,6 +13,7 @@ import de.bettinger.processmgmt.collaboration.application.TaskCommandService;
 import de.bettinger.processmgmt.common.application.StakeholderService;
 import de.bettinger.processmgmt.common.domain.StakeholderRole;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -87,19 +88,55 @@ class StakeholdersControllerTest {
 	void listsStakeholdersByTenant() throws Exception {
 		String tenantId = "tenant-" + UUID.randomUUID();
 		String otherTenantId = "tenant-" + UUID.randomUUID();
-		UUID stakeholderId = stakeholderService.createStakeholder(tenantId, "Maria", "Becker",
-				StakeholderRole.CONSULTANT).getId();
+		stakeholderService.createStakeholder(tenantId, "Maria", "Becker", StakeholderRole.CONSULTANT);
+		stakeholderService.createStakeholder(tenantId, "Lena", "Meyer", StakeholderRole.DIRECTOR);
 		stakeholderService.createStakeholder(otherTenantId, "Lena", "Meyer", StakeholderRole.DIRECTOR);
 
 		mockMvc.perform(get("/api/stakeholders")
+						.param("page", "0")
+						.param("size", "1")
+						.param("sort", "lastName,asc")
 						.header(DevAuthFilter.USER_HEADER, "u-1")
 						.header(DevAuthFilter.TENANT_HEADER, tenantId))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.items.length()").value(1))
-				.andExpect(jsonPath("$.items[0].id").value(stakeholderId.toString()))
 				.andExpect(jsonPath("$.items[0].firstName").value("Maria"))
 				.andExpect(jsonPath("$.items[0].lastName").value("Becker"))
-				.andExpect(jsonPath("$.items[0].role").value("CONSULTANT"));
+				.andExpect(jsonPath("$.items[0].role").value("CONSULTANT"))
+				.andExpect(jsonPath("$.page").value(0))
+				.andExpect(jsonPath("$.size").value(1))
+				.andExpect(jsonPath("$.totalItems").value(2))
+				.andExpect(jsonPath("$.totalPages").value(2));
+	}
+
+	@Test
+	void rejectsNegativePageForStakeholders() throws Exception {
+		mockMvc.perform(get("/api/stakeholders")
+						.param("page", "-1")
+						.header(DevAuthFilter.USER_HEADER, "u-1")
+						.header(DevAuthFilter.TENANT_HEADER, "tenant-1"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+	}
+
+	@Test
+	void rejectsTooLargeSizeForStakeholders() throws Exception {
+		mockMvc.perform(get("/api/stakeholders")
+						.param("size", "999")
+						.header(DevAuthFilter.USER_HEADER, "u-1")
+						.header(DevAuthFilter.TENANT_HEADER, "tenant-1"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+	}
+
+	@Test
+	void rejectsInvalidSortForStakeholders() throws Exception {
+		mockMvc.perform(get("/api/stakeholders")
+						.param("sort", "unknown,asc")
+						.header(DevAuthFilter.USER_HEADER, "u-1")
+						.header(DevAuthFilter.TENANT_HEADER, "tenant-1"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
 	}
 
 	@Test
@@ -112,29 +149,48 @@ class StakeholdersControllerTest {
 		processCaseRepository.save(new ProcessCaseEntity(caseId, tenantId, "Fall A",
 				UUID.randomUUID(), ProcessCaseStatus.ACTIVE, Instant.now()));
 
-		UUID taskId = taskCommandService.createTask(caseId, "Task 1", "Desc", null).getId();
-		taskCommandService.assignTask(taskId, stakeholderId.toString());
+		UUID laterTaskId = taskCommandService
+				.createTask(caseId, "Task 1", "Desc", LocalDate.of(2026, 2, 10))
+				.getId();
+		taskCommandService.assignTask(laterTaskId, stakeholderId.toString());
+
+		UUID earlierTaskId = taskCommandService
+				.createTask(caseId, "Task 2", "Desc", LocalDate.of(2026, 2, 1))
+				.getId();
+		taskCommandService.assignTask(earlierTaskId, stakeholderId.toString());
 
 		UUID otherCaseId = UUID.randomUUID();
 		processCaseRepository.save(new ProcessCaseEntity(otherCaseId, tenantId, "Fall B",
 				UUID.randomUUID(), ProcessCaseStatus.ACTIVE, Instant.now()));
-		UUID otherTaskId = taskCommandService.createTask(otherCaseId, "Task 2", "Desc", null).getId();
+		UUID otherTaskId = taskCommandService
+				.createTask(otherCaseId, "Task 3", "Desc", LocalDate.of(2026, 2, 5))
+				.getId();
 		taskCommandService.assignTask(otherTaskId, "someone-else");
 
 		UUID otherTenantCaseId = UUID.randomUUID();
 		processCaseRepository.save(new ProcessCaseEntity(otherTenantCaseId, otherTenantId, "Fall C",
 				UUID.randomUUID(), ProcessCaseStatus.ACTIVE, Instant.now()));
-		UUID otherTenantTaskId = taskCommandService.createTask(otherTenantCaseId, "Task 3", "Desc", null).getId();
+		UUID otherTenantTaskId = taskCommandService
+				.createTask(otherTenantCaseId, "Task 4", "Desc", LocalDate.of(2026, 2, 3))
+				.getId();
 		taskCommandService.assignTask(otherTenantTaskId, stakeholderId.toString());
 
 		mockMvc.perform(get("/api/stakeholders/{stakeholderId}/tasks", stakeholderId)
+						.param("page", "0")
+						.param("size", "1")
+						.param("sort", "dueDate,asc")
 						.header(DevAuthFilter.USER_HEADER, "u-1")
 						.header(DevAuthFilter.TENANT_HEADER, tenantId))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.stakeholderId").value(stakeholderId.toString()))
 				.andExpect(jsonPath("$.items.length()").value(1))
-				.andExpect(jsonPath("$.items[0].id").value(taskId.toString()))
-				.andExpect(jsonPath("$.items[0].assigneeId").value(stakeholderId.toString()));
+				.andExpect(jsonPath("$.items[0].id").value(earlierTaskId.toString()))
+				.andExpect(jsonPath("$.items[0].assigneeId").value(stakeholderId.toString()))
+				.andExpect(jsonPath("$.items[0].dueDate").value("2026-02-01"))
+				.andExpect(jsonPath("$.page").value(0))
+				.andExpect(jsonPath("$.size").value(1))
+				.andExpect(jsonPath("$.totalItems").value(2))
+				.andExpect(jsonPath("$.totalPages").value(2));
 	}
 
 	@Test

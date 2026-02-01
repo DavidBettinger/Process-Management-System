@@ -7,45 +7,49 @@
     <button class="ghost-button" type="button" (click)="addItem()">Aufgabenpunkt hinzufuegen</button>
   </header>
 
-  <div class="empty" *ngIf="items.length === 0">
-    <p>Noch keine Aufgabenpunkte.</p>
-  </div>
+  @if (items.length === 0) {
+    <div class="empty">
+      <p>Noch keine Aufgabenpunkte.</p>
+    </div>
+  }
 
-  <div class="item" *ngFor="let item of items; let i = index; trackBy: trackByKey">
-    <div class="item-meta">
-      <span class="item-key">Key: {{ item.key }}</span>
-      <button class="ghost-button" type="button" (click)="removeItem(i)">Entfernen</button>
+  @for (item of items; track item.key; let i = $index) {
+    <div class="item">
+      <div class="item-meta">
+        <span class="item-key">Key: {{ item.key }}</span>
+        <button class="ghost-button" type="button" (click)="removeItem(i)">Entfernen</button>
+      </div>
+      <div class="item-fields">
+        <label>
+          Titel
+          <input
+            type="text"
+            [ngModel]="item.title"
+            (ngModelChange)="updateField(i, 'title', $event)"
+            [ngModelOptions]="{ standalone: true }"
+            placeholder="z.B. Konzeptentwurf erstellen"
+          />
+        </label>
+        <label>
+          Verantwortlich (optional)
+          <app-stakeholder-select
+            [stakeholders]="stakeholders"
+            [selectedId]="item.assigneeId || null"
+            [disabled]="stakeholders.length === 0"
+            [placeholder]="'Bitte waehlen'"
+            (selectedIdChange)="updateField(i, 'assigneeId', $event)"
+          />
+        </label>
+        <label>
+          Faellig am (optional)
+          <input
+            type="date"
+            [ngModel]="item.dueDate"
+            (ngModelChange)="updateField(i, 'dueDate', $event)"
+            [ngModelOptions]="{ standalone: true }"
+          />
+        </label>
+      </div>
     </div>
-    <div class="item-fields">
-      <label>
-        Titel
-        <input
-          type="text"
-          [ngModel]="item.title"
-          (ngModelChange)="updateField(i, 'title', $event)"
-          [ngModelOptions]="{ standalone: true }"
-          placeholder="z.B. Konzeptentwurf erstellen"
-        />
-      </label>
-      <label>
-        Verantwortlich (optional)
-        <app-stakeholder-select
-          [stakeholders]="stakeholders"
-          [selectedId]="item.assigneeId || null"
-          [disabled]="stakeholders.length === 0"
-          [placeholder]="'Bitte waehlen'"
-          (selectedIdChange)="updateField(i, 'assigneeId', $event)"
-        />
-      </label>
-      <label>
-        Faellig am (optional)
-        <input
-          type="date"
-          [ngModel]="item.dueDate"
-          (ngModelChange)="updateField(i, 'dueDate', $event)"
-          [ngModelOptions]="{ standalone: true }"
-        />
-      </label>
-    </div>
-  </div>
+  }
 </section>

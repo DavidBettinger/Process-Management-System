@@ -20,30 +20,173 @@ Make sure that you don't use deprecated features!
 
 ---
 
-### [x] T2.12 Add UI feedback system: toasts + confirmation dialogs
-**Objective:** Make MVP usable and safe (confirm destructive actions).
-**Files to touch:**
-- `frontend/src/app/shared/ui/toast.service.ts`
-- `frontend/src/app/shared/ui/confirm-dialog/*`
-  **Definition of done:**
-- Success toast on save.
-- Error toast shows mapped message.
-- Confirm dialog for resolve/cancel actions (optional).
-  **How to test:**
-- Unit tests for toast service; manual smoke test.
-Status: Done (2026-01-31).
+# [ ] Task FE-ANG-CF-001 Replace deprecated `*ngIf` / `*ngFor` with `@if` / `@for` and update SPEC.md
+
+Language: **English** (required)
+
+## Context
+Angular’s new built-in control flow syntax (`@if`, `@for`) should be used instead of legacy structural directives (`*ngIf`, `*ngFor`).  
+Goal: remove deprecated usage across the frontend and ensure Codex does not reintroduce deprecated templates.
+
+## Objective
+1) Replace **all** occurrences of:
+- `*ngIf` → `@if (...) { ... }`
+- `*ngFor` → `@for (...) { ... }`
+
+2) Update `SPEC.md` with an explicit rule:
+- “Do not use deprecated Angular template features (`*ngIf`, `*ngFor`). Use the built-in control flow (`@if`, `@for`).”
+
+3) Add/adjust tests so `npm test` passes.
 
 ---
 
-### [x] T2.13 Add shared form utilities + validation helpers
-**Objective:** Standardize required/enum validation and error display.
-**Files to touch:**
-- `frontend/src/app/shared/forms/*`
-  **Definition of done:**
-- Consistent error messages for required fields.
-  **How to test:**
-- Component test for create case form.
-Status: Done (2026-01-31).
+## Scope
+### In scope
+- All Angular templates (`.html`) under:
+  - `frontend/src/app/**`
+- Any inline templates in `.ts` files (search for backticks with `*ngIf` / `*ngFor`)
+- Any shared components and feature templates
+
+### Out of scope
+- Full UI redesign
+- Refactoring business logic unrelated to templates
+
+---
+
+## Preconditions / Compatibility Check
+Before changing templates, verify:
+- Angular version supports built-in control flow (Angular 17+).
+- `tsconfig` / build is configured to use it (usually default in Angular 17+).
+
+If the repo is not on Angular 17+, add a **TODO** note and stop; do not partially convert.
+
+---
+
+## Implementation Steps
+
+### 1) Add a “Frontend Rules” section in `SPEC.md`
+Update `SPEC.md` (or add a subsection under “Constraints”):
+- Use Angular built-in control flow:
+  - `@if`, `@for`, `@switch` (if applicable)
+- Do not use:
+  - `*ngIf`, `*ngFor`, `*ngSwitch`
+- Prefer `track` in `@for`
+
+Example snippet for SPEC.md:
+```md
+### Frontend (Angular) rules
+- Use Angular built-in control flow: `@if`, `@for`, `@switch`.
+- Do not use deprecated structural directives: `*ngIf`, `*ngFor`, `*ngSwitch`.
+- Always use `track` in `@for` loops (e.g., `track item.id`).
+```
+
+### 2) Replace `*ngIf` with `@if`
+Common patterns:
+
+**Before**
+```html
+<div *ngIf="isLoading">Loading...</div>
+```
+
+**After**
+```html
+@if (isLoading) {
+  <div>Loading...</div>
+}
+```
+
+**Before (else block)**
+```html
+<div *ngIf="items?.length; else empty">...</div>
+<ng-template #empty>Empty</ng-template>
+```
+
+**After**
+```html
+@if (items?.length) {
+  <div>...</div>
+} @else {
+  <div>Empty</div>
+}
+```
+
+> Replace `<ng-template #...>` else blocks with `@else` where possible.
+
+### 3) Replace `*ngFor` with `@for`
+**Before**
+```html
+<li *ngFor="let item of items; trackBy: trackById">{{ item.title }}</li>
+```
+
+**After**
+```html
+@for (item of items; track item.id) {
+  <li>{{ item.title }}</li>
+}
+```
+
+If there is no stable id, use index:
+```html
+@for (item of items; track $index) { ... }
+```
+
+### 4) Handle `*ngIf` + `*ngFor` combinations
+If nested directives exist, refactor with nested blocks:
+
+```html
+@if (items?.length) {
+  @for (item of items; track item.id) {
+    <app-item [item]="item" />
+  }
+} @else {
+  <app-empty-state />
+}
+```
+
+### 5) Update inline templates (if any)
+Search for `template: \`` and update control flow blocks similarly.
+
+---
+
+## Files to touch
+- `SPEC.md`
+- All affected Angular templates:
+  - `frontend/src/app/**/*.html`
+- Potentially affected inline templates:
+  - `frontend/src/app/**/*.ts`
+
+---
+
+## Tests
+### Required checks
+1) `cd frontend && npm test`
+2) `cd frontend && npm run build` (if available)
+
+### Add a guard test (recommended)
+Add a lightweight test or script check that fails if deprecated directives are present.
+
+**Option A (preferred): Jest/Vitest test**
+Create `frontend/src/app/_meta/no-deprecated-template-syntax.spec.ts`:
+- Read template files and assert they do not contain `*ngIf` or `*ngFor`.
+
+**Option B: npm script**
+Add `"check:templates": "grep -R \"\\*ngIf\\|\\*ngFor\" -n frontend/src/app && exit 1 || exit 0"`  
+(Only if your CI environment supports grep; otherwise prefer Option A.)
+
+---
+
+## Acceptance Criteria
+- There are **zero** `*ngIf` and `*ngFor` in the frontend codebase.
+- All templates compile using `@if` / `@for`.
+- SPEC.md contains the rule preventing deprecated syntax from being used again.
+- All unit tests pass.
+
+---
+
+## Definition of Done (DoD)
+- Search result count for `*ngIf` and `*ngFor` is 0.
+- `npm test` passes.
+- `SPEC.md` updated with the Angular template rules.
 
 ---
 

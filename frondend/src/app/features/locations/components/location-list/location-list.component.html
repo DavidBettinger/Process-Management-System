@@ -1,12 +1,14 @@
 <ul class="location-list">
-  <li class="location-card" *ngFor="let location of locations">
-    <div class="location-header">
-      <h3>{{ location.label }}</h3>
-    </div>
-    <div class="address">
-      <span>{{ location.address.street }} {{ location.address.houseNumber }}</span>
-      <span>{{ location.address.postalCode }} {{ location.address.city }}</span>
-      <span>{{ countryLabel(location.address.country) }}</span>
-    </div>
-  </li>
+  @for (location of locations; track location.id) {
+    <li class="location-card">
+      <div class="location-header">
+        <h3>{{ location.label }}</h3>
+      </div>
+      <div class="address">
+        <span>{{ location.address.street }} {{ location.address.houseNumber }}</span>
+        <span>{{ location.address.postalCode }} {{ location.address.city }}</span>
+        <span>{{ countryLabel(location.address.country) }}</span>
+      </div>
+    </li>
+  }
 </ul>

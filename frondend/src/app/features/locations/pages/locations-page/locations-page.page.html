@@ -11,26 +11,33 @@
     <app-location-form [isSubmitting]="isLoading()" (create)="handleCreate($event)" />
 
     <div class="list-panel">
-      <div class="state" *ngIf="isLoading()">
-        <div class="skeleton"></div>
-        <div class="skeleton"></div>
-      </div>
+      @if (isLoading()) {
+        <div class="state">
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+        </div>
+      }
 
-      <div class="state" *ngIf="status() === 'error'">
-        <p class="state-title">Standorte konnten nicht geladen werden</p>
-        <p class="state-text">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
-        <button class="ghost-button" type="button" (click)="locationsStore.loadLocations()">Erneut versuchen</button>
-      </div>
+      @if (status() === 'error') {
+        <div class="state">
+          <p class="state-title">Standorte konnten nicht geladen werden</p>
+          <p class="state-text">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
+          <button class="ghost-button" type="button" (click)="locationsStore.loadLocations()">
+            Erneut versuchen
+          </button>
+        </div>
+      }
 
-      <div class="state" *ngIf="isEmpty()">
-        <p class="state-title">Keine Standorte vorhanden</p>
-        <p class="state-text">Lege einen Standort an, damit Prozesse darauf verweisen koennen.</p>
-      </div>
+      @if (isEmpty()) {
+        <div class="state">
+          <p class="state-title">Keine Standorte vorhanden</p>
+          <p class="state-text">Lege einen Standort an, damit Prozesse darauf verweisen koennen.</p>
+        </div>
+      }
 
-      <app-location-list
-        *ngIf="status() === 'success' && locations().length > 0"
-        [locations]="locations()"
-      />
+      @if (status() === 'success' && locations().length > 0) {
+        <app-location-list [locations]="locations()" />
+      }
     </div>
   </div>
 </section>

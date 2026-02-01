@@ -2,25 +2,27 @@
   <div class="field">
     <label for="title">Prozess-Titel</label>
     <input id="title" type="text" formControlName="title" placeholder="Titel eingeben" />
-    <span class="error" *ngIf="isInvalid('title')">
-      {{ requiredMessage('Prozess-Titel') }}
-    </span>
+    @if (isInvalid('title')) {
+      <span class="error">{{ requiredMessage('Prozess-Titel') }}</span>
+    }
   </div>
 
   <div class="field">
     <label for="kitaId">Kita</label>
     <select id="kitaId" formControlName="kitaId">
       <option value="">Bitte waehlen</option>
-      <option *ngFor="let kita of kitas" [value]="kita.id">
-        {{ kita.name }} · {{ locationLabel(kita.locationId) }}
-      </option>
+      @for (kita of kitas; track kita.id) {
+        <option [value]="kita.id">
+          {{ kita.name }} · {{ locationLabel(kita.locationId) }}
+        </option>
+      }
     </select>
-    <span class="error" *ngIf="isInvalid('kitaId')">
-      {{ requiredMessage('Kita') }}
-    </span>
-    <p class="hint" *ngIf="kitas.length === 0">
-      Es sind noch keine Kitas vorhanden. Bitte zuerst eine Kita anlegen.
-    </p>
+    @if (isInvalid('kitaId')) {
+      <span class="error">{{ requiredMessage('Kita') }}</span>
+    }
+    @if (kitas.length === 0) {
+      <p class="hint">Es sind noch keine Kitas vorhanden. Bitte zuerst eine Kita anlegen.</p>
+    }
     <div class="links">
       <a routerLink="/kitas">Zu den Kitas</a>
       <a routerLink="/locations">Standort anlegen</a>

@@ -15,35 +15,45 @@
         (create)="handleCreate($event)"
       />
 
-      <div class="state" *ngIf="locationsStatus() === 'error'">
-        <p class="state-title">Standorte konnten nicht geladen werden</p>
-        <p class="state-text">{{ locationsError()?.message ?? 'Unbekannter Fehler' }}</p>
-        <button class="ghost-button" type="button" (click)="retryLocations()">Erneut versuchen</button>
-      </div>
+      @if (locationsStatus() === 'error') {
+        <div class="state">
+          <p class="state-title">Standorte konnten nicht geladen werden</p>
+          <p class="state-text">{{ locationsError()?.message ?? 'Unbekannter Fehler' }}</p>
+          <button class="ghost-button" type="button" (click)="retryLocations()">
+            Erneut versuchen
+          </button>
+        </div>
+      }
     </div>
 
     <div class="list-panel">
-      <div class="state" *ngIf="isLoading()">
-        <div class="skeleton"></div>
-        <div class="skeleton"></div>
-      </div>
+      @if (isLoading()) {
+        <div class="state">
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+        </div>
+      }
 
-      <div class="state" *ngIf="status() === 'error'">
-        <p class="state-title">Kitas konnten nicht geladen werden</p>
-        <p class="state-text">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
-        <button class="ghost-button" type="button" (click)="kitasStore.loadKitas()">Erneut versuchen</button>
-      </div>
+      @if (status() === 'error') {
+        <div class="state">
+          <p class="state-title">Kitas konnten nicht geladen werden</p>
+          <p class="state-text">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
+          <button class="ghost-button" type="button" (click)="kitasStore.loadKitas()">
+            Erneut versuchen
+          </button>
+        </div>
+      }
 
-      <div class="state" *ngIf="isEmpty()">
-        <p class="state-title">Keine Kitas vorhanden</p>
-        <p class="state-text">Lege eine Kita an oder erstelle zunaechst einen Standort.</p>
-      </div>
+      @if (isEmpty()) {
+        <div class="state">
+          <p class="state-title">Keine Kitas vorhanden</p>
+          <p class="state-text">Lege eine Kita an oder erstelle zunaechst einen Standort.</p>
+        </div>
+      }
 
-      <app-kita-list
-        *ngIf="status() === 'success' && kitas().length > 0"
-        [kitas]="kitas()"
-        [locations]="locations()"
-      />
+      @if (status() === 'success' && kitas().length > 0) {
+        <app-kita-list [kitas]="kitas()" [locations]="locations()" />
+      }
     </div>
   </div>
 </section>

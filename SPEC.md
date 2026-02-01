@@ -241,3 +241,8 @@ A process management app for **Kita consulting** (Fachberatung) to document and 
 
 #### Browser support
 •	Latest Chrome/Firefox/Edge, plus current Safari.
+
+### Frontend (Angular) rules
+- Use Angular built-in control flow: `@if`, `@for`, `@switch`.
+- Do not use deprecated structural directives: `*ngIf`, `*ngFor`, `*ngSwitch`.
+- Always use `track` in `@for` loops (e.g., `track item.id`).

@@ -11,28 +11,33 @@
     <app-stakeholder-form [isSubmitting]="isLoading()" (create)="handleCreate($event)" />
 
     <div class="list-panel">
-      <div class="state" *ngIf="isLoading()">
-        <div class="skeleton"></div>
-        <div class="skeleton"></div>
-      </div>
+      @if (isLoading()) {
+        <div class="state">
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+        </div>
+      }
 
-      <div class="state" *ngIf="status() === 'error'">
-        <p class="state-title">Beteiligte konnten nicht geladen werden</p>
-        <p class="state-text">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
-        <button class="ghost-button" type="button" (click)="stakeholdersStore.loadStakeholders()">
-          Erneut versuchen
-        </button>
-      </div>
+      @if (status() === 'error') {
+        <div class="state">
+          <p class="state-title">Beteiligte konnten nicht geladen werden</p>
+          <p class="state-text">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
+          <button class="ghost-button" type="button" (click)="stakeholdersStore.loadStakeholders()">
+            Erneut versuchen
+          </button>
+        </div>
+      }
 
-      <div class="state" *ngIf="isEmpty()">
-        <p class="state-title">Noch keine Beteiligten vorhanden</p>
-        <p class="state-text">Lege eine Person an, damit du sie Prozessen zuordnen kannst.</p>
-      </div>
+      @if (isEmpty()) {
+        <div class="state">
+          <p class="state-title">Noch keine Beteiligten vorhanden</p>
+          <p class="state-text">Lege eine Person an, damit du sie Prozessen zuordnen kannst.</p>
+        </div>
+      }
 
-      <app-stakeholder-list
-        *ngIf="status() === 'success' && stakeholders().length > 0"
-        [stakeholders]="stakeholders()"
-      />
+      @if (status() === 'success' && stakeholders().length > 0) {
+        <app-stakeholder-list [stakeholders]="stakeholders()" />
+      }
     </div>
   </div>
 </section>

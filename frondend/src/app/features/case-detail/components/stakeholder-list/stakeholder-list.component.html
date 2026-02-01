@@ -1,8 +1,16 @@
 <div class="stakeholder-list">
-  <p class="empty" *ngIf="stakeholders.length === 0">Keine Beteiligten vorhanden.</p>
-  <ul *ngIf="stakeholders.length > 0">
-    <li *ngFor="let stakeholder of stakeholders">
-      <span class="name">{{ stakeholder.userId | stakeholderLabel: roleLabel(stakeholder.role) }}</span>
-    </li>
-  </ul>
+  @if (stakeholders.length === 0) {
+    <p class="empty">Keine Beteiligten vorhanden.</p>
+  }
+  @if (stakeholders.length > 0) {
+    <ul>
+      @for (stakeholder of stakeholders; track stakeholder.userId) {
+        <li>
+          <span class="name">
+            {{ stakeholder.userId | stakeholderLabel: roleLabel(stakeholder.role) }}
+          </span>
+        </li>
+      }
+    </ul>
+  }
 </div>

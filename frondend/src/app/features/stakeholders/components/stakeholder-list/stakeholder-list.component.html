@@ -1,13 +1,15 @@
 <ul class="stakeholder-list">
-  <li class="stakeholder-card" *ngFor="let stakeholder of stakeholders">
-    <a class="stakeholder-link" [routerLink]="['/stakeholders', stakeholder.id]">
-      <div class="stakeholder-header">
-        <div>
-          <h3>{{ stakeholder.firstName }} {{ stakeholder.lastName }}</h3>
-          <p class="meta">Rolle: {{ roleLabel(stakeholder.role) }}</p>
+  @for (stakeholder of stakeholders; track stakeholder.id) {
+    <li class="stakeholder-card">
+      <a class="stakeholder-link" [routerLink]="['/stakeholders', stakeholder.id]">
+        <div class="stakeholder-header">
+          <div>
+            <h3>{{ stakeholder.firstName }} {{ stakeholder.lastName }}</h3>
+            <p class="meta">Rolle: {{ roleLabel(stakeholder.role) }}</p>
+          </div>
+          <span class="detail-hint">Details</span>
         </div>
-        <span class="detail-hint">Details</span>
-      </div>
-    </a>
-  </li>
+      </a>
+    </li>
+  }
 </ul>

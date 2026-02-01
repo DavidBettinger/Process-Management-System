@@ -7,43 +7,56 @@
   </header>
 
   <div class="panel">
-    <div class="state" *ngIf="stakeholdersStatus() === 'loading'">
-      <p class="state-title">Beteiligte werden geladen</p>
-    </div>
+    @if (stakeholdersStatus() === 'loading') {
+      <div class="state">
+        <p class="state-title">Beteiligte werden geladen</p>
+      </div>
+    }
 
-    <div class="state" *ngIf="stakeholdersStatus() === 'error'">
-      <p class="state-title">Beteiligte konnten nicht geladen werden</p>
-      <p class="state-text">{{ stakeholdersError()?.message ?? 'Unbekannter Fehler' }}</p>
-    </div>
+    @if (stakeholdersStatus() === 'error') {
+      <div class="state">
+        <p class="state-title">Beteiligte konnten nicht geladen werden</p>
+        <p class="state-text">{{ stakeholdersError()?.message ?? 'Unbekannter Fehler' }}</p>
+      </div>
+    }
 
-    <div class="state" *ngIf="isLoading()">
-      <div class="skeleton"></div>
-      <div class="skeleton"></div>
-    </div>
+    @if (isLoading()) {
+      <div class="state">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+      </div>
+    }
 
-    <div class="state" *ngIf="status() === 'error'">
-      <p class="state-title">Aufgaben konnten nicht geladen werden</p>
-      <p class="state-text">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
-      <button class="ghost-button" type="button" (click)="tasksStore.loadTasks()">Erneut versuchen</button>
-    </div>
+    @if (status() === 'error') {
+      <div class="state">
+        <p class="state-title">Aufgaben konnten nicht geladen werden</p>
+        <p class="state-text">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
+        <button class="ghost-button" type="button" (click)="tasksStore.loadTasks()">
+          Erneut versuchen
+        </button>
+      </div>
+    }
 
-    <div class="state" *ngIf="status() === 'success' && tasks().length === 0">
-      <p class="state-title">Keine Aufgaben vorhanden</p>
-      <p class="state-text">Erstelle Aufgaben in Terminen oder fuege sie spaeter hinzu.</p>
-    </div>
+    @if (status() === 'success' && tasks().length === 0) {
+      <div class="state">
+        <p class="state-title">Keine Aufgaben vorhanden</p>
+        <p class="state-text">Erstelle Aufgaben in Terminen oder fuege sie spaeter hinzu.</p>
+      </div>
+    }
 
-    <app-task-list
-      *ngIf="status() === 'success' && tasks().length > 0"
-      [tasks]="tasks()"
-      [busyTaskIds]="busyTaskIds()"
-      [stakeholders]="stakeholders()"
-      [stakeholdersReady]="stakeholdersStatus() === 'success'"
-      (assign)="handleAssign($event)"
-      (start)="handleStart($event)"
-      (block)="handleBlock($event)"
-      (unblock)="handleUnblock($event)"
-      (decline)="handleDecline($event)"
-      (resolve)="handleResolve($event)"
-    />
+    @if (status() === 'success' && tasks().length > 0) {
+      <app-task-list
+        [tasks]="tasks()"
+        [busyTaskIds]="busyTaskIds()"
+        [stakeholders]="stakeholders()"
+        [stakeholdersReady]="stakeholdersStatus() === 'success'"
+        (assign)="handleAssign($event)"
+        (start)="handleStart($event)"
+        (block)="handleBlock($event)"
+        (unblock)="handleUnblock($event)"
+        (decline)="handleDecline($event)"
+        (resolve)="handleResolve($event)"
+      />
+    }
   </div>
 </section>

@@ -1,28 +1,30 @@
 <div class="timeline">
-  <div class="timeline-entry" *ngFor="let entry of entries">
-    <div class="dot"></div>
-    <div>
-      <p class="entry-title">{{ titleFor(entry) }}</p>
-      <p class="entry-meta">
-        <ng-container [ngSwitch]="entry.type">
-          <ng-container *ngSwitchCase="'MEETING_HELD'">
-            {{ entry.meetingId | meetingLabel: entry.occurredAt : entry.locationId }}
-          </ng-container>
-          <ng-container *ngSwitchCase="'TASK_CREATED'">
-            {{ dateLabel(entry.occurredAt) }} • Aufgabe: {{ entry.taskId | taskLabel }}
-          </ng-container>
-          <ng-container *ngSwitchCase="'TASK_ASSIGNED'">
-            {{ dateLabel(entry.occurredAt) }} • Aufgabe: {{ entry.taskId | taskLabel }} • Zugewiesen an
-            {{ entry.assigneeId | stakeholderLabel }}
-          </ng-container>
-          <ng-container *ngSwitchCase="'TASK_RESOLVED'">
-            {{ dateLabel(entry.occurredAt) }} • Aufgabe: {{ entry.taskId | taskLabel }}
-          </ng-container>
-          <ng-container *ngSwitchDefault>
-            {{ dateLabel(entry.occurredAt) }} • Typ: {{ entry.type }}
-          </ng-container>
-        </ng-container>
-      </p>
+  @for (entry of entries; track $index) {
+    <div class="timeline-entry">
+      <div class="dot"></div>
+      <div>
+        <p class="entry-title">{{ titleFor(entry) }}</p>
+        <p class="entry-meta">
+          @switch (entry.type) {
+            @case ('MEETING_HELD') {
+              {{ entry.meetingId | meetingLabel: entry.occurredAt : entry.locationId }}
+            }
+            @case ('TASK_CREATED') {
+              {{ dateLabel(entry.occurredAt) }} • Aufgabe: {{ entry.taskId | taskLabel }}
+            }
+            @case ('TASK_ASSIGNED') {
+              {{ dateLabel(entry.occurredAt) }} • Aufgabe: {{ entry.taskId | taskLabel }} •
+              Zugewiesen an {{ entry.assigneeId | stakeholderLabel }}
+            }
+            @case ('TASK_RESOLVED') {
+              {{ dateLabel(entry.occurredAt) }} • Aufgabe: {{ entry.taskId | taskLabel }}
+            }
+            @default {
+              {{ dateLabel(entry.occurredAt) }} • Typ: {{ entry.type }}
+            }
+          }
+        </p>
+      </div>
     </div>
-  </div>
+  }
 </div>

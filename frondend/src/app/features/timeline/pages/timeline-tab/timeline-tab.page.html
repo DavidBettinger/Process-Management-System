@@ -7,22 +7,30 @@
   </header>
 
   <div class="panel">
-    <div class="state" *ngIf="isLoading()">
-      <div class="skeleton"></div>
-      <div class="skeleton"></div>
-    </div>
+    @if (isLoading()) {
+      <div class="state">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+      </div>
+    }
 
-    <div class="state" *ngIf="status() === 'error'">
-      <p class="state-title">Zeitlinie konnte nicht geladen werden</p>
-      <p class="state-text">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
-      <button class="ghost-button" type="button" (click)="retry()">Erneut versuchen</button>
-    </div>
+    @if (status() === 'error') {
+      <div class="state">
+        <p class="state-title">Zeitlinie konnte nicht geladen werden</p>
+        <p class="state-text">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
+        <button class="ghost-button" type="button" (click)="retry()">Erneut versuchen</button>
+      </div>
+    }
 
-    <div class="state" *ngIf="isEmpty()">
-      <p class="state-title">Noch keine Eintraege vorhanden</p>
-      <p class="state-text">Termine und Aufgaben erscheinen hier, sobald sie erstellt wurden.</p>
-    </div>
+    @if (isEmpty()) {
+      <div class="state">
+        <p class="state-title">Noch keine Eintraege vorhanden</p>
+        <p class="state-text">Termine und Aufgaben erscheinen hier, sobald sie erstellt wurden.</p>
+      </div>
+    }
 
-    <app-timeline-list *ngIf="status() === 'success' && entries().length > 0" [entries]="entries()" />
+    @if (status() === 'success' && entries().length > 0) {
+      <app-timeline-list [entries]="entries()" />
+    }
   </div>
 </section>

@@ -13,33 +13,45 @@
         (click)="activateCase()">
         Prozess aktivieren
       </button>
-      <p class="hint" *ngIf="activationHint()">{{ activationHint() }}</p>
+      @if (activationHint()) {
+        <p class="hint">{{ activationHint() }}</p>
+      }
     </div>
   </header>
 
   <div class="content-grid">
     <div class="panel">
-      <div class="state" *ngIf="isLoading()">
-        <div class="skeleton"></div>
-        <div class="skeleton"></div>
-      </div>
-
-      <div class="state" *ngIf="status() === 'error'">
-        <p class="state-title">Prozess konnte nicht geladen werden</p>
-        <p class="state-text">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
-        <button class="ghost-button" type="button" (click)="caseStore.loadCase()">Erneut versuchen</button>
-      </div>
-
-      <div *ngIf="status() === 'success' && caseData() as data" class="details">
-        <div class="meta">
-          <span class="status">{{ statusLabel(data.status) }}</span>
-          <span class="time">Kita: {{ kitaName(data.kitaId) }}</span>
+      @if (isLoading()) {
+        <div class="state">
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
         </div>
-        <h2>{{ data.title }}</h2>
-        <p class="info">Erstellt am: {{ data.createdAt | date: 'dd.MM.yyyy' }}</p>
-        <p class="info">Standort: {{ locationLabelForKita(data.kitaId) }}</p>
-        <p class="info">Adresse: {{ locationAddressForKita(data.kitaId) }}</p>
-      </div>
+      }
+
+      @if (status() === 'error') {
+        <div class="state">
+          <p class="state-title">Prozess konnte nicht geladen werden</p>
+          <p class="state-text">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
+          <button class="ghost-button" type="button" (click)="caseStore.loadCase()">
+            Erneut versuchen
+          </button>
+        </div>
+      }
+
+      @if (status() === 'success') {
+        @if (caseData(); as data) {
+          <div class="details">
+            <div class="meta">
+              <span class="status">{{ statusLabel(data.status) }}</span>
+              <span class="time">Kita: {{ kitaName(data.kitaId) }}</span>
+            </div>
+            <h2>{{ data.title }}</h2>
+            <p class="info">Erstellt am: {{ data.createdAt | date: 'dd.MM.yyyy' }}</p>
+            <p class="info">Standort: {{ locationLabelForKita(data.kitaId) }}</p>
+            <p class="info">Adresse: {{ locationAddressForKita(data.kitaId) }}</p>
+          </div>
+        }
+      }
     </div>
 
     <div class="panel">
@@ -60,17 +72,23 @@
             (selectedIdChange)="form.controls.stakeholderId.setValue($event ?? '')"
           />
         </label>
-        <div class="state" *ngIf="stakeholdersStatus() === 'loading'">
-          <p class="state-title">Beteiligte werden geladen</p>
-        </div>
-        <div class="state" *ngIf="stakeholdersStatus() === 'error'">
-          <p class="state-title">Beteiligte konnten nicht geladen werden</p>
-          <p class="state-text">{{ stakeholdersError()?.message ?? 'Unbekannter Fehler' }}</p>
-        </div>
+        @if (stakeholdersStatus() === 'loading') {
+          <div class="state">
+            <p class="state-title">Beteiligte werden geladen</p>
+          </div>
+        }
+        @if (stakeholdersStatus() === 'error') {
+          <div class="state">
+            <p class="state-title">Beteiligte konnten nicht geladen werden</p>
+            <p class="state-text">{{ stakeholdersError()?.message ?? 'Unbekannter Fehler' }}</p>
+          </div>
+        }
         <label>
           Rolle
           <select formControlName="role">
-            <option *ngFor="let option of roleOptions" [value]="option.value">{{ option.label }}</option>
+            @for (option of roleOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
           </select>
         </label>
         <button

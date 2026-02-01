@@ -1,5 +1,7 @@
 <div class="actions">
-  <p class="resolved" *ngIf="isResolved()">Aufgabe ist abgeschlossen. Aktionen sind deaktiviert.</p>
+  @if (isResolved()) {
+    <p class="resolved">Aufgabe ist abgeschlossen. Aktionen sind deaktiviert.</p>
+  }
 
   <div class="action-row">
     <div class="action-block">
@@ -70,7 +72,9 @@
       <h4>Abschliessen</h4>
       <form [formGroup]="resolveForm" (ngSubmit)="submitResolve()">
         <select formControlName="kind">
-          <option *ngFor="let option of resolveKinds" [value]="option.value">{{ option.label }}</option>
+          @for (option of resolveKinds; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
         </select>
         <input type="text" formControlName="reason" placeholder="Begruendung" />
         <button type="submit" class="ghost-button" [disabled]="!canResolve() || busy || resolveForm.invalid">

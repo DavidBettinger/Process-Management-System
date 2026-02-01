@@ -6,12 +6,14 @@
     </div>
   </header>
 
-  <div class="panel" *ngIf="status() === 'error'">
-    <div class="state">
-      <p class="state-title">Termin konnte nicht gespeichert werden</p>
-      <p class="state-text">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
+  @if (status() === 'error') {
+    <div class="panel">
+      <div class="state">
+        <p class="state-title">Termin konnte nicht gespeichert werden</p>
+        <p class="state-text">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
+      </div>
     </div>
-  </div>
+  }
 
   <div class="grid">
     <section class="panel">
@@ -25,16 +27,22 @@
           Standort
           <select formControlName="locationId">
             <option value="">Bitte waehlen</option>
-            <option *ngFor="let location of locations()" [value]="location.id">
-              {{ location.label }} · {{ location.address.city }}
-            </option>
+            @for (location of locations(); track location.id) {
+              <option [value]="location.id">
+                {{ location.label }} · {{ location.address.city }}
+              </option>
+            }
           </select>
         </label>
-        <div class="state" *ngIf="locationsStatus() === 'error'">
-          <p class="state-title">Standorte konnten nicht geladen werden</p>
-          <p class="state-text">{{ locationsError()?.message ?? 'Unbekannter Fehler' }}</p>
-          <button class="ghost-button" type="button" (click)="retryLocations()">Erneut versuchen</button>
-        </div>
+        @if (locationsStatus() === 'error') {
+          <div class="state">
+            <p class="state-title">Standorte konnten nicht geladen werden</p>
+            <p class="state-text">{{ locationsError()?.message ?? 'Unbekannter Fehler' }}</p>
+            <button class="ghost-button" type="button" (click)="retryLocations()">
+              Erneut versuchen
+            </button>
+          </div>
+        }
         <div class="participants">
           <div class="participants-header">
             <p>Teilnehmende</p>
@@ -42,31 +50,39 @@
               Teilnehmende hinzufuegen
             </button>
           </div>
-          <div class="participant-row" *ngFor="let participantId of scheduleParticipants; let i = index">
-            <app-stakeholder-select
-              [stakeholders]="stakeholders()"
-              [selectedId]="participantId || null"
-              [disabled]="stakeholdersStatus() !== 'success'"
-              [required]="true"
-              (selectedIdChange)="updateScheduleParticipant(i, $event)"
-            />
-            <button
-              class="ghost-button"
-              type="button"
-              (click)="removeScheduleParticipant(i)"
-              [disabled]="scheduleParticipants.length === 1"
-            >
-              Entfernen
-            </button>
-          </div>
-          <p class="error" *ngIf="scheduleParticipantsError">{{ scheduleParticipantsError }}</p>
-          <div class="state" *ngIf="stakeholdersStatus() === 'loading'">
-            <p class="state-title">Beteiligte werden geladen</p>
-          </div>
-          <div class="state" *ngIf="stakeholdersStatus() === 'error'">
-            <p class="state-title">Beteiligte konnten nicht geladen werden</p>
-            <p class="state-text">{{ stakeholdersError()?.message ?? 'Unbekannter Fehler' }}</p>
-          </div>
+          @for (participantId of scheduleParticipants; track $index; let i = $index) {
+            <div class="participant-row">
+              <app-stakeholder-select
+                [stakeholders]="stakeholders()"
+                [selectedId]="participantId || null"
+                [disabled]="stakeholdersStatus() !== 'success'"
+                [required]="true"
+                (selectedIdChange)="updateScheduleParticipant(i, $event)"
+              />
+              <button
+                class="ghost-button"
+                type="button"
+                (click)="removeScheduleParticipant(i)"
+                [disabled]="scheduleParticipants.length === 1"
+              >
+                Entfernen
+              </button>
+            </div>
+          }
+          @if (scheduleParticipantsError) {
+            <p class="error">{{ scheduleParticipantsError }}</p>
+          }
+          @if (stakeholdersStatus() === 'loading') {
+            <div class="state">
+              <p class="state-title">Beteiligte werden geladen</p>
+            </div>
+          }
+          @if (stakeholdersStatus() === 'error') {
+            <div class="state">
+              <p class="state-title">Beteiligte konnten nicht geladen werden</p>
+              <p class="state-text">{{ stakeholdersError()?.message ?? 'Unbekannter Fehler' }}</p>
+            </div>
+          }
         </div>
         <button
           class="primary-button"
@@ -77,20 +93,26 @@
         </button>
       </form>
 
-      <div class="state" *ngIf="meetings().length === 0">
-        <p class="state-title">Keine Termine geplant</p>
-        <p class="state-text">Plane einen Termin, um ihn im Prozess zu protokollieren.</p>
-      </div>
+      @if (meetings().length === 0) {
+        <div class="state">
+          <p class="state-title">Keine Termine geplant</p>
+          <p class="state-text">Plane einen Termin, um ihn im Prozess zu protokollieren.</p>
+        </div>
+      }
 
-      <div class="meeting-list" *ngIf="meetings().length > 0">
-        <article class="meeting-card" *ngFor="let meeting of meetings()">
-          <div class="meeting-meta">
-            <span class="status">{{ meetingStatusLabel(meeting.status) }}</span>
-            <span class="time">{{ meetingDateLabel(meeting) }}</span>
-          </div>
-          <p>Standort: {{ locationLabel(meeting.locationId) }}</p>
-        </article>
-      </div>
+      @if (meetings().length > 0) {
+        <div class="meeting-list">
+          @for (meeting of meetings(); track meeting.id) {
+            <article class="meeting-card">
+              <div class="meeting-meta">
+                <span class="status">{{ meetingStatusLabel(meeting.status) }}</span>
+                <span class="time">{{ meetingDateLabel(meeting) }}</span>
+              </div>
+              <p>Standort: {{ locationLabel(meeting.locationId) }}</p>
+            </article>
+          }
+        </div>
+      }
     </section>
 
     <section class="panel">

@@ -1,25 +1,27 @@
 <ul class="task-list">
-  <li class="task-card" *ngFor="let task of tasks">
-    <div class="task-header">
-      <div>
-        <p class="task-title">{{ task.title || 'Unbenannte Aufgabe' }}</p>
-        <p class="task-meta">Status: {{ statusLabel(task.state) }}</p>
+  @for (task of tasks; track task.id) {
+    <li class="task-card">
+      <div class="task-header">
+        <div>
+          <p class="task-title">{{ task.title || 'Unbenannte Aufgabe' }}</p>
+          <p class="task-meta">Status: {{ statusLabel(task.state) }}</p>
+        </div>
+        @if (task.assigneeId) {
+          <span class="assignee">Zustaendig: {{ task.assigneeId | stakeholderLabel }}</span>
+        }
       </div>
-      <span class="assignee" *ngIf="task.assigneeId">
-        Zustaendig: {{ task.assigneeId | stakeholderLabel }}
-      </span>
-    </div>
-    <app-task-actions
-      [task]="task"
-      [busy]="isBusy(task.id)"
-      [stakeholders]="stakeholders"
-      [stakeholdersReady]="stakeholdersReady"
-      (assign)="assign.emit($event)"
-      (start)="start.emit($event)"
-      (block)="block.emit($event)"
-      (unblock)="unblock.emit($event)"
-      (decline)="decline.emit($event)"
-      (resolve)="resolve.emit($event)"
-    />
-  </li>
+      <app-task-actions
+        [task]="task"
+        [busy]="isBusy(task.id)"
+        [stakeholders]="stakeholders"
+        [stakeholdersReady]="stakeholdersReady"
+        (assign)="assign.emit($event)"
+        (start)="start.emit($event)"
+        (block)="block.emit($event)"
+        (unblock)="unblock.emit($event)"
+        (decline)="decline.emit($event)"
+        (resolve)="resolve.emit($event)"
+      />
+    </li>
+  }
 </ul>

@@ -6,12 +6,14 @@
     (change)="onSelectionChange($event)"
   >
     <option value="" disabled>{{ placeholder }}</option>
-    <option *ngFor="let stakeholder of stakeholders" [value]="stakeholder.id">
-      {{ labelFor(stakeholder) }}
-    </option>
+    @for (stakeholder of stakeholders; track stakeholder.id) {
+      <option [value]="stakeholder.id">
+        {{ labelFor(stakeholder) }}
+      </option>
+    }
   </select>
 
-  <p class="empty" *ngIf="stakeholders.length === 0">
-    Keine Beteiligten vorhanden. <a href="/stakeholders">Jetzt anlegen</a>
-  </p>
+  @if (stakeholders.length === 0) {
+    <p class="empty">Keine Beteiligten vorhanden. <a href="/stakeholders">Jetzt anlegen</a></p>
+  }
 </div>

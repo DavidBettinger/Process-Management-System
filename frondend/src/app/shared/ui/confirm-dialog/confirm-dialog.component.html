@@ -1,19 +1,21 @@
-<div class="confirm-backdrop" *ngIf="dialog()" (click)="cancel()">
-  <div class="confirm-dialog" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
-    <h3>{{ dialog()?.title }}</h3>
-    <p>{{ dialog()?.message }}</p>
-    <div class="actions">
-      <button class="ghost-button" type="button" (click)="cancel()">
-        {{ dialog()?.cancelLabel ?? 'Abbrechen' }}
-      </button>
-      <button
-        class="primary-button"
-        type="button"
-        [class.destructive]="dialog()?.destructive"
-        (click)="confirm()"
-      >
-        {{ dialog()?.confirmLabel ?? 'Bestaetigen' }}
-      </button>
+@if (dialog(); as current) {
+  <div class="confirm-backdrop" (click)="cancel()">
+    <div class="confirm-dialog" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <h3>{{ current.title }}</h3>
+      <p>{{ current.message }}</p>
+      <div class="actions">
+        <button class="ghost-button" type="button" (click)="cancel()">
+          {{ current.cancelLabel ?? 'Abbrechen' }}
+        </button>
+        <button
+          class="primary-button"
+          type="button"
+          [class.destructive]="current.destructive"
+          (click)="confirm()"
+        >
+          {{ current.confirmLabel ?? 'Bestaetigen' }}
+        </button>
+      </div>
     </div>
   </div>
-</div>
+}

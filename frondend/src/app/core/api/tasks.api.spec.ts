@@ -8,6 +8,7 @@ import {
   DeclineTaskRequest,
   ResolveTaskRequest
 } from '../models/task.model';
+import { TaskAttachment } from '../models/task-attachment.model';
 
 describe('TasksApi', () => {
   let api: TasksApi;
@@ -113,5 +114,54 @@ describe('TasksApi', () => {
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual(payload);
     req.flush({ id: 'task-1', state: 'RESOLVED', assigneeId: 'u-1' });
+  });
+
+  it('uploads an attachment', () => {
+    const file = new File(['data'], 'bericht.pdf', { type: 'application/pdf' });
+
+    api.uploadAttachment('task-1', file).subscribe();
+
+    const req = httpMock.expectOne('/api/tasks/task-1/attachments');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body instanceof FormData).toBeTrue();
+    const body = req.request.body as FormData;
+    expect(body.get('file')).toBe(file);
+    req.flush({ id: 'att-1' });
+  });
+
+  it('lists attachments', () => {
+    api.listAttachments('task-1').subscribe();
+
+    const req = httpMock.expectOne('/api/tasks/task-1/attachments');
+    expect(req.request.method).toBe('GET');
+    const items: TaskAttachment[] = [
+      {
+        id: 'att-1',
+        taskId: 'task-1',
+        fileName: 'bericht.pdf',
+        contentType: 'application/pdf',
+        sizeBytes: 1200,
+        uploadedAt: '2026-02-01T10:00:00Z',
+        uploadedByStakeholderId: 's-1'
+      }
+    ];
+    req.flush({ items });
+  });
+
+  it('downloads an attachment', () => {
+    api.downloadAttachment('task-1', 'att-1').subscribe();
+
+    const req = httpMock.expectOne('/api/tasks/task-1/attachments/att-1');
+    expect(req.request.method).toBe('GET');
+    expect(req.request.responseType).toBe('blob');
+    req.flush(new Blob(['file']));
+  });
+
+  it('deletes an attachment', () => {
+    api.deleteAttachment('task-1', 'att-1').subscribe();
+
+    const req = httpMock.expectOne('/api/tasks/task-1/attachments/att-1');
+    expect(req.request.method).toBe('DELETE');
+    req.flush(null);
   });
 });

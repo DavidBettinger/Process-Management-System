@@ -4,11 +4,12 @@ import { Task, TaskResolutionKind } from '../../../../core/models/task.model';
 import { Stakeholder } from '../../../../core/models/stakeholder.model';
 import { TaskActionsComponent } from '../task-actions/task-actions.component';
 import { StakeholderLabelPipe } from '../../../../shared/labels/stakeholder-label.pipe';
+import { TaskAttachmentsComponent } from '../task-attachments/task-attachments.component';
 
 @Component({
   selector: 'app-task-list',
   standalone: true,
-  imports: [CommonModule, TaskActionsComponent, StakeholderLabelPipe],
+  imports: [CommonModule, TaskActionsComponent, StakeholderLabelPipe, TaskAttachmentsComponent],
   templateUrl: './task-list.component.html',
   styleUrl: './task-list.component.css'
 })

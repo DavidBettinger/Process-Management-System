@@ -18,6 +18,7 @@
       @if (task.description) {
         <p class="task-description">{{ task.description }}</p>
       }
+      <app-task-attachments [taskId]="task.id"></app-task-attachments>
       <app-task-actions
         [task]="task"
         [busy]="isBusy(task.id)"

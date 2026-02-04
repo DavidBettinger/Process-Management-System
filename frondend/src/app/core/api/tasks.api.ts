@@ -11,6 +11,10 @@ import {
   TaskStatusResponse,
   TasksResponse
 } from '../models/task.model';
+import {
+  TaskAttachmentsResponse,
+  UploadAttachmentResponse
+} from '../models/task-attachment.model';
 import { buildApiUrl } from './api.config';
 
 @Injectable({ providedIn: 'root' })
@@ -47,5 +51,25 @@ export class TasksApi {
 
   resolveTask(taskId: string, request: ResolveTaskRequest): Observable<TaskStatusResponse> {
     return this.http.post<TaskStatusResponse>(buildApiUrl(`/tasks/${taskId}/resolve`), request);
+  }
+
+  uploadAttachment(taskId: string, file: File): Observable<UploadAttachmentResponse> {
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+    return this.http.post<UploadAttachmentResponse>(buildApiUrl(`/tasks/${taskId}/attachments`), formData);
+  }
+
+  listAttachments(taskId: string): Observable<TaskAttachmentsResponse> {
+    return this.http.get<TaskAttachmentsResponse>(buildApiUrl(`/tasks/${taskId}/attachments`));
+  }
+
+  downloadAttachment(taskId: string, attachmentId: string): Observable<Blob> {
+    return this.http.get(buildApiUrl(`/tasks/${taskId}/attachments/${attachmentId}`), {
+      responseType: 'blob'
+    });
+  }
+
+  deleteAttachment(taskId: string, attachmentId: string): Observable<void> {
+    return this.http.delete<void>(buildApiUrl(`/tasks/${taskId}/attachments/${attachmentId}`));
   }
 }

@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { TaskListComponent } from './task-list.component';
 import { LabelResolverService } from '../../../../shared/labels/label-resolver.service';
 
@@ -11,7 +12,7 @@ class LabelResolverServiceStub {
 describe('TaskListComponent', () => {
   it('renders task title and assignee label without showing ids', () => {
     TestBed.configureTestingModule({
-      imports: [TaskListComponent],
+      imports: [TaskListComponent, HttpClientTestingModule],
       providers: [{ provide: LabelResolverService, useClass: LabelResolverServiceStub }]
     });
 

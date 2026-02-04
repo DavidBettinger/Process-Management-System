@@ -228,7 +228,7 @@ Reminder DTO:
 
 ---
 
-## [ ] Task 5 — Frontend: Attachments UI (add/list/download/delete) + tests
+## [x] Task 5 — Frontend: Attachments UI (add/list/download/delete) + tests
 
 **Task ID:** FE-TASK-ATT-005  
 **Objective:** Allow users to add files to a task and see attached files.

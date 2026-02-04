@@ -262,7 +262,7 @@ Reminder DTO:
 
 ---
 
-## [ ] Task 6 — Backend: Implement Task Reminders (create/list/delete) + tests
+## [x] Task 6 — Backend: Implement Task Reminders (create/list/delete) + tests
 
 **Task ID:** BE-TASK-REM-006  
 **Objective:** Add reminders linked to tasks and stakeholders.

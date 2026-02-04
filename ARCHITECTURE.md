@@ -770,6 +770,7 @@ Edge Cases & Validation
    - Attachment not found (download/delete) → 404.
 8) Reminder validation:
    - `remindAt` must be in the future (strictly later than request time) → 400.
+   - `note` optional; max length 1,000 chars → 400.
    - `stakeholderId` must exist and belong to tenant → 404 (or 403 for cross-tenant; be consistent).
    - Task not found → 404.
 9) Auth Strategy (MVP)

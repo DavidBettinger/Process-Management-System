@@ -515,6 +515,23 @@ Response 200: (includes stakeholders)
 
 Meetings
 
+#### List meetings
+GET /api/cases/{caseId}/meetings
+Response 200:
+```json
+{
+  "items": [
+    {
+      "id": "uuid",
+      "status": "SCHEDULED",
+      "scheduledAt": "2026-02-01T10:00:00Z",
+      "heldAt": null,
+      "locationId": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8"
+    }
+  ]
+}
+```
+
 #### Schedule meeting
 POST /api/cases/{caseId}/meetings
 Request:

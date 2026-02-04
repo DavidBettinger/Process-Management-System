@@ -22,6 +22,7 @@ class MeetingsStoreStub {
   holdResult = signal(null);
   setCaseIdValue: string | null = null;
   clearHoldResultCalls = 0;
+  loadCalls = 0;
 
   setCaseId = (caseId: string) => {
     this.setCaseIdValue = caseId;
@@ -29,7 +30,10 @@ class MeetingsStoreStub {
   clearHoldResult = () => {
     this.clearHoldResultCalls += 1;
   };
-  loadMeetings = () => of(void 0);
+  loadMeetings = () => {
+    this.loadCalls += 1;
+    return of(void 0);
+  };
   scheduleMeeting = () => of(void 0);
   holdMeeting = () => of(void 0);
 }
@@ -101,6 +105,7 @@ describe('MeetingsTabPageComponent', () => {
     expect(stakeholdersStore.loadCalls).toBe(1);
     expect(locationsStore.loadCalls).toBe(1);
     expect(kitasStore.loadCalls).toBe(1);
+    expect(meetingsStore.loadCalls).toBe(1);
   });
 
   it('shows stakeholder error state', () => {

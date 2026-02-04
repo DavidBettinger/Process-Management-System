@@ -50,6 +50,7 @@ A process management app for **Kita consulting** (Fachberatung) to document and 
 - Case stakeholders and roles
 - Paginated stakeholder lists and stakeholder task lists
 - Meetings (scheduled/held/cancelled) with minutes
+- Meetings list endpoint (`GET /api/cases/{caseId}/meetings`)
 - Tasks with lifecycle and resolution types:
     - completed, not completed, not applicable, cancelled
 - Health check endpoint (`GET /api/health`)

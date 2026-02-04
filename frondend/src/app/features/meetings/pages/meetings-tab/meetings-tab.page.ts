@@ -63,6 +63,7 @@ export class MeetingsTabPageComponent implements OnInit {
       const caseId = params.get('caseId');
       if (caseId) {
         this.meetingsStore.setCaseId(caseId);
+        this.meetingsStore.loadMeetings().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
       }
       this.meetingsStore.clearHoldResult();
     });

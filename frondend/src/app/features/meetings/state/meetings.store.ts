@@ -1,6 +1,6 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { Observable, defer, of, throwError } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { Observable, defer, of } from 'rxjs';
+import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { MeetingsApi } from '../../../core/api/meetings.api';
 import {
   HoldMeetingRequest,
@@ -29,14 +29,26 @@ export class MeetingsStore {
 
   loadMeetings(): Observable<void> {
     return defer(() => {
-      // TODO: Implement GET meetings for case once backend provides an endpoint.
-      const error = new Error('TODO: Implement GET meetings for case');
-      this.meetingsState.update((current) => ({
-        ...current,
-        status: 'error',
-        error: toStoreError(error)
-      }));
-      return throwError(() => error);
+      const caseId = this.caseId();
+      if (!caseId) {
+        this.meetingsState.update((current) => ({ ...current, status: 'error', error: missingCaseIdError() }));
+        return of(void 0);
+      }
+      this.meetingsState.update((current) => ({ ...current, status: 'loading', error: undefined }));
+      return this.meetingsApi.getMeetings(caseId).pipe(
+        tap((response) => {
+          this.meetingsState.update((current) => ({
+            ...current,
+            status: 'success',
+            items: response.items
+          }));
+        }),
+        map(() => void 0),
+        catchError((error) => {
+          this.meetingsState.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+          return of(void 0);
+        })
+      );
     });
   }
 
@@ -77,8 +89,8 @@ export class MeetingsStore {
       return this.meetingsApi.holdMeeting(caseId, meetingId, req).pipe(
         tap((result) => {
           this.holdResult.set(result);
-          this.meetingsState.update((current) => ({ ...current, status: 'success' }));
         }),
+        switchMap(() => this.loadMeetings()),
         map(() => void 0),
         catchError((error) => {
           this.meetingsState.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));

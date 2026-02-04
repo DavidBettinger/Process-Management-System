@@ -1,0 +1,41 @@
+<div class="task-fields" [formGroup]="form">
+  <label>
+    Titel
+    <input type="text" formControlName="title" placeholder="z.B. Konzeptentwurf vorbereiten" />
+    @if (isInvalid('title')) {
+      <span class="error">{{ requiredMessage('Titel') }}</span>
+    }
+  </label>
+
+  @if (showPriority) {
+    <label>
+      Prioritaet
+      <select formControlName="priority">
+        @for (option of priorityOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+      @if (isInvalid('priority')) {
+        <span class="error">{{ requiredMessage('Prioritaet') }}</span>
+      }
+    </label>
+  }
+
+  @if (showDescription) {
+    <label>
+      Beschreibung (optional)
+      <textarea
+        formControlName="description"
+        rows="3"
+        placeholder="Weitere Details oder Hinweise"
+      ></textarea>
+    </label>
+  }
+
+  @if (showDueDate) {
+    <label>
+      Faellig bis (optional)
+      <input type="date" formControlName="dueDate" />
+    </label>
+  }
+</div>

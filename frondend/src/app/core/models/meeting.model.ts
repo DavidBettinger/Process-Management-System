@@ -20,6 +20,10 @@ export interface Meeting {
   heldAt?: string | null;
 }
 
+export interface MeetingsResponse {
+  items: Meeting[];
+}
+
 export interface ActionItemRequest {
   key: string;
   title: string;

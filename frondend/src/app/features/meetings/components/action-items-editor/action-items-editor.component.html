@@ -4,8 +4,26 @@
       <h3>Aufgabenpunkte</h3>
       <p>Erstelle Aufgaben, die aus dem Termin entstehen.</p>
     </div>
-    <button class="ghost-button" type="button" (click)="addItem()">Aufgabenpunkt hinzufuegen</button>
   </header>
+
+  <div class="action-item-form">
+    <label>
+      Verantwortlich (optional)
+      <app-stakeholder-select
+        [stakeholders]="stakeholders"
+        [selectedId]="selectedAssigneeId"
+        [disabled]="stakeholders.length === 0"
+        [placeholder]="'Bitte waehlen'"
+        (selectedIdChange)="selectedAssigneeId = $event"
+      />
+    </label>
+    <app-task-create-form
+      [showHeader]="false"
+      [useFormTag]="false"
+      [submitLabel]="'Aufgabenpunkt hinzufuegen'"
+      (create)="handleCreate($event)"
+    />
+  </div>
 
   @if (items.length === 0) {
     <div class="empty">
@@ -13,43 +31,28 @@
     </div>
   }
 
-  @for (item of items; track item.key; let i = $index) {
-    <div class="item">
-      <div class="item-meta">
-        <span class="item-key">Key: {{ item.key }}</span>
-        <button class="ghost-button" type="button" (click)="removeItem(i)">Entfernen</button>
-      </div>
-      <div class="item-fields">
-        <label>
-          Titel
-          <input
-            type="text"
-            [ngModel]="item.title"
-            (ngModelChange)="updateField(i, 'title', $event)"
-            [ngModelOptions]="{ standalone: true }"
-            placeholder="z.B. Konzeptentwurf erstellen"
-          />
-        </label>
-        <label>
-          Verantwortlich (optional)
-          <app-stakeholder-select
-            [stakeholders]="stakeholders"
-            [selectedId]="item.assigneeId || null"
-            [disabled]="stakeholders.length === 0"
-            [placeholder]="'Bitte waehlen'"
-            (selectedIdChange)="updateField(i, 'assigneeId', $event)"
-          />
-        </label>
-        <label>
-          Faellig am (optional)
-          <input
-            type="date"
-            [ngModel]="item.dueDate"
-            (ngModelChange)="updateField(i, 'dueDate', $event)"
-            [ngModelOptions]="{ standalone: true }"
-          />
-        </label>
-      </div>
-    </div>
+  @if (items.length > 0) {
+    <ul class="action-items-list">
+      @for (item of items; track item.key; let i = $index) {
+        <li class="action-item">
+          <div class="action-item-main">
+            <p class="action-item-title">{{ item.title }}</p>
+            <p class="action-item-meta">
+              @if (item.assigneeId) {
+                <span>Verantwortlich: {{ assigneeLabel(item.assigneeId) }}</span>
+              }
+              @if (item.priority) {
+                <span>Prioritaet: {{ priorityLabel(item.priority) }}</span>
+              }
+              <span>Faellig: {{ formatDate(item.dueDate) }}</span>
+            </p>
+            @if (item.description) {
+              <p class="action-item-description">{{ item.description }}</p>
+            }
+          </div>
+          <button class="ghost-button" type="button" (click)="removeItem(i)">Entfernen</button>
+        </li>
+      }
+    </ul>
   }
 </section>

@@ -12,6 +12,14 @@ import { isControlInvalid, requiredMessage } from '../../../../shared/forms/form
   styleUrl: './task-create-form.component.css'
 })
 export class TaskCreateFormComponent {
+  @Input() showHeader = true;
+  @Input() headerTitle = 'Aufgabe erstellen';
+  @Input() headerSubtitle = 'Lege eine neue Aufgabe fuer diesen Prozess an.';
+  @Input() submitLabel = 'Aufgabe erstellen';
+  @Input() showPriority = true;
+  @Input() showDescription = true;
+  @Input() showDueDate = true;
+  @Input() useFormTag = true;
   @Input() loading = false;
   @Output() create = new EventEmitter<CreateTaskRequest>();
 

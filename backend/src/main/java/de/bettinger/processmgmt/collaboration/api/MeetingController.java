@@ -2,10 +2,13 @@ package de.bettinger.processmgmt.collaboration.api;
 
 import de.bettinger.processmgmt.collaboration.api.MeetingDtos.HoldMeetingRequest;
 import de.bettinger.processmgmt.collaboration.api.MeetingDtos.HoldMeetingResponse;
+import de.bettinger.processmgmt.collaboration.api.MeetingDtos.MeetingSummaryResponse;
+import de.bettinger.processmgmt.collaboration.api.MeetingDtos.MeetingsResponse;
 import de.bettinger.processmgmt.collaboration.api.MeetingDtos.ScheduleMeetingRequest;
 import de.bettinger.processmgmt.collaboration.api.MeetingDtos.ScheduleMeetingResponse;
 import de.bettinger.processmgmt.collaboration.application.MeetingActionItemCommand;
 import de.bettinger.processmgmt.collaboration.application.MeetingCommandService;
+import de.bettinger.processmgmt.collaboration.application.MeetingQueryService;
 import de.bettinger.processmgmt.collaboration.infrastructure.persistence.MeetingActionItemEntity;
 import de.bettinger.processmgmt.collaboration.infrastructure.persistence.MeetingEntity;
 import de.bettinger.processmgmt.auth.DevAuthFilter;
@@ -15,6 +18,7 @@ import java.util.Objects;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,9 +31,25 @@ import org.springframework.web.bind.annotation.RestController;
 public class MeetingController {
 
 	private final MeetingCommandService meetingCommandService;
+	private final MeetingQueryService meetingQueryService;
 
-	public MeetingController(MeetingCommandService meetingCommandService) {
+	public MeetingController(MeetingCommandService meetingCommandService, MeetingQueryService meetingQueryService) {
 		this.meetingCommandService = meetingCommandService;
+		this.meetingQueryService = meetingQueryService;
+	}
+
+	@GetMapping
+	public MeetingsResponse listMeetings(@PathVariable UUID caseId) {
+		List<MeetingSummaryResponse> items = meetingQueryService.listMeetings(caseId).stream()
+				.map(meeting -> new MeetingSummaryResponse(
+						meeting.getId(),
+						meeting.getStatus(),
+						meeting.getLocationId(),
+						meeting.getScheduledAt(),
+						meeting.getHeldAt()
+				))
+				.toList();
+		return new MeetingsResponse(items);
 	}
 
 	@PostMapping

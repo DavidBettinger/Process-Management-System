@@ -7,6 +7,12 @@ describe('MeetingsStore', () => {
   const createApi = (overrides?: Partial<MeetingsApi>): MeetingsApi => {
     return {
       scheduleMeeting: () => of({ id: 'm-1', status: 'SCHEDULED', locationId: 'location-1' }),
+      getMeetings: () =>
+        of({
+          items: [
+            { id: 'm-1', status: 'SCHEDULED', locationId: 'location-1', scheduledAt: '2026-01-01T10:00:00Z' }
+          ]
+        }),
       holdMeeting: () => of({ meetingId: 'm-1', createdTaskIds: [] }),
       ...overrides
     } as MeetingsApi;
@@ -58,18 +64,15 @@ describe('MeetingsStore', () => {
     expect(store.error()?.code).toBe('MISSING_CASE_ID');
   });
 
-  it('loadMeetings throws TODO when endpoint missing', () => {
+  it('loadMeetings stores meetings on success', () => {
     const store = new MeetingsStore(createApi());
-    let caught = false;
+    store.setCaseId('case-1');
 
-    store.loadMeetings().subscribe({
-      error: () => {
-        caught = true;
-      }
-    });
+    store.loadMeetings().subscribe();
 
-    expect(caught).toBe(true);
-    expect(store.status()).toBe('error');
+    expect(store.status()).toBe('success');
+    expect(store.meetings().length).toBe(1);
+    expect(store.meetings()[0].id).toBe('m-1');
   });
 
   it('stores errors on holdMeeting', () => {

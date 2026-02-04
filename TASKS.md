@@ -6,7 +6,7 @@ For each task: objective, files to touch, definition of done, how to test.
 ---
 
 ## 1) Backend — Spring Boot MVP
-
+- [x] Implement GET /api/cases/{caseId}/meetings and wire frontend loadMeetings
 
 ---
 ## 2) Frontend — Angular MVP
@@ -155,7 +155,7 @@ Reminder DTO:
 
 ---
 
-## [ ] Task 3 — Frontend: Extend Task model + forms (priority + description) + tests
+## [x] Task 3 — Frontend: Extend Task model + forms (priority + description) + tests
 
 **Task ID:** FE-TASK-EXT-003  
 **Objective:** Add priority and description to frontend models, task creation UI, task list UI.
@@ -169,7 +169,7 @@ Reminder DTO:
 - Store:
   - `tasks.store.ts` mapping updates
 - UI:
-  - Task create form: add
+  - Task create form (This form should be shown in the task list and it should replace the old form in the hold meeting): add 
     - priority select (1..5) with labels:
       - 1 = „Sehr wichtig“
       - 2 = „Wichtig“

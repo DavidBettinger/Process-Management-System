@@ -39,4 +39,11 @@ public final class MeetingDtos {
 
 	public record HoldMeetingResponse(UUID meetingId, List<UUID> createdTaskIds) {
 	}
+
+	public record MeetingSummaryResponse(UUID id, MeetingStatus status, UUID locationId, Instant scheduledAt,
+										 Instant heldAt) {
+	}
+
+	public record MeetingsResponse(List<MeetingSummaryResponse> items) {
+	}
 }

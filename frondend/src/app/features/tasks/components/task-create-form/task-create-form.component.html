@@ -1,46 +1,102 @@
 <section class="task-create">
-  <div class="task-create-header">
-    <h3>Aufgabe erstellen</h3>
-    <p>Lege eine neue Aufgabe fuer diesen Prozess an.</p>
-  </div>
+  @if (showHeader) {
+    <div class="task-create-header">
+      <h3>{{ headerTitle }}</h3>
+      <p>{{ headerSubtitle }}</p>
+    </div>
+  }
 
-  <form class="form" [formGroup]="form" (ngSubmit)="submit()">
-    <label>
-      Titel
-      <input type="text" formControlName="title" placeholder="z.B. Konzeptentwurf vorbereiten" />
-      @if (isInvalid('title')) {
-        <span class="error">{{ requiredMessage('Titel') }}</span>
-      }
-    </label>
-
-    <label>
-      Prioritaet
-      <select formControlName="priority">
-        @for (option of priorityOptions; track option.value) {
-          <option [value]="option.value">{{ option.label }}</option>
+  @if (useFormTag) {
+    <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+      <label>
+        Titel
+        <input type="text" formControlName="title" placeholder="z.B. Konzeptentwurf vorbereiten" />
+        @if (isInvalid('title')) {
+          <span class="error">{{ requiredMessage('Titel') }}</span>
         }
-      </select>
-      @if (isInvalid('priority')) {
-        <span class="error">{{ requiredMessage('Prioritaet') }}</span>
+      </label>
+
+      @if (showPriority) {
+        <label>
+          Prioritaet
+          <select formControlName="priority">
+            @for (option of priorityOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+          @if (isInvalid('priority')) {
+            <span class="error">{{ requiredMessage('Prioritaet') }}</span>
+          }
+        </label>
       }
-    </label>
 
-    <label>
-      Beschreibung (optional)
-      <textarea
-        formControlName="description"
-        rows="3"
-        placeholder="Weitere Details oder Hinweise"
-      ></textarea>
-    </label>
+      @if (showDescription) {
+        <label>
+          Beschreibung (optional)
+          <textarea
+            formControlName="description"
+            rows="3"
+            placeholder="Weitere Details oder Hinweise"
+          ></textarea>
+        </label>
+      }
 
-    <label>
-      Faellig bis (optional)
-      <input type="date" formControlName="dueDate" />
-    </label>
+      @if (showDueDate) {
+        <label>
+          Faellig bis (optional)
+          <input type="date" formControlName="dueDate" />
+        </label>
+      }
 
-    <button class="primary-button" type="submit" [disabled]="loading">
-      Aufgabe erstellen
-    </button>
-  </form>
+      <button class="primary-button" type="submit" [disabled]="loading">
+        {{ submitLabel }}
+      </button>
+    </form>
+  } @else {
+    <div class="form" [formGroup]="form">
+      <label>
+        Titel
+        <input type="text" formControlName="title" placeholder="z.B. Konzeptentwurf vorbereiten" />
+        @if (isInvalid('title')) {
+          <span class="error">{{ requiredMessage('Titel') }}</span>
+        }
+      </label>
+
+      @if (showPriority) {
+        <label>
+          Prioritaet
+          <select formControlName="priority">
+            @for (option of priorityOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+          @if (isInvalid('priority')) {
+            <span class="error">{{ requiredMessage('Prioritaet') }}</span>
+          }
+        </label>
+      }
+
+      @if (showDescription) {
+        <label>
+          Beschreibung (optional)
+          <textarea
+            formControlName="description"
+            rows="3"
+            placeholder="Weitere Details oder Hinweise"
+          ></textarea>
+        </label>
+      }
+
+      @if (showDueDate) {
+        <label>
+          Faellig bis (optional)
+          <input type="date" formControlName="dueDate" />
+        </label>
+      }
+
+      <button class="primary-button" type="button" [disabled]="loading" (click)="submit()">
+        {{ submitLabel }}
+      </button>
+    </div>
+  }
 </section>

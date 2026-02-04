@@ -1,20 +1,23 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { CreateTaskRequest } from '../../../../core/models/task.model';
 import { Stakeholder } from '../../../../core/models/stakeholder.model';
+import { TaskCreateFormComponent } from '../../../tasks/components/task-create-form/task-create-form.component';
 import { StakeholderSelectComponent } from '../../../../shared/ui/stakeholder-select/stakeholder-select.component';
 
 export interface ActionItemDraft {
   key: string;
   title: string;
-  assigneeId: string;
+  assigneeId?: string | null;
   dueDate: string | null;
+  priority?: number | null;
+  description?: string | null;
 }
 
 @Component({
   selector: 'app-action-items-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, StakeholderSelectComponent],
+  imports: [CommonModule, TaskCreateFormComponent, StakeholderSelectComponent],
   templateUrl: './action-items-editor.component.html',
   styleUrl: './action-items-editor.component.css'
 })
@@ -23,41 +26,77 @@ export class ActionItemsEditorComponent {
   @Input() stakeholders: Stakeholder[] = [];
   @Output() itemsChange = new EventEmitter<ActionItemDraft[]>();
 
-  addItem(): void {
-    const next = [...this.items, this.buildItem()];
-    this.itemsChange.emit(next);
-  }
-
   removeItem(index: number): void {
     const next = this.items.filter((_, idx) => idx !== index);
     this.itemsChange.emit(next);
   }
 
-  updateField(index: number, field: keyof ActionItemDraft, value: string | null): void {
-    const nextValue = field === 'dueDate' ? (value ? value : null) : (value ?? '');
-    const next = this.items.map((item, idx) => {
-      if (idx !== index) {
-        return item;
+  selectedAssigneeId: string | null = null;
+
+  handleCreate(request: CreateTaskRequest): void {
+    const title = request.title.trim();
+    if (!title) {
+      return;
+    }
+    const description = request.description?.trim() ? request.description.trim() : null;
+    const next = [
+      ...this.items,
+      {
+        key: this.createKey(),
+        title,
+        assigneeId: this.selectedAssigneeId ?? null,
+        dueDate: request.dueDate ?? null,
+        priority: request.priority,
+        description
       }
-      return {
-        ...item,
-        [field]: nextValue
-      } as ActionItemDraft;
-    });
+    ];
     this.itemsChange.emit(next);
+    this.selectedAssigneeId = null;
   }
 
   trackByKey(_: number, item: ActionItemDraft): string {
     return item.key;
   }
 
-  private buildItem(): ActionItemDraft {
-    return {
-      key: this.createKey(),
-      title: '',
-      assigneeId: '',
-      dueDate: null
-    };
+  assigneeLabel(assigneeId?: string | null): string {
+    if (!assigneeId) {
+      return 'Unbekannt';
+    }
+    const match = this.stakeholders.find((stakeholder) => stakeholder.id === assigneeId);
+    if (!match) {
+      return 'Unbekannt';
+    }
+    return `${match.firstName} ${match.lastName}`;
+  }
+
+  priorityLabel(priority?: number | null): string {
+    if (priority === 1) {
+      return 'Sehr wichtig';
+    }
+    if (priority === 2) {
+      return 'Wichtig';
+    }
+    if (priority === 3) {
+      return 'Mittel';
+    }
+    if (priority === 4) {
+      return 'Eher unwichtig';
+    }
+    if (priority === 5) {
+      return 'Nicht wichtig';
+    }
+    return 'Unbekannt';
+  }
+
+  formatDate(value: string | null): string {
+    if (!value) {
+      return 'Kein Datum';
+    }
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return 'Kein Datum';
+    }
+    return parsed.toLocaleDateString('de-DE');
   }
 
   private createKey(): string {

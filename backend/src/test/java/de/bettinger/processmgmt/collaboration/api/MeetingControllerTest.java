@@ -5,9 +5,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import de.bettinger.processmgmt.auth.DevAuthFilter;
+import de.bettinger.processmgmt.collaboration.application.MeetingCommandService;
 import de.bettinger.processmgmt.common.domain.Address;
 import de.bettinger.processmgmt.common.infrastructure.persistence.LocationEntity;
 import de.bettinger.processmgmt.common.infrastructure.persistence.LocationRepository;
+import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +28,9 @@ class MeetingControllerTest {
 
 	@Autowired
 	private LocationRepository locationRepository;
+
+	@Autowired
+	private MeetingCommandService meetingCommandService;
 
 	private MockMvc mockMvc;
 
@@ -79,6 +84,29 @@ class MeetingControllerTest {
 						.content(payload))
 					.andExpect(status().isNotFound())
 					.andExpect(jsonPath("$.code").value("NOT_FOUND"));
+	}
+
+	@Test
+	void listsMeetingsForCase() throws Exception {
+		String tenantId = "tenant-1";
+		UUID caseId = UUID.randomUUID();
+		UUID locationId = seedLocation(tenantId, "Kita Sonnenblume");
+		meetingCommandService.scheduleMeeting(
+				tenantId,
+				caseId,
+				locationId,
+				Instant.parse("2026-02-01T10:00:00Z"),
+				java.util.List.of("u-1")
+		);
+
+		mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get(
+						"/api/cases/{caseId}/meetings", caseId)
+						.header(DevAuthFilter.USER_HEADER, "u-1")
+						.header(DevAuthFilter.TENANT_HEADER, tenantId))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.items").isArray())
+				.andExpect(jsonPath("$.items[0].locationId").value(locationId.toString()))
+				.andExpect(jsonPath("$.items[0].status").value("SCHEDULED"));
 	}
 
 	private UUID seedLocation(String tenantId, String label) {

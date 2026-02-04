@@ -1,0 +1,33 @@
+.task-fields {
+  display: grid;
+  gap: 0.9rem;
+}
+
+label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: rgba(16, 18, 24, 0.75);
+  font-weight: 600;
+}
+
+input,
+select,
+textarea {
+  padding: 0.6rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid rgba(16, 18, 24, 0.2);
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: #101218;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.error {
+  color: #b24d4d;
+  font-size: 0.8rem;
+  font-weight: 500;
+}

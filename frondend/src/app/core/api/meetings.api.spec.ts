@@ -50,4 +50,16 @@ describe('MeetingsApi', () => {
     expect(req.request.body).toEqual(payload);
     req.flush({ meetingId: 'm-1', createdTaskIds: [] });
   });
+
+  it('gets meetings for a case', () => {
+    api.getMeetings('case-1').subscribe();
+
+    const req = httpMock.expectOne('/api/cases/case-1/meetings');
+    expect(req.request.method).toBe('GET');
+    req.flush({
+      items: [
+        { id: 'm-1', status: 'SCHEDULED', locationId: 'location-1', scheduledAt: '2026-01-02T09:00:00Z' }
+      ]
+    });
+  });
 });

@@ -5,6 +5,7 @@ export type TaskResolutionKind = 'COMPLETED' | 'NOT_COMPLETED' | 'NOT_APPLICABLE
 export interface CreateTaskRequest {
   title: string;
   description?: string | null;
+  priority: number;
   dueDate?: string | null;
 }
 
@@ -22,6 +23,8 @@ export interface TaskStatusResponse {
 export interface Task {
   id: string;
   title: string;
+  description?: string | null;
+  priority: number;
   state: TaskState;
   assigneeId?: string | null;
 }

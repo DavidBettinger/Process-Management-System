@@ -39,7 +39,7 @@ This task set implements new requirements:
 
 ---
 
-## [ ] Task 1 — Update API Contracts in `ARCHITECTURE.md` (Task fields + Attachments + Reminders)
+## [x] Task 1 — Update API Contracts in `ARCHITECTURE.md` (Task fields + Attachments + Reminders)
 
 **Task ID:** DOC-TASK-EXT-001  
 **Objective:** Update `ARCHITECTURE.md` so Codex has a stable contract for:
@@ -126,7 +126,7 @@ Reminder DTO:
 
 ---
 
-## [ ] Task 2 — Backend: Add Task priority + description (DB + domain + API + tests)
+## [x] Task 2 — Backend: Add Task priority + description (DB + domain + API + tests)
 
 **Task ID:** BE-TASK-EXT-002  
 **Objective:** Extend backend task model with `priority` and `description`, persist them, and expose them via API.

@@ -6,6 +6,8 @@ describe('TaskActionsComponent', () => {
   const buildTask = (state: Task['state']): Task => ({
     id: 'task-1',
     title: 'Konzept',
+    description: 'Beschreibung',
+    priority: 3,
     state,
     assigneeId: 'u-1'
   });

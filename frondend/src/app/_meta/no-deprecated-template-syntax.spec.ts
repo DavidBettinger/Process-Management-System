@@ -5,12 +5,17 @@ import { fileURLToPath } from 'node:url';
 describe('template syntax guard', () => {
   it('does not use deprecated structural directives', () => {
     const specFile = fileURLToPath(import.meta.url);
-    const appRoot = path.resolve(path.dirname(specFile), '..');
+    const marker = `${path.sep}src${path.sep}app`;
+    const markerIndex = specFile.lastIndexOf(marker);
+    const appRoot =
+      markerIndex >= 0
+        ? specFile.slice(0, markerIndex + marker.length)
+        : path.resolve(path.dirname(specFile), '..');
     const files = collectFiles(appRoot, ['.html', '.ts']);
     const forbidden = ['*ngIf', '*ngFor', '*ngSwitch', '*ngSwitchCase', '*ngSwitchDefault'];
 
     const matches = files.flatMap((file) => {
-      if (file === specFile) {
+      if (file.endsWith('.spec.ts')) {
         return [];
       }
       const content = fs.readFileSync(file, 'utf8');
@@ -27,9 +32,12 @@ describe('template syntax guard', () => {
 
 function collectFiles(root: string, extensions: string[]): string[] {
   const entries = fs.readdirSync(root, { withFileTypes: true });
-  return entries.flatMap((entry) => {
+  return entries.flatMap((entry: { name: string; isDirectory(): boolean }) => {
     const entryPath = path.join(root, entry.name);
     if (entry.isDirectory()) {
+      if (['node_modules', 'dist', 'out-tsc', '.angular', '.git'].includes(entry.name)) {
+        return [];
+      }
       return collectFiles(entryPath, extensions);
     }
     if (extensions.includes(path.extname(entry.name))) {

@@ -1,13 +1,18 @@
 import { Subject, of, throwError } from 'rxjs';
 import { TasksStore } from './tasks.store';
 import { TasksApi } from '../../../core/api/tasks.api';
-import { TaskStatusResponse } from '../../../core/models/task.model';
+import { CreateTaskRequest, TaskStatusResponse } from '../../../core/models/task.model';
 
 describe('TasksStore', () => {
   const createApi = (overrides?: Partial<TasksApi>): TasksApi => {
     return {
       createTask: () => of({ id: 'task-1', state: 'OPEN' }),
-      getTasks: () => of({ items: [{ id: 'task-1', title: 'Titel', state: 'OPEN', assigneeId: null }] }),
+      getTasks: () =>
+        of({
+          items: [
+            { id: 'task-1', title: 'Titel', description: 'Desc', priority: 3, state: 'OPEN', assigneeId: null }
+          ]
+        }),
       assignTask: () => of({ id: 'task-1', state: 'ASSIGNED', assigneeId: 'u-1' }),
       startTask: () => of({ id: 'task-1', state: 'IN_PROGRESS', assigneeId: 'u-1' }),
       blockTask: () => of({ id: 'task-1', state: 'BLOCKED', assigneeId: 'u-1' }),
@@ -43,10 +48,25 @@ describe('TasksStore', () => {
   it('sets error when caseId is missing for createTask', () => {
     const store = new TasksStore(createApi());
 
-    store.createTask({ title: 'Titel', description: 'Desc', dueDate: null }).subscribe();
+    store.createTask({ title: 'Titel', description: 'Desc', priority: 3, dueDate: null }).subscribe();
 
     expect(store.status()).toBe('error');
     expect(store.error()?.code).toBe('MISSING_CASE_ID');
+  });
+
+  it('forwards priority when creating a task', () => {
+    let received: CreateTaskRequest | null = null;
+    const store = new TasksStore(createApi({
+      createTask: (_caseId, payload) => {
+        received = payload;
+        return of({ id: 'task-1', state: 'OPEN' });
+      }
+    }));
+    store.setCaseId('case-1');
+
+    store.createTask({ title: 'Titel', description: 'Desc', priority: 2, dueDate: null }).subscribe();
+
+    expect(received).toEqual({ title: 'Titel', description: 'Desc', priority: 2, dueDate: null });
   });
 
   it('sets error when caseId is missing for loadTasks', () => {
@@ -78,6 +98,8 @@ describe('TasksStore', () => {
 
     expect(store.status()).toBe('success');
     expect(store.tasks()).toHaveLength(1);
+    expect(store.tasks()[0]?.priority).toBe(3);
+    expect(store.tasks()[0]?.description).toBe('Desc');
     expect(store.error()).toBeUndefined();
   });
 

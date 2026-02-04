@@ -7,6 +7,9 @@
   </header>
 
   <div class="panel">
+    <app-task-create-form [loading]="isLoading()" (create)="handleCreate($event)" />
+    <div class="divider"></div>
+
     @if (stakeholdersStatus() === 'loading') {
       <div class="state">
         <p class="state-title">Beteiligte werden geladen</p>

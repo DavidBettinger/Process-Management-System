@@ -26,7 +26,7 @@ describe('TasksApi', () => {
   });
 
   it('creates a task', () => {
-    const payload: CreateTaskRequest = { title: 'Titel', description: 'Desc', dueDate: null };
+    const payload: CreateTaskRequest = { title: 'Titel', description: 'Desc', priority: 2, dueDate: null };
 
     api.createTask('case-1', payload).subscribe();
 
@@ -41,7 +41,18 @@ describe('TasksApi', () => {
 
     const req = httpMock.expectOne('/api/cases/case-1/tasks');
     expect(req.request.method).toBe('GET');
-    req.flush({ items: [{ id: 'task-1', title: 'Titel', state: 'OPEN', assigneeId: null }] });
+    req.flush({
+      items: [
+        {
+          id: 'task-1',
+          title: 'Titel',
+          description: 'Desc',
+          priority: 2,
+          state: 'OPEN',
+          assigneeId: null
+        }
+      ]
+    });
   });
 
   it('assigns a task', () => {

@@ -17,7 +17,14 @@ describe('TaskListComponent', () => {
 
     const fixture = TestBed.createComponent(TaskListComponent);
     fixture.componentInstance.tasks = [
-      { id: 'task-1', title: 'Kinderschutz-Konzept', state: 'ASSIGNED', assigneeId: 's-1' }
+      {
+        id: 'task-1',
+        title: 'Kinderschutz-Konzept',
+        description: 'Kurzbeschreibung',
+        priority: 1,
+        state: 'ASSIGNED',
+        assigneeId: 's-1'
+      }
     ];
     fixture.componentInstance.stakeholders = [
       { id: 's-1', firstName: 'Maria', lastName: 'Becker', role: 'CONSULTANT' }
@@ -26,6 +33,7 @@ describe('TaskListComponent', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Kinderschutz-Konzept');
+    expect(compiled.textContent).toContain('Sehr wichtig');
     expect(compiled.textContent).toContain('Maria Becker');
     expect(compiled.textContent).not.toContain('task-1');
     expect(compiled.textContent).not.toContain('s-1');

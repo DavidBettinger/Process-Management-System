@@ -4,17 +4,23 @@ import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TasksStore } from '../../state/tasks.store';
 import { TaskListComponent } from '../../components/task-list/task-list.component';
-import { AssignTaskRequest, DeclineTaskRequest, ResolveTaskRequest } from '../../../../core/models/task.model';
+import {
+  AssignTaskRequest,
+  CreateTaskRequest,
+  DeclineTaskRequest,
+  ResolveTaskRequest
+} from '../../../../core/models/task.model';
 import { StakeholdersStore } from '../../../stakeholders/state/stakeholders.store';
 import { Observable, of } from 'rxjs';
 import { finalize, switchMap } from 'rxjs/operators';
 import { ToastService } from '../../../../shared/ui/toast.service';
 import { ConfirmDialogService } from '../../../../shared/ui/confirm-dialog/confirm-dialog.service';
+import { TaskCreateFormComponent } from '../../components/task-create-form/task-create-form.component';
 
 @Component({
   selector: 'app-tasks-tab-page',
   standalone: true,
-  imports: [CommonModule, TaskListComponent],
+  imports: [CommonModule, TaskListComponent, TaskCreateFormComponent],
   templateUrl: './tasks-tab.page.html',
   styleUrl: './tasks-tab.page.css'
 })
@@ -50,6 +56,10 @@ export class TasksTabPageComponent implements OnInit {
   handleAssign(payload: { taskId: string; assigneeId: string }): void {
     const req: AssignTaskRequest = { assigneeId: payload.assigneeId };
     this.runAction(this.tasksStore.assignTask(payload.taskId, req));
+  }
+
+  handleCreate(payload: CreateTaskRequest): void {
+    this.runAction(this.tasksStore.createTask(payload));
   }
 
   handleStart(taskId: string): void {

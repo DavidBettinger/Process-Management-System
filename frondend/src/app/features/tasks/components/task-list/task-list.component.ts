@@ -44,6 +44,32 @@ export class TaskListComponent {
     return 'Unbekannt';
   }
 
+  priorityLabel(priority: number): string {
+    if (priority === 1) {
+      return 'Sehr wichtig';
+    }
+    if (priority === 2) {
+      return 'Wichtig';
+    }
+    if (priority === 3) {
+      return 'Mittel';
+    }
+    if (priority === 4) {
+      return 'Eher unwichtig';
+    }
+    if (priority === 5) {
+      return 'Nicht wichtig';
+    }
+    return 'Unbekannt';
+  }
+
+  priorityClass(priority: number): string {
+    if (priority >= 1 && priority <= 5) {
+      return `priority-${priority}`;
+    }
+    return '';
+  }
+
   isBusy(taskId: string): boolean {
     return this.busyTaskIds.has(taskId);
   }

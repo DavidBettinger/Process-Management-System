@@ -4,12 +4,20 @@
       <div class="task-header">
         <div>
           <p class="task-title">{{ task.title || 'Unbenannte Aufgabe' }}</p>
-          <p class="task-meta">Status: {{ statusLabel(task.state) }}</p>
+          <p class="task-meta">
+            Status: {{ statusLabel(task.state) }}
+            <span class="priority-badge" [class]="priorityClass(task.priority)">
+              Prioritaet: {{ priorityLabel(task.priority) }}
+            </span>
+          </p>
         </div>
         @if (task.assigneeId) {
           <span class="assignee">Zustaendig: {{ task.assigneeId | stakeholderLabel }}</span>
         }
       </div>
+      @if (task.description) {
+        <p class="task-description">{{ task.description }}</p>
+      }
       <app-task-actions
         [task]="task"
         [busy]="isBusy(task.id)"

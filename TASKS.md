@@ -189,7 +189,7 @@ Reminder DTO:
 
 ---
 
-## [ ] Task 4 — Backend: Implement Task Attachments (upload/list/download) with storage strategy + tests
+## [x] Task 4 — Backend: Implement Task Attachments (upload/list/download) with storage strategy + tests
 
 **Task ID:** BE-TASK-ATT-004  
 **Objective:** Add attachments to tasks: upload, list, download.

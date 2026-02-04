@@ -43,7 +43,8 @@ public class TaskController {
 			@PathVariable UUID caseId,
 			@Valid @RequestBody CreateTaskRequest request
 	) {
-		TaskEntity task = taskCommandService.createTask(caseId, request.title(), request.description(), request.dueDate());
+		TaskEntity task = taskCommandService.createTask(caseId, request.title(), request.description(),
+				request.priority(), request.dueDate());
 		return ResponseEntity.status(HttpStatus.CREATED)
 				.body(new CreateTaskResponse(task.getId(), task.getState()));
 	}
@@ -51,7 +52,8 @@ public class TaskController {
 	@GetMapping("/cases/{caseId}/tasks")
 	public TasksResponse listTasks(@PathVariable UUID caseId) {
 		List<TaskSummaryResponse> items = taskQueryService.listTasks(caseId).stream()
-				.map(task -> new TaskSummaryResponse(task.getId(), task.getTitle(), task.getState(), task.getAssigneeId()))
+				.map(task -> new TaskSummaryResponse(task.getId(), task.getTitle(), task.getDescription(),
+						task.getPriority(), task.getState(), task.getAssigneeId()))
 				.toList();
 		return new TasksResponse(items);
 	}

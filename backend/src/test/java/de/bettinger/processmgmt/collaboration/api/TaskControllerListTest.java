@@ -35,8 +35,8 @@ class TaskControllerListTest {
 	void listsTasksByCase() throws Exception {
 		UUID caseId = UUID.randomUUID();
 		UUID otherCaseId = UUID.randomUUID();
-		UUID taskId = taskCommandService.createTask(caseId, "Titel 1", "Desc", null).getId();
-		taskCommandService.createTask(otherCaseId, "Titel 2", "Desc", null);
+		UUID taskId = taskCommandService.createTask(caseId, "Titel 1", "Desc", 2, null).getId();
+		taskCommandService.createTask(otherCaseId, "Titel 2", "Desc", 3, null);
 
 		mockMvc.perform(get("/api/cases/{caseId}/tasks", caseId)
 						.header(DevAuthFilter.USER_HEADER, "u-1")
@@ -45,6 +45,8 @@ class TaskControllerListTest {
 				.andExpect(jsonPath("$.items.length()").value(1))
 				.andExpect(jsonPath("$.items[0].id").value(taskId.toString()))
 				.andExpect(jsonPath("$.items[0].title").value("Titel 1"))
+				.andExpect(jsonPath("$.items[0].description").value("Desc"))
+				.andExpect(jsonPath("$.items[0].priority").value(2))
 				.andExpect(jsonPath("$.items[0].state").value("OPEN"));
 	}
 }

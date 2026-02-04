@@ -35,6 +35,9 @@ public class TaskEntity {
 	@Column(name = "description", nullable = false)
 	private String description;
 
+	@Column(name = "priority", nullable = false)
+	private int priority;
+
 	@Column(name = "due_date")
 	private LocalDate dueDate;
 
@@ -78,6 +81,7 @@ public class TaskEntity {
 				task.getTitle(),
 				task.getDescription(),
 				null,
+				task.getPriority(),
 				task.getAssigneeId(),
 				task.getState(),
 				task.getResolutionKind(),
@@ -96,6 +100,7 @@ public class TaskEntity {
 				caseId,
 				title,
 				description,
+				priority,
 				state,
 				assigneeId,
 				resolutionKind,
@@ -127,14 +132,15 @@ public class TaskEntity {
 	}
 
 	public TaskEntity(UUID id, UUID caseId, UUID originMeetingId, String title, String description, LocalDate dueDate,
-					 String assigneeId, TaskState state, TaskResolutionKind resolutionKind, String resolutionReason,
-					 String resolvedBy, Instant resolvedAt, String lastDeclineReason, String lastSuggestedAssigneeId,
-					 Instant createdAt) {
+					 int priority, String assigneeId, TaskState state, TaskResolutionKind resolutionKind,
+					 String resolutionReason, String resolvedBy, Instant resolvedAt, String lastDeclineReason,
+					 String lastSuggestedAssigneeId, Instant createdAt) {
 		this.id = id;
 		this.caseId = caseId;
 		this.originMeetingId = originMeetingId;
 		this.title = title;
 		this.description = description;
+		this.priority = priority;
 		this.dueDate = dueDate;
 		this.assigneeId = assigneeId;
 		this.state = state;

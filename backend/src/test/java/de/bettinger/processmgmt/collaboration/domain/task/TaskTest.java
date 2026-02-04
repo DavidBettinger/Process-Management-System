@@ -10,7 +10,7 @@ class TaskTest {
 
 	@Test
 	void supportsAllowedTransitions() {
-		Task task = Task.create(UUID.randomUUID(), "Title", "Desc");
+		Task task = Task.create(UUID.randomUUID(), "Title", "Desc", 3);
 
 		assertThat(task.getState()).isEqualTo(TaskState.OPEN);
 
@@ -30,7 +30,7 @@ class TaskTest {
 
 	@Test
 	void resolvingSetsResolutionAndBecomesTerminal() {
-		Task task = Task.create(UUID.randomUUID(), "Title", "Desc");
+		Task task = Task.create(UUID.randomUUID(), "Title", "Desc", 3);
 		task.assign("u-1");
 
 		task.resolve(TaskResolutionKind.NOT_COMPLETED, "Reason", "u-1");
@@ -47,7 +47,7 @@ class TaskTest {
 
 	@Test
 	void decliningAssignmentClearsAssigneeAndReturnsToOpen() {
-		Task task = Task.create(UUID.randomUUID(), "Title", "Desc");
+		Task task = Task.create(UUID.randomUUID(), "Title", "Desc", 3);
 		task.assign("u-1");
 
 		task.declineAssignment("Not responsible", "u-2");
@@ -56,5 +56,14 @@ class TaskTest {
 		assertThat(task.getAssigneeId()).isNull();
 		assertThat(task.getLastDeclineReason()).isEqualTo("Not responsible");
 		assertThat(task.getLastSuggestedAssigneeId()).isEqualTo("u-2");
+	}
+
+	@Test
+	void rejectsPriorityOutsideRange() {
+		assertThatThrownBy(() -> Task.create(UUID.randomUUID(), "Title", "Desc", 0))
+				.isInstanceOf(IllegalArgumentException.class);
+
+		assertThatThrownBy(() -> Task.create(UUID.randomUUID(), "Title", "Desc", 6))
+				.isInstanceOf(IllegalArgumentException.class);
 	}
 }

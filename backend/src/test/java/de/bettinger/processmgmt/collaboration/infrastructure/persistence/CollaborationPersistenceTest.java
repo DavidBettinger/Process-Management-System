@@ -48,6 +48,7 @@ class CollaborationPersistenceTest {
 				"Title",
 				"Description",
 				LocalDate.now(),
+				2,
 				"u-1",
 				TaskState.ASSIGNED,
 				TaskResolutionKind.COMPLETED,
@@ -63,6 +64,7 @@ class CollaborationPersistenceTest {
 
 		TaskEntity saved = taskRepository.findById(task.getId()).orElseThrow();
 		assertThat(saved.getResolutionKind()).isEqualTo(TaskResolutionKind.COMPLETED);
+		assertThat(saved.getPriority()).isEqualTo(2);
 		assertThat(saved.getAssigneeId()).isEqualTo("u-1");
 		assertThat(saved.getLastDeclineReason()).isEqualTo("Declined");
 		assertThat(saved.getLastSuggestedAssigneeId()).isEqualTo("u-2");
@@ -78,6 +80,7 @@ class CollaborationPersistenceTest {
 				"Title",
 				"Description",
 				LocalDate.now(),
+				3,
 				"u-1",
 				TaskState.ASSIGNED,
 				null,
@@ -95,6 +98,7 @@ class CollaborationPersistenceTest {
 				"Other",
 				"Description",
 				LocalDate.now(),
+				3,
 				null,
 				TaskState.OPEN,
 				null,

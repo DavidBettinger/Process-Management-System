@@ -75,7 +75,7 @@ class TimelineControllerIntegrationTest {
 				List.of("u-1"),
 				List.of()
 		);
-		UUID taskId = taskCommandService.createTask(caseId, "Title", "Desc", null).getId();
+		UUID taskId = taskCommandService.createTask(caseId, "Title", "Desc", 3, null).getId();
 		taskCommandService.assignTask(taskId, "u-1");
 		taskCommandService.resolveTask(taskId, TaskResolutionKind.COMPLETED, "Done", "u-1");
 

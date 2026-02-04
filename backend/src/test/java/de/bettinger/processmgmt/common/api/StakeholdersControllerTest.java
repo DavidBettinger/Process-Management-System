@@ -150,12 +150,12 @@ class StakeholdersControllerTest {
 				UUID.randomUUID(), ProcessCaseStatus.ACTIVE, Instant.now()));
 
 		UUID laterTaskId = taskCommandService
-				.createTask(caseId, "Task 1", "Desc", LocalDate.of(2026, 2, 10))
+				.createTask(caseId, "Task 1", "Desc", 3, LocalDate.of(2026, 2, 10))
 				.getId();
 		taskCommandService.assignTask(laterTaskId, stakeholderId.toString());
 
 		UUID earlierTaskId = taskCommandService
-				.createTask(caseId, "Task 2", "Desc", LocalDate.of(2026, 2, 1))
+				.createTask(caseId, "Task 2", "Desc", 3, LocalDate.of(2026, 2, 1))
 				.getId();
 		taskCommandService.assignTask(earlierTaskId, stakeholderId.toString());
 
@@ -163,7 +163,7 @@ class StakeholdersControllerTest {
 		processCaseRepository.save(new ProcessCaseEntity(otherCaseId, tenantId, "Fall B",
 				UUID.randomUUID(), ProcessCaseStatus.ACTIVE, Instant.now()));
 		UUID otherTaskId = taskCommandService
-				.createTask(otherCaseId, "Task 3", "Desc", LocalDate.of(2026, 2, 5))
+				.createTask(otherCaseId, "Task 3", "Desc", 3, LocalDate.of(2026, 2, 5))
 				.getId();
 		taskCommandService.assignTask(otherTaskId, "someone-else");
 
@@ -171,7 +171,7 @@ class StakeholdersControllerTest {
 		processCaseRepository.save(new ProcessCaseEntity(otherTenantCaseId, otherTenantId, "Fall C",
 				UUID.randomUUID(), ProcessCaseStatus.ACTIVE, Instant.now()));
 		UUID otherTenantTaskId = taskCommandService
-				.createTask(otherTenantCaseId, "Task 4", "Desc", LocalDate.of(2026, 2, 3))
+				.createTask(otherTenantCaseId, "Task 4", "Desc", 3, LocalDate.of(2026, 2, 3))
 				.getId();
 		taskCommandService.assignTask(otherTenantTaskId, stakeholderId.toString());
 

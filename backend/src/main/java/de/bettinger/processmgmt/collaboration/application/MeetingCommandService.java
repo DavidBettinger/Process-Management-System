@@ -95,6 +95,7 @@ public class MeetingCommandService {
 
 	private UUID createTaskFromActionItem(MeetingEntity meeting, MeetingActionItemCommand command) {
 		UUID taskId = UUID.randomUUID();
+		// TODO: allow meeting action items to specify priority; default to medium for now.
 		TaskEntity task = new TaskEntity(
 				taskId,
 				meeting.getCaseId(),
@@ -102,6 +103,7 @@ public class MeetingCommandService {
 				command.title(),
 				"",
 				command.dueDate(),
+				de.bettinger.processmgmt.collaboration.domain.task.Task.DEFAULT_PRIORITY,
 				command.assigneeId(),
 				de.bettinger.processmgmt.collaboration.domain.task.TaskState.OPEN,
 				null,

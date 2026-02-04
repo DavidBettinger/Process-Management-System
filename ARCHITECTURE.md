@@ -211,6 +211,49 @@ Fields:
 - UI identification rule:
   - Display label: `heldAt || scheduledAt` + resolved `Location.label`
 
+#### Task (updated)
+```json
+{
+  "id": "1d4e6c8a-6dc3-4a1b-9a68-5c4e5d2c84f0",
+  "caseId": "2b1e6d57-8b52-41a8-a2d3-7c1f1a9f1d16",
+  "originMeetingId": "f8c25b59-5c5b-4d78-9d9c-57cb9d0f3cdb",
+  "title": "Draft child protection concept v1",
+  "description": "Longer text describing the task...",
+  "priority": 2,
+  "state": "ASSIGNED",
+  "assigneeId": "u-201",
+  "dueDate": "2026-02-10"
+}
+```
+Fields:
+- `priority` (int, required, 1..5)
+- `description` (string, optional, max length 10,000)
+
+#### TaskAttachment
+```json
+{
+  "id": "att-uuid",
+  "taskId": "task-uuid",
+  "fileName": "concept-v1.docx",
+  "contentType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "sizeBytes": 123456,
+  "uploadedAt": "2026-02-01T10:00:00Z",
+  "uploadedByStakeholderId": "stakeholder-uuid"
+}
+```
+
+#### TaskReminder
+```json
+{
+  "id": "rem-uuid",
+  "taskId": "task-uuid",
+  "stakeholderId": "stakeholder-uuid",
+  "remindAt": "2026-02-05T09:00:00Z",
+  "note": "Bitte an die Rückmeldung denken.",
+  "createdAt": "2026-02-01T10:00:00Z"
+}
+```
+
 #### Stakeholder (global)
 ```json
 {
@@ -515,7 +558,12 @@ Create task (standalone)
 POST /api/cases/{caseId}/tasks
 Request:
 ```json
-{ "title": "Prepare checklist", "description": "", "dueDate": "2026-02-10" }
+{
+  "title": "Prepare checklist",
+  "description": "Longer text describing the task...",
+  "priority": 3,
+  "dueDate": "2026-02-10"
+}
 ```
 Response 201:
 ```json
@@ -527,7 +575,14 @@ Response 200:
 ```json
 {
   "items": [
-    { "id": "uuid", "title": "Prepare checklist", "state": "OPEN", "assigneeId": null }
+    {
+      "id": "uuid",
+      "title": "Prepare checklist",
+      "description": "Longer text describing the task...",
+      "priority": 3,
+      "state": "OPEN",
+      "assigneeId": null
+    }
   ]
 }
 ```
@@ -580,6 +635,83 @@ Response 200:
 ```json
 { "id": "uuid", "state": "RESOLVED", "assigneeId": "u-201" }
 ```
+
+Task Attachments
+
+Upload attachment (multipart)
+POST /api/tasks/{taskId}/attachments
+Request: multipart/form-data
+- `file` (required)
+Response 201:
+```json
+{ "id": "att-uuid" }
+```
+
+List attachments
+GET /api/tasks/{taskId}/attachments
+Response 200:
+```json
+{
+  "items": [
+    {
+      "id": "att-uuid",
+      "taskId": "task-uuid",
+      "fileName": "concept-v1.docx",
+      "contentType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "sizeBytes": 123456,
+      "uploadedAt": "2026-02-01T10:00:00Z",
+      "uploadedByStakeholderId": "stakeholder-uuid"
+    }
+  ]
+}
+```
+
+Download attachment
+GET /api/tasks/{taskId}/attachments/{attachmentId}
+Response 200: file bytes with correct Content-Type
+
+Delete attachment (recommended MVP)
+DELETE /api/tasks/{taskId}/attachments/{attachmentId}
+Response 204
+
+Task Reminders
+
+Create reminder
+POST /api/tasks/{taskId}/reminders
+Request:
+```json
+{
+  "stakeholderId": "stakeholder-uuid",
+  "remindAt": "2026-02-05T09:00:00Z",
+  "note": "Bitte an die Rückmeldung denken."
+}
+```
+Response 201:
+```json
+{ "id": "rem-uuid" }
+```
+
+List reminders
+GET /api/tasks/{taskId}/reminders
+Response 200:
+```json
+{
+  "items": [
+    {
+      "id": "rem-uuid",
+      "taskId": "task-uuid",
+      "stakeholderId": "stakeholder-uuid",
+      "remindAt": "2026-02-05T09:00:00Z",
+      "note": "Bitte an die Rückmeldung denken.",
+      "createdAt": "2026-02-01T10:00:00Z"
+    }
+  ]
+}
+```
+
+Delete reminder (recommended MVP)
+DELETE /api/tasks/{taskId}/reminders/{reminderId}
+Response 204
 Analytics
 
 Timeline
@@ -612,7 +744,18 @@ Edge Cases & Validation
    - If `heldAt` is null (scheduled only), UI uses `scheduledAt + Location.label`.
 5) Validation errors:
    - Missing required address fields return 400 with field-level details.
-6) Auth Strategy (MVP)
+6) Task validation:
+   - `priority` required; must be integer 1..5 → 400.
+   - `description` optional; max length 10,000 chars → 400.
+7) Attachment validation:
+   - Max file size 25 MB → 400.
+   - Task not found → 404.
+   - Attachment not found (download/delete) → 404.
+8) Reminder validation:
+   - `remindAt` must be in the future (strictly later than request time) → 400.
+   - `stakeholderId` must exist and belong to tenant → 404 (or 403 for cross-tenant; be consistent).
+   - Task not found → 404.
+9) Auth Strategy (MVP)
    •	Target: OIDC with Keycloak.
    •	MVP approach:
    •	Dev mode uses fixed headers: X-Dev-UserId and X-Tenant-Id.
@@ -624,7 +767,7 @@ Authorization rule (MVP):
 •	A user can view/edit a case only if they are a stakeholder of the case.
 •	Consultant role can do all actions; other roles can update tasks assigned to them and view the case.
 
-7) Error Handling
+10) Error Handling
 
 Standard error response:
 ```json
@@ -635,7 +778,7 @@ Standard error response:
   "traceId": "abc-123"
 }
 ```
-8) Logging & Metrics
+11) Logging & Metrics
    •	Log:
    •	request method/path, status, traceId
    •	do not log minutesText or sensitive fields
@@ -643,7 +786,7 @@ Standard error response:
    •	request latency, error rates
    •	outbox backlog size
 
-9) UI Wireframes (ASCII)
+12) UI Wireframes (ASCII)
 
 Case Detail
 ```

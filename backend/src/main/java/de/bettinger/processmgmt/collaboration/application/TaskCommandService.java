@@ -26,8 +26,9 @@ public class TaskCommandService {
 	}
 
 	@Transactional
-	public TaskEntity createTask(UUID caseId, String title, String description, java.time.LocalDate dueDate) {
-		Task task = Task.create(caseId, title, description);
+	public TaskEntity createTask(UUID caseId, String title, String description, int priority,
+								 java.time.LocalDate dueDate) {
+		Task task = Task.create(caseId, title, description, priority);
 		TaskEntity entity = TaskEntity.fromDomain(task);
 		entity.setDueDate(dueDate);
 		taskRepository.save(entity);

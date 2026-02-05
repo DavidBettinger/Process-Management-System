@@ -92,6 +92,14 @@ shared/
 - Task Board (list + actions)
 - Timeline View
 
+### Frontend UI Primitives (Tailwind)
+Shared Tailwind-based UI primitives live in `frondend/src/app/shared/ui/tw` and should be reused across features:
+- `app-tw-page` (page container + header)
+- `app-tw-card` (surface container)
+- `app-tw-field` (label + hint + error wrapper)
+- `app-tw-badge` (status labels)
+- `appTwButton` (button directive with variants)
+
 ## 4) Persistence
 
 ### Primary OLTP database (PostgreSQL)

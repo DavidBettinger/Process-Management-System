@@ -26,7 +26,7 @@
         <div class="state">
           <p class="state-title">Daten konnten nicht geladen werden</p>
           <p class="state-text">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
-          <button class="ghost-button" type="button" (click)="casesStore.loadCases()">
+          <button appTwButton="ghost" type="button" (click)="casesStore.loadCases()">
             Erneut versuchen
           </button>
         </div>
@@ -44,7 +44,7 @@
           @for (item of cases(); track item.id) {
             <li class="case-card">
               <div class="case-meta">
-                <span class="status">{{ statusLabel(item.status) }}</span>
+                <app-tw-badge [variant]="statusVariant(item.status)">{{ statusLabel(item.status) }}</app-tw-badge>
                 <span class="time">{{ kitaLabel(item.kitaId) }}</span>
               </div>
               <h2>{{ item.title }}</h2>

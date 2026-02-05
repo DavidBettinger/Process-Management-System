@@ -9,6 +9,8 @@
 ## Coding Style
 - Backend: Java 21, Spring Boot, Gradle, Checkstyle/Spotless (TODO if not configured yet), prefer records for DTOs.
 - Frontend: Angular (latest LTS), TypeScript strict mode, ESLint + Prettier (TODO if not configured yet).
+- Frontend styling: use Tailwind utility classes; never introduce new component `.css/.scss` files. Prefer shared Tailwind UI primitives in `frondend/src/app/shared/ui/tw` (page, card, field, badge, button directive). If Tailwind utilities are insufficient, use Tailwind config or a single global stylesheet section (no per-component CSS).
+- When changing HTML structure, update or add tests as needed.
 - Frontend app layer (features/** and shared/**) uses RxJS end-to-end: stores return Observables, components subscribe with takeUntilDestroyed(), and async/await is not used.
 - Frontend forms must use the shared helpers in `src/app/shared/forms/form-utils.ts` for required-field errors and invalid-state checks.
 - Use consistent naming:

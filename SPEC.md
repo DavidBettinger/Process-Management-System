@@ -243,6 +243,20 @@ A process management app for **Kita consulting** (Fachberatung) to document and 
 #### Browser support
 •	Latest Chrome/Firefox/Edge, plus current Safari.
 
+### Styling rules (Tailwind)
+- Use Tailwind utility classes for all UI styling.
+- Do not add new component CSS/SCSS files unless absolutely necessary (document why).
+- Prefer shared Tailwind-based UI primitives over one-off styles.
+- If a style cannot be expressed with Tailwind utilities, use Tailwind config or a single global stylesheet section (no per-component CSS).
+
+### Tailwind UI primitives
+Reusable primitives live in `frondend/src/app/shared/ui/tw` and must be reused before creating custom markup:
+- `app-tw-page` (page container + header)
+- `app-tw-card` (surface container)
+- `app-tw-field` (label + hint + error wrapper)
+- `app-tw-badge` (status labels)
+- `appTwButton` (button directive with variants)
+
 ### Frontend (Angular) rules
 - Use Angular built-in control flow: `@if`, `@for`, `@switch`.
 - Do not use deprecated structural directives: `*ngIf`, `*ngFor`, `*ngSwitch`.

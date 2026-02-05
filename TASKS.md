@@ -38,308 +38,207 @@ This task set implements new requirements:
 > Where endpoints are not yet defined, update `ARCHITECTURE.md` first and do not invent behavior silently.
 
 ---
+Tasks — Replace custom CSS with Tailwind (Angular) and enforce Tailwind usage going forward
 
-## [x] Task 1 — Update API Contracts in `ARCHITECTURE.md` (Task fields + Attachments + Reminders)
+Language: **English** for code/docs/tests.  
+UI-visible text can be German.
 
-**Task ID:** DOC-TASK-EXT-001  
-**Objective:** Update `ARCHITECTURE.md` so Codex has a stable contract for:
-- Task priority + description
-- Attachment upload + listing
-- Reminder CRUD-lite (create/list/delete)
+## Context
+Tailwind CSS is integrated in the Angular project, but Codex has been adding regular CSS files/classes.  
+Goal:
+1) Replace existing custom CSS with a consistent Tailwind-based layout **where reasonable**.
+2) Establish rules so future code uses Tailwind by default.
+
+> These tasks are intentionally small (30–90 min each) and can be repeated per feature.
+
+---
+
+## [x] Task 1 — Document Tailwind-only UI rule in SPEC.md + CODEX instructions
+
+**Task ID:** DOC-TW-001  
+**Objective:** Make Tailwind usage explicit so Codex stops writing plain CSS.
 
 ### Files to touch
-- `ARCHITECTURE.md`
+- `SPEC.md`
+- `CODEX_INSTRUCTIONS.md` (or create it if missing)
+- Optional: `ARCHITECTURE.md` (frontend conventions section)
 
-### Contracts to add
-
-#### Task (updated)
-Add fields to Task DTOs (create + list + detail):
-- `priority` (int 1..5, required; default allowed? choose and document)
-- `description` (string, optional; long text)
-
-Example:
-```json
-{
-  "id": "task-uuid",
-  "caseId": "case-uuid",
-  "title": "Draft concept v1",
-  "description": "Longer text describing the task...",
-  "priority": 2,
-  "state": "OPEN",
-  "assigneeId": "stakeholder-uuid",
-  "dueDate": "2026-02-10"
-}
+### Required content to add (example)
+Add to `SPEC.md` under Constraints → Frontend:
+```md
+### Styling rules (Tailwind)
+- Use Tailwind utility classes for all UI styling.
+- Do not add new component CSS/SCSS files unless absolutely necessary (document why).
+- Prefer shared Tailwind-based UI components over one-off styles.
+- If a style cannot be expressed with Tailwind utilities, use Tailwind config or a single global stylesheet section (no per-component CSS).
 ```
 
-#### Attachments (new)
-Define endpoints:
-- `POST /api/tasks/{taskId}/attachments` (multipart upload)
-- `GET /api/tasks/{taskId}/attachments` (list)
-- `GET /api/tasks/{taskId}/attachments/{attachmentId}` (download)
-- `DELETE /api/tasks/{taskId}/attachments/{attachmentId}` (optional MVP; recommended)
-
-Attachment DTO:
-```json
-{
-  "id": "att-uuid",
-  "taskId": "task-uuid",
-  "fileName": "concept-v1.docx",
-  "contentType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "sizeBytes": 123456,
-  "uploadedAt": "2026-02-01T10:00:00Z",
-  "uploadedByStakeholderId": "stakeholder-uuid"
-}
-```
-
-#### Reminders (new)
-Define endpoints:
-- `POST /api/tasks/{taskId}/reminders`
-- `GET /api/tasks/{taskId}/reminders`
-- `DELETE /api/tasks/{taskId}/reminders/{reminderId}` (optional but strongly recommended)
-
-Reminder DTO:
-```json
-{
-  "id": "rem-uuid",
-  "taskId": "task-uuid",
-  "stakeholderId": "stakeholder-uuid",
-  "remindAt": "2026-02-05T09:00:00Z",
-  "note": "Bitte an die Rückmeldung denken.",
-  "createdAt": "2026-02-01T10:00:00Z"
-}
-```
-
-### Validation rules to document
-- `priority` must be integer in range 1..5
-- `description` max length (e.g., 10,000 chars) — choose and document
-- Attachment max file size (e.g., 25 MB) — choose and document
-- `remindAt` must be in the future (or allow past? choose and document)
-- `stakeholderId` must exist and belong to tenant
+Add to `CODEX_INSTRUCTIONS.md`:
+- “Never introduce new `.css/.scss` files for components.”
+- “Prefer Tailwind classes and shared UI components.”
+- “When changing HTML structure, update tests.”
 
 ### DoD
-- `ARCHITECTURE.md` contains:
-  - updated Task DTOs
-  - attachment endpoints + DTOs
-  - reminder endpoints + DTOs
-  - clear validation/error behavior (400 vs 404)
-- No ambiguity remains for Codex.
+- Rules exist in docs and are unambiguous.
 
 ---
 
-## [x] Task 2 — Backend: Add Task priority + description (DB + domain + API + tests)
+## [x] Task 2 — Add shared Tailwind design primitives (layout, buttons, inputs)
 
-**Task ID:** BE-TASK-EXT-002  
-**Objective:** Extend backend task model with `priority` and `description`, persist them, and expose them via API.
+**Task ID:** FE-TW-PRIM-002  
+**Objective:** Create a minimal set of reusable primitives so Tailwind usage stays consistent:
+- Page container layout
+- Card
+- Button variants
+- Form field layout
+- Badge
+
+### Files to touch / create
+- `frontend/src/app/shared/ui/tw/*`
+  - `tw-page.component.ts/html` (or just a documented class recipe)
+  - `tw-card.component.ts/html`
+  - `tw-button.directive.ts` (preferred) OR component
+  - `tw-field.component.ts/html`
+  - `tw-badge.component.ts/html`
+- `frontend/src/styles.css` (only if you define Tailwind component classes via `@layer components`)
+
+### Implementation guidance
+- Prefer **utility classes** directly in templates.
+- Optional: define a few reusable classes (`.btn`, `.card`, `.field-*`) using Tailwind `@layer components` to keep templates readable.
+
+### DoD
+- Primitives exist and are used in at least one page.
+- `npm test` passes.
+
+---
+
+## [ ] Task 3 — Convert “Locations” UI to Tailwind (remove component CSS)
+
+**Task ID:** FE-TW-LOC-003  
+**Objective:** Replace custom CSS in Locations feature with Tailwind classes.
 
 ### Files to touch
-- Domain:
-  - Task entity/value objects (wherever your Task lives)
-- Persistence:
-  - Task JPA entity + repository
-  - DB migration: add `priority` and `description` columns
-- API DTOs:
-  - CreateTaskRequest, TaskDto, TaskListItemDto (as applicable)
-- Tests:
-  - domain tests (priority range)
-  - controller tests (400 on invalid priority)
-  - repository/integration tests (values persisted)
+- `frontend/src/app/features/locations/**/*.html`
+- `frontend/src/app/features/locations/**/*.css|scss` (delete or empty if no longer needed)
 
-### Invariants
-- `priority` required, range 1..5
-- `description` optional (long text)
+### Layout requirements
+- Standard page skeleton:
+  - max-width container
+  - title row with primary action button
+  - form in a card
+  - list in a card
+- Input styling: consistent spacing and focus rings
+- Empty/loading/error states
 
 ### DoD
-- Creating and fetching tasks includes priority+description
-- Invalid priority returns 400 with field error
-- `./gradlew test` passes
+- No feature-specific CSS remains in Locations (unless documented exception).
+- UI looks consistent on desktop and narrow widths.
+- `npm test` passes.
 
 ---
 
-## [x] Task 3 — Frontend: Extend Task model + forms (priority + description) + tests
+## [ ] Task 4 — Convert “Kitas” UI to Tailwind (remove component CSS)
 
-**Task ID:** FE-TASK-EXT-003  
-**Objective:** Add priority and description to frontend models, task creation UI, task list UI.
+**Task ID:** FE-TW-KITA-004  
+**Objective:** Replace custom CSS in Kitas feature with Tailwind classes.
 
 ### Files to touch
-- Models:
-  - `frontend/src/app/core/models/task.model.ts`
-  - request model for create task
-- API client:
-  - `tasks.api.ts` typing updates
-- Store:
-  - `tasks.store.ts` mapping updates
-- UI:
-  - Task create form (This form should be shown in the task list and it should replace the old form in the hold meeting): add 
-    - priority select (1..5) with labels:
-      - 1 = „Sehr wichtig“
-      - 2 = „Wichtig“
-      - 3 = „Mittel“
-      - 4 = „Eher unwichtig“
-      - 5 = „Nicht wichtig“
-    - description textarea (optional)
-  - Task list row shows priority (badge or text) and title; description optionally in detail/expand
-- Tests:
-  - component form validation (priority required)
-  - store mapping test ensures fields are stored and sent
+- `frontend/src/app/features/kitas/**/*.html`
+- `frontend/src/app/features/kitas/**/*.css|scss` (delete)
 
 ### DoD
-- UI can create task with priority + description
-- UI shows priority in task list
-- `npm test` passes
+- No feature-specific CSS remains in Kitas (unless documented exception).
+- Dropdown + form layout consistent with Locations.
+- `npm test` passes.
 
 ---
 
-## [x] Task 4 — Backend: Implement Task Attachments (upload/list/download) with storage strategy + tests
+## [ ] Task 5 — Convert “Meetings” UI to Tailwind (overlay + forms)
 
-**Task ID:** BE-TASK-ATT-004  
-**Objective:** Add attachments to tasks: upload, list, download.
-
-### Storage strategy (MVP recommendation)
-- Store file bytes in filesystem or object storage
-- Store metadata in DB:
-  - attachment_id, task_id, file_name, content_type, size_bytes, storage_key, uploaded_at, uploaded_by
-- Use tenant isolation in storage key.
+**Task ID:** FE-TW-MEET-005  
+**Objective:** Tailwind refactor for Meetings UI, including overlays and forms.
 
 ### Files to touch
-- DB migration:
-  - create `task_attachments` table
-- Domain:
-  - `TaskAttachment` entity
-- Infrastructure:
-  - `AttachmentStorage` interface + `LocalFileStorage` implementation (MVP)
-- API:
-  - `TaskAttachmentsController`
-  - multipart upload handling
-- Tests:
-  - controller tests for upload/list/download
-  - storage test using temp directory
-  - tenant isolation test (cannot access other tenant’s attachment)
-
-### Validation
-- max file size (per contract)
-- content type allowed list (optional MVP; document)
-- taskId must exist
+- `frontend/src/app/features/meetings/**/*.html`
+- `frontend/src/app/features/meetings/**/*.css|scss` (delete)
+- Overlay component templates if they currently use CSS
 
 ### DoD
-- Upload returns attachment id
-- List returns metadata
-- Download returns correct content type and bytes
-- `./gradlew test` passes
+- Meeting list, meeting creation overlay, nested location overlay use Tailwind.
+- Overlays: proper backdrop, centered panel, responsive spacing.
+- `npm test` passes.
 
 ---
 
-## [x] Task 5 — Frontend: Attachments UI (add/list/download/delete) + tests
+## [ ] Task 6 — Convert “Tasks” UI to Tailwind (list, actions, detail sections)
 
-**Task ID:** FE-TASK-ATT-005  
-**Objective:** Allow users to add files to a task and see attached files.
+**Task ID:** FE-TW-TASK-006  
+**Objective:** Replace custom CSS in Tasks feature with Tailwind classes.
 
 ### Files to touch
-- Models:
-  - `task-attachment.model.ts` (new)
-- API client:
-  - `tasks.api.ts` add attachment methods:
-    - `uploadAttachment(taskId, file)`
-    - `listAttachments(taskId)`
-    - `downloadAttachment(taskId, attachmentId)` (or provide URL)
-    - `deleteAttachment(...)` (if supported)
-- Store:
-  - `task-detail.store.ts` (recommended) or extend `tasks.store.ts` with per-task attachment state
-- UI:
-  - Task detail view (or expandable section in task list):
-    - File picker + upload button
-    - Attachment list with:
-      - fileName, size, uploadedAt, download button
-      - optional delete
-- Tests:
-  - component test: upload triggers api method
-  - empty/loading/error states
-  - attachment list renders file names (no ids shown)
+- `frontend/src/app/features/tasks/**/*.html`
+- `frontend/src/app/features/tasks/**/*.css|scss` (delete)
 
 ### DoD
-- Upload works and list refreshes
-- Download action triggers browser download (or opens)
-- Tests pass: `npm test`
+- Task list rows use consistent spacing/typography.
+- Actions use Tailwind buttons/badges.
+- `npm test` passes.
 
 ---
 
-## [x] Task 6 — Backend: Implement Task Reminders (create/list/delete) + tests
+## [ ] Task 7 — Add a guard to prevent new component CSS files (enforce Tailwind)
 
-**Task ID:** BE-TASK-REM-006  
-**Objective:** Add reminders linked to tasks and stakeholders.
+**Task ID:** FE-TW-GUARD-007  
+**Objective:** Add an automated check that fails if new component CSS/SCSS files are introduced.
 
-### Reminder behavior (MVP)
-- Reminder is a record stored in DB.
-- For MVP: only CRUD-lite + retrieval; no email sending required.
+### Option A (recommended): Node script check
+Create:
+- `frontend/scripts/check-no-component-css.js`
+  Add npm script:
+- `"check:styles": "node frontend/scripts/check-no-component-css.js"`
 
-### Files to touch
-- DB migration:
-  - create `task_reminders` table
-- Domain:
-  - `TaskReminder` entity
-- API:
-  - `TaskRemindersController`
-- Tests:
-  - create reminder returns 201
-  - list returns reminders for task
-  - delete removes reminder
-  - 404 if task not found
-  - 400 if remindAt invalid (past, if future-only rule)
+Script must:
+- fail if it finds `.component.css` or `.component.scss` under `frontend/src/app/**`
+- allow exceptions only in a small allowlist (document in code)
 
-### Validation
-- `stakeholderId` must exist for tenant
-- `remindAt` ISO datetime
-- `note` optional but max length (document)
+### Option B: Unit test meta-check
+Add:
+- `frontend/src/app/_meta/no-component-css.spec.ts`
+  that scans for forbidden files.
 
 ### DoD
-- Endpoints implemented as in architecture contract
-- `./gradlew test` passes
+- `npm run check:styles` fails when forbidden files are present.
+- Add to CI (if CI exists) or document how to run locally.
 
 ---
 
-## [ ] Task 7 — Frontend: Reminders UI (create/list/delete) + tests
+## [ ] Task 8 — Repo-wide sweep to unify Tailwind layout (optional after feature conversions)
 
-**Task ID:** FE-TASK-REM-007  
-**Objective:** Add a reminders section to task detail:
-- create reminder (select stakeholder, choose time, add note)
-- list reminders
-- delete reminder
+**Task ID:** FE-TW-SWEEP-008  
+**Objective:** A repo-wide sweep to:
+- remove leftover CSS usage
+- eliminate inline `style=""` where possible
+- unify spacing/typography patterns
 
-### Files to touch
-- Models:
-  - `task-reminder.model.ts` (new)
-- API client:
-  - `tasks.api.ts` add reminder methods
-- Store:
-  - `task-detail.store.ts` (recommended)
-- UI:
-  - Reminders section in task detail:
-    - stakeholder dropdown (name + role)
-    - datetime picker
-    - note input
-    - create button
-    - reminder list: remindAt + stakeholder label + note
-    - delete action
-- Tests:
-  - create reminder calls API with correct ids
-  - list renders human labels (not ids)
-  - delete removes row
-  - validation: cannot create without stakeholder + remindAt
+### Steps
+1) Search for:
+  - `.component.css`, `.component.scss`
+  - `<style>` blocks
+  - inline `style="..."`
+2) Replace with Tailwind utilities / primitives.
 
 ### DoD
-- Reminders feature usable end-to-end
-- No ids displayed in reminder list
-- `npm test` passes
+- Search results for component CSS files are 0 (or documented allowlist).
+- UI looks consistent across features.
+- `npm test` passes.
 
 ---
 
-## Global Documentation + Quality Requirements (apply to all tasks)
-- Update `ARCHITECTURE.md` whenever a DTO or endpoint changes.
-- Ensure UI shows **titles/names** (no raw IDs).
-- All new endpoints must have controller tests.
-- All new UI components must have unit tests.
-- DoD for each task requires tests to pass:
-  - Backend: `./gradlew test`
-  - Frontend: `npm test`
+## Global Acceptance Criteria
+- Tailwind is the default styling method across the frontend.
+- No new per-component CSS files are introduced.
+- UI follows a consistent layout system (container + cards + form fields + buttons).
+- All tests pass: `cd frontend && npm test`
 ---
 
 ## 3) DevOps / Local Dev

@@ -9,11 +9,13 @@ import { CreateCaseRequest } from '../../../../core/models/case.model';
 import { KitasStore } from '../../../kitas/state/kitas.store';
 import { LocationsStore } from '../../../locations/state/locations.store';
 import { ToastService } from '../../../../shared/ui/toast.service';
+import { TwBadgeComponent, TwBadgeVariant } from '../../../../shared/ui/tw/tw-badge.component';
+import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
 
 @Component({
   selector: 'app-case-list-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, CaseCreateDialogComponent],
+  imports: [CommonModule, RouterLink, CaseCreateDialogComponent, TwBadgeComponent, TwButtonDirective],
   templateUrl: './case-list.page.html',
   styleUrl: './case-list.page.css'
 })
@@ -68,6 +70,16 @@ export class CaseListPageComponent implements OnInit {
       return 'Entwurf';
     }
     return 'Unbekannt';
+  }
+
+  statusVariant(status: string): TwBadgeVariant {
+    if (status === 'ACTIVE') {
+      return 'success';
+    }
+    if (status === 'DRAFT') {
+      return 'warning';
+    }
+    return 'neutral';
   }
 
   kitaLabel(kitaId: string): string {

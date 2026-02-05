@@ -1,0 +1,20 @@
+<div class="space-y-2">
+  @if (label) {
+    <label class="text-sm font-medium text-slate-900" [attr.for]="forId">
+      {{ label }}
+      @if (required) {
+        <span class="text-rose-600">*</span>
+      }
+    </label>
+  }
+
+  <div class="space-y-2">
+    <ng-content />
+  </div>
+
+  @if (error) {
+    <p class="text-xs font-medium text-rose-600">{{ error }}</p>
+  } @else if (hint) {
+    <p class="text-xs text-slate-500">{{ hint }}</p>
+  }
+</div>

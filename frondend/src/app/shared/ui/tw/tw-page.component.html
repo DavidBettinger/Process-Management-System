@@ -1,0 +1,17 @@
+<section class="mx-auto w-full max-w-6xl px-6 py-8 sm:px-8">
+  @if (eyebrow || title || subtitle) {
+    <header class="mb-6">
+      @if (eyebrow) {
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{{ eyebrow }}</p>
+      }
+      @if (title) {
+        <h1 class="mt-2 text-3xl font-semibold text-slate-900">{{ title }}</h1>
+      }
+      @if (subtitle) {
+        <p class="mt-2 max-w-2xl text-sm text-slate-600">{{ subtitle }}</p>
+      }
+    </header>
+  }
+
+  <ng-content />
+</section>

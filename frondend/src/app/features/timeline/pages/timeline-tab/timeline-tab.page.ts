@@ -7,13 +7,14 @@ import { TimelineListComponent } from '../../components/timeline-list/timeline-l
 import { TasksStore } from '../../../tasks/state/tasks.store';
 import { StakeholdersStore } from '../../../stakeholders/state/stakeholders.store';
 import { LocationsStore } from '../../../locations/state/locations.store';
+import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
+import { TwCardComponent } from '../../../../shared/ui/tw/tw-card.component';
 
 @Component({
   selector: 'app-timeline-tab-page',
   standalone: true,
-  imports: [CommonModule, TimelineListComponent],
-  templateUrl: './timeline-tab.page.html',
-  styleUrl: './timeline-tab.page.css'
+  imports: [CommonModule, TimelineListComponent, TwButtonDirective, TwCardComponent],
+  templateUrl: './timeline-tab.page.html'
 })
 export class TimelineTabPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);

@@ -1,70 +1,72 @@
-<section class="page">
-  <header class="page-header">
+<section class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
     <div>
-      <p class="eyebrow">Beteiligte</p>
-      <h1>{{ headerTitle() }}</h1>
-      <p class="subtitle">Aufgaben und Rollen in Prozessen auf einen Blick.</p>
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Beteiligte</p>
+      <h1 class="mt-2 text-3xl font-semibold text-slate-900">{{ headerTitle() }}</h1>
+      <p class="mt-2 text-sm text-slate-600">Aufgaben und Rollen in Prozessen auf einen Blick.</p>
     </div>
     @if (profileStatus() === 'success') {
-      <div class="profile-card">
-        <p class="profile-label">Rolle</p>
-        <p class="profile-value">{{ roleLabel(profile()?.role) }}</p>
+      <div class="min-w-[220px] rounded-2xl border border-slate-200 bg-white/90 p-4">
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Rolle</p>
+        <p class="mt-2 text-lg font-semibold text-slate-900">{{ roleLabel(profile()?.role) }}</p>
       </div>
     }
   </header>
 
-  <div class="panel">
-    <div class="panel-header">
+  <app-tw-card [className]="'space-y-5'">
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
       <div>
-        <h2>Zugeordnete Aufgaben</h2>
-        <p>Diese Aufgaben sind der Person in Prozessen zugewiesen.</p>
+        <h2 class="text-lg font-semibold text-slate-900">Zugeordnete Aufgaben</h2>
+        <p class="mt-1 text-sm text-slate-600">Diese Aufgaben sind der Person in Prozessen zugewiesen.</p>
       </div>
       @if (tasksStatus() === 'success') {
-        <div class="panel-meta">{{ totalItems() }} Aufgaben</div>
+        <div class="text-sm font-semibold text-slate-600">{{ totalItems() }} Aufgaben</div>
       }
     </div>
 
     @if (profileStatus() === 'error') {
-      <div class="state">
-        <p class="state-title">Profil konnte nicht geladen werden</p>
-        <p class="state-text">{{ profileError()?.message ?? 'Unbekannter Fehler' }}</p>
+      <div class="space-y-2">
+        <p class="text-sm font-semibold text-slate-900">Profil konnte nicht geladen werden</p>
+        <p class="text-sm text-slate-600">{{ profileError()?.message ?? 'Unbekannter Fehler' }}</p>
       </div>
     }
 
     @if (tasksStatus() === 'loading') {
-      <div class="state">
-        <div class="skeleton"></div>
-        <div class="skeleton"></div>
-        <div class="skeleton"></div>
+      <div class="space-y-3 animate-pulse">
+        <div class="h-4 w-3/4 rounded-full bg-slate-200"></div>
+        <div class="h-4 w-2/3 rounded-full bg-slate-200"></div>
+        <div class="h-4 w-1/2 rounded-full bg-slate-200"></div>
       </div>
     }
 
     @if (tasksStatus() === 'error') {
-      <div class="state">
-        <p class="state-title">Aufgaben konnten nicht geladen werden</p>
-        <p class="state-text">{{ tasksError()?.message ?? 'Unbekannter Fehler' }}</p>
-        <button class="ghost-button" type="button" (click)="store.loadTasks()">Erneut versuchen</button>
+      <div class="space-y-2">
+        <p class="text-sm font-semibold text-slate-900">Aufgaben konnten nicht geladen werden</p>
+        <p class="text-sm text-slate-600">{{ tasksError()?.message ?? 'Unbekannter Fehler' }}</p>
+        <button appTwButton="ghost" size="sm" type="button" (click)="store.loadTasks()">Erneut versuchen</button>
       </div>
     }
 
     @if (tasksStatus() === 'success' && tasks().length === 0) {
-      <div class="state">
-        <p class="state-title">Keine Aufgaben zugeordnet</p>
-        <p class="state-text">Aktuell sind dieser Person keine Aufgaben in Prozessen zugewiesen.</p>
+      <div class="space-y-2">
+        <p class="text-sm font-semibold text-slate-900">Keine Aufgaben zugeordnet</p>
+        <p class="text-sm text-slate-600">
+          Aktuell sind dieser Person keine Aufgaben in Prozessen zugewiesen.
+        </p>
       </div>
     }
 
     @if (tasksStatus() === 'success' && tasks().length > 0) {
-      <div class="tasks-table">
-        <div class="tasks-row header">
+      <div class="space-y-3">
+        <div class="hidden grid-cols-[minmax(0,2.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.6fr)] gap-4 text-xs font-semibold uppercase tracking-[0.15em] text-slate-400 md:grid">
           <span>Titel</span>
           <span>Status</span>
           <span>Faellig</span>
           <span>Prozess</span>
         </div>
         @for (task of tasks(); track task.id) {
-          <div class="tasks-row">
-            <span class="task-title">{{ task.title }}</span>
+          <div class="grid grid-cols-2 gap-2 border-b border-slate-200 pb-3 text-sm text-slate-600 md:grid-cols-[minmax(0,2.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.6fr)] md:items-center">
+            <span class="font-semibold text-slate-900">{{ task.title }}</span>
             <span>{{ stateLabel(task.state) }}</span>
             <span>{{ dueDateLabel(task.dueDate) }}</span>
             <span>{{ task.caseId | processLabel }}</span>
@@ -74,27 +76,21 @@
     }
 
     @if (tasksStatus() === 'success' && tasks().length > 0) {
-      <div class="pagination">
-        <button
-          class="ghost-button pagination-button"
-          type="button"
-          [disabled]="!hasPrev()"
-          (click)="prevPage()"
-        >
+      <div class="flex flex-wrap items-center gap-3 pt-2">
+        <button appTwButton="ghost" size="sm" type="button" [disabled]="!hasPrev()" (click)="prevPage()">
           Zurueck
         </button>
-        <span class="page-indicator">Seite {{ page() + 1 }} von {{ totalPages() }}</span>
-        <button
-          class="ghost-button pagination-button"
-          type="button"
-          [disabled]="!hasNext()"
-          (click)="nextPage()"
-        >
+        <span class="text-sm font-semibold text-slate-600">Seite {{ page() + 1 }} von {{ totalPages() }}</span>
+        <button appTwButton="ghost" size="sm" type="button" [disabled]="!hasNext()" (click)="nextPage()">
           Weiter
         </button>
-        <label class="page-size">
+        <label class="ml-auto flex items-center gap-2 text-xs font-semibold text-slate-500">
           <span>Pro Seite</span>
-          <select [value]="size()" (change)="handlePageSizeChange($event)">
+          <select
+            class="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700"
+            [value]="size()"
+            (change)="handlePageSizeChange($event)"
+          >
             @for (option of pageSizes; track option) {
               <option [value]="option">{{ option }}</option>
             }
@@ -102,5 +98,5 @@
         </label>
       </div>
     }
-  </div>
+  </app-tw-card>
 </section>

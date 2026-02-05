@@ -1,35 +1,45 @@
-<form class="case-form" [formGroup]="form" (ngSubmit)="submit()">
-  <div class="field">
-    <label for="title">Prozess-Titel</label>
-    <input id="title" type="text" formControlName="title" placeholder="Titel eingeben" />
-    @if (isInvalid('title')) {
-      <span class="error">{{ requiredMessage('Prozess-Titel') }}</span>
-    }
-  </div>
+<app-tw-card [className]="'space-y-4'">
+  <form class="space-y-4" [formGroup]="form" (ngSubmit)="submit()">
+    <app-tw-field
+      label="Prozess-Titel"
+      forId="case-title"
+      [required]="true"
+      [error]="isInvalid('title') ? requiredMessage('Prozess-Titel') : null"
+    >
+      <input
+        id="case-title"
+        type="text"
+        formControlName="title"
+        placeholder="Titel eingeben"
+        class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+      />
+    </app-tw-field>
 
-  <div class="field">
-    <label for="kitaId">Kita</label>
-    <select id="kitaId" formControlName="kitaId">
-      <option value="">Bitte waehlen</option>
-      @for (kita of kitas; track kita.id) {
-        <option [value]="kita.id">
-          {{ kita.name }} · {{ locationLabel(kita.locationId) }}
-        </option>
-      }
-    </select>
-    @if (isInvalid('kitaId')) {
-      <span class="error">{{ requiredMessage('Kita') }}</span>
-    }
-    @if (kitas.length === 0) {
-      <p class="hint">Es sind noch keine Kitas vorhanden. Bitte zuerst eine Kita anlegen.</p>
-    }
-    <div class="links">
-      <a routerLink="/kitas">Zu den Kitas</a>
-      <a routerLink="/locations">Standort anlegen</a>
-    </div>
-  </div>
+    <app-tw-field
+      label="Kita"
+      forId="case-kita"
+      [required]="true"
+      [error]="isInvalid('kitaId') ? requiredMessage('Kita') : null"
+      [hint]="kitas.length === 0 ? 'Es sind noch keine Kitas vorhanden. Bitte zuerst eine Kita anlegen.' : undefined"
+    >
+      <select
+        id="case-kita"
+        formControlName="kitaId"
+        class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+      >
+        <option value="">Bitte waehlen</option>
+        @for (kita of kitas; track kita.id) {
+          <option [value]="kita.id">
+            {{ kita.name }} · {{ locationLabel(kita.locationId) }}
+          </option>
+        }
+      </select>
+      <div class="flex flex-wrap gap-3 text-xs font-semibold text-slate-600">
+        <a class="text-slate-700 hover:text-slate-900" routerLink="/kitas">Zu den Kitas</a>
+        <a class="text-slate-700 hover:text-slate-900" routerLink="/locations">Standort anlegen</a>
+      </div>
+    </app-tw-field>
 
-  <button class="primary-button" type="submit" [disabled]="submitting()">
-    Prozess anlegen
-  </button>
-</form>
+    <button appTwButton="primary" type="submit" [disabled]="submitting()">Prozess anlegen</button>
+  </form>
+</app-tw-card>

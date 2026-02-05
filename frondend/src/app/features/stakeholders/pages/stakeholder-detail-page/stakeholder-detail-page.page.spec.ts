@@ -171,10 +171,13 @@ describe('StakeholderDetailPageComponent', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    const buttons = compiled.querySelectorAll('.pagination-button') as NodeListOf<HTMLButtonElement>;
-    expect(buttons.length).toBe(2);
-    expect(buttons[0].disabled).toBe(true);
-    expect(buttons[1].disabled).toBe(false);
+    const buttons = Array.from(compiled.querySelectorAll('button')) as HTMLButtonElement[];
+    const prevButton = buttons.find((button) => button.textContent?.includes('Zurueck')) ?? null;
+    const nextButton = buttons.find((button) => button.textContent?.includes('Weiter')) ?? null;
+    expect(prevButton).not.toBeNull();
+    expect(nextButton).not.toBeNull();
+    expect(prevButton?.disabled).toBe(true);
+    expect(nextButton?.disabled).toBe(false);
   });
 
   it('renders process title instead of case id', () => {

@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
+import { TwBadgeComponent } from '../../../shared/ui/tw/tw-badge.component';
 
 @Component({
   selector: 'app-case-timeline',
   standalone: true,
-  templateUrl: './case-timeline.component.html',
-  styleUrl: './case-timeline.component.css'
+  imports: [TwBadgeComponent],
+  templateUrl: './case-timeline.component.html'
 })
 export class CaseTimelineComponent {}

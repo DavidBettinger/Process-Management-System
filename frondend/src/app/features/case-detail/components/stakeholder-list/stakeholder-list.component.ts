@@ -7,8 +7,7 @@ import { StakeholderLabelPipe } from '../../../../shared/labels/stakeholder-labe
   selector: 'app-stakeholder-list',
   standalone: true,
   imports: [CommonModule, StakeholderLabelPipe],
-  templateUrl: './stakeholder-list.component.html',
-  styleUrl: './stakeholder-list.component.css'
+  templateUrl: './stakeholder-list.component.html'
 })
 export class StakeholderListComponent {
   @Input({ required: true }) stakeholders: StakeholderResponse[] = [];

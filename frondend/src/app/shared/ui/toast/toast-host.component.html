@@ -1,14 +1,28 @@
-<div class="toast-host" aria-live="polite">
+<div
+  class="fixed inset-x-4 bottom-4 z-50 flex max-w-full flex-col gap-3 sm:inset-x-auto sm:right-6 sm:bottom-6 sm:max-w-90"
+  aria-live="polite"
+>
   @for (toast of toasts(); track toast.id) {
     <div
-      class="toast"
-      [class.success]="toast.variant === 'success'"
-      [class.error]="toast.variant === 'error'"
-      [class.info]="toast.variant === 'info'"
+      class="flex items-start gap-3 rounded-2xl border border-white/10 px-4 py-3 text-sm text-white shadow-lg"
+      [ngClass]="
+        toast.variant === 'success'
+          ? 'bg-emerald-600/95'
+          : toast.variant === 'error'
+            ? 'bg-rose-600/95'
+            : toast.variant === 'info'
+              ? 'bg-slate-800/95'
+              : 'bg-slate-900/95'
+      "
       role="status"
     >
-      <span class="toast-message">{{ toast.message }}</span>
-      <button class="toast-close" type="button" (click)="dismiss(toast.id)" aria-label="Schliessen">
+      <span class="flex-1 leading-snug">{{ toast.message }}</span>
+      <button
+        class="text-sm font-bold leading-none text-white/80 hover:text-white"
+        type="button"
+        (click)="dismiss(toast.id)"
+        aria-label="Schliessen"
+      >
         x
       </button>
     </div>

@@ -6,8 +6,7 @@ import { Stakeholder, StakeholderRole } from '../../../core/models/stakeholder.m
   selector: 'app-stakeholder-select',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './stakeholder-select.component.html',
-  styleUrl: './stakeholder-select.component.css'
+  templateUrl: './stakeholder-select.component.html'
 })
 export class StakeholderSelectComponent {
   @Input() stakeholders: Stakeholder[] = [];

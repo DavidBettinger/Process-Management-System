@@ -1,39 +1,49 @@
-<section class="page">
-  <header class="page-header">
+<section class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
     <div>
-      <p class="eyebrow">Prozesse</p>
-      <h1>Aktive Prozesse</h1>
-      <p class="subtitle">Behalte Koordination, Besprechungen und Aufgabenfortschritt je Prozess im Blick.</p>
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Prozesse</p>
+      <h1 class="mt-2 text-3xl font-semibold text-slate-900">Aktive Prozesse</h1>
+      <p class="mt-2 max-w-2xl text-sm text-slate-600">
+        Behalte Koordination, Besprechungen und Aufgabenfortschritt je Prozess im Blick.
+      </p>
     </div>
-    <button class="primary-button" type="button">Prozess anlegen</button>
+    <button appTwButton="primary" type="button">Prozess anlegen</button>
   </header>
 
-  <div class="grid">
-    <article class="case-card">
-      <div class="case-meta">
-        <span class="status">Aktiv</span>
-        <span class="time">Vor 2 Std. aktualisiert</span>
+  <div class="grid gap-6 md:grid-cols-2">
+    <article class="space-y-4 rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-lg">
+      <div class="flex items-center justify-between text-sm text-slate-500">
+        <span class="text-xs font-semibold uppercase tracking-[0.15em] text-emerald-700">Aktiv</span>
+        <span>Vor 2 Std. aktualisiert</span>
       </div>
-      <h2>Sunrise Kita Onboarding</h2>
-      <p class="case-copy">Stakeholder-Interviews, Sicherheitscheck und Personalbereitschaft.</p>
-      <div class="case-footer">
-        <span class="pill">3 Besprechungen</span>
-        <span class="pill">7 Aufgaben offen</span>
-        <a class="link" routerLink="/cases/11111111-1111-1111-1111-111111111111">Prozess oeffnen</a>
+      <h2 class="text-xl font-semibold text-slate-900">Sunrise Kita Onboarding</h2>
+      <p class="text-sm text-slate-600">
+        Stakeholder-Interviews, Sicherheitscheck und Personalbereitschaft.
+      </p>
+      <div class="flex flex-wrap items-center gap-3 text-xs text-slate-600">
+        <span class="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700">3 Besprechungen</span>
+        <span class="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700">7 Aufgaben offen</span>
+        <a class="text-sm font-semibold text-slate-900 hover:text-slate-700" routerLink="/cases/11111111-1111-1111-1111-111111111111">
+          Prozess oeffnen
+        </a>
       </div>
     </article>
 
-    <article class="case-card muted">
-      <div class="case-meta">
-        <span class="status">Entwurf</span>
-        <span class="time">Gestern aktualisiert</span>
+    <article class="space-y-4 rounded-2xl border border-slate-200 bg-amber-50/70 p-6 shadow-lg">
+      <div class="flex items-center justify-between text-sm text-slate-500">
+        <span class="text-xs font-semibold uppercase tracking-[0.15em] text-amber-700">Entwurf</span>
+        <span>Gestern aktualisiert</span>
       </div>
-      <h2>Little Harbor Erweiterung</h2>
-      <p class="case-copy">Zeitplan fuer Ausbau und Personalfreigaben wird erstellt.</p>
-      <div class="case-footer">
-        <span class="pill">Noch keine Besprechungen</span>
-        <span class="pill">2 Aufgaben offen</span>
-        <a class="link" routerLink="/cases/22222222-2222-2222-2222-222222222222">Prozess oeffnen</a>
+      <h2 class="text-xl font-semibold text-slate-900">Little Harbor Erweiterung</h2>
+      <p class="text-sm text-slate-600">Zeitplan fuer Ausbau und Personalfreigaben wird erstellt.</p>
+      <div class="flex flex-wrap items-center gap-3 text-xs text-slate-600">
+        <span class="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700">
+          Noch keine Besprechungen
+        </span>
+        <span class="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700">2 Aufgaben offen</span>
+        <a class="text-sm font-semibold text-slate-900 hover:text-slate-700" routerLink="/cases/22222222-2222-2222-2222-222222222222">
+          Prozess oeffnen
+        </a>
       </div>
     </article>
   </div>

@@ -12,6 +12,11 @@ import { Kita } from '../../../../core/models/kita.model';
 import { Location } from '../../../../core/models/location.model';
 import { StakeholdersStore } from '../../../stakeholders/state/stakeholders.store';
 import { StakeholderSelectComponent } from '../../../../shared/ui/stakeholder-select/stakeholder-select.component';
+import { isControlInvalid, requiredMessage } from '../../../../shared/forms/form-utils';
+import { TwBadgeComponent, TwBadgeVariant } from '../../../../shared/ui/tw/tw-badge.component';
+import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
+import { TwCardComponent } from '../../../../shared/ui/tw/tw-card.component';
+import { TwFieldComponent } from '../../../../shared/ui/tw/tw-field.component';
 
 @Component({
   selector: 'app-case-detail-page',
@@ -23,10 +28,13 @@ import { StakeholderSelectComponent } from '../../../../shared/ui/stakeholder-se
     RouterLinkActive,
     RouterOutlet,
     StakeholderListComponent,
-    StakeholderSelectComponent
+    StakeholderSelectComponent,
+    TwBadgeComponent,
+    TwButtonDirective,
+    TwCardComponent,
+    TwFieldComponent
   ],
-  templateUrl: './case-detail.page.html',
-  styleUrl: './case-detail.page.css'
+  templateUrl: './case-detail.page.html'
 })
 export class CaseDetailPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
@@ -49,6 +57,7 @@ export class CaseDetailPageComponent implements OnInit {
   readonly availableStakeholders = this.stakeholdersStore.stakeholders;
   readonly stakeholdersStatus = this.stakeholdersStore.status;
   readonly stakeholdersError = this.stakeholdersStore.error;
+  readonly requiredMessage = requiredMessage;
 
   readonly form = this.formBuilder.group({
     stakeholderId: ['', [Validators.required]],
@@ -113,6 +122,16 @@ export class CaseDetailPageComponent implements OnInit {
     return 'Unbekannt';
   }
 
+  statusVariant(status: string | null): TwBadgeVariant {
+    if (status === 'ACTIVE') {
+      return 'success';
+    }
+    if (status === 'DRAFT') {
+      return 'warning';
+    }
+    return 'neutral';
+  }
+
   activationHint(): string | null {
     if (this.caseStatus() === 'DRAFT' && !this.canActivate()) {
       return 'Zum Aktivieren wird mindestens eine Fachberatung benoetigt.';
@@ -121,6 +140,10 @@ export class CaseDetailPageComponent implements OnInit {
       return 'Der Prozess ist bereits aktiv.';
     }
     return null;
+  }
+
+  isInvalid(controlName: string): boolean {
+    return isControlInvalid(this.form, controlName);
   }
 
   kitaName(kitaId: string | null | undefined): string {

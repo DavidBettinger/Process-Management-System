@@ -21,7 +21,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.brand-title')?.textContent).toContain('Prozessstudio');
+    expect(compiled.textContent).toContain('Prozessstudio');
     expect(compiled.querySelector('h1')?.textContent).toContain('Prozesse');
   });
 });

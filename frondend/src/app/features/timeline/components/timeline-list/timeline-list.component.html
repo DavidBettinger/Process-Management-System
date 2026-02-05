@@ -1,10 +1,12 @@
-<div class="timeline">
+<div class="space-y-5">
   @for (entry of entries; track $index) {
-    <div class="timeline-entry">
-      <div class="dot"></div>
+    <div class="grid grid-cols-[16px_1fr] gap-4">
+      <div
+        class="mt-1 h-3.5 w-3.5 rounded-full bg-gradient-to-br from-orange-400 to-amber-300 shadow-[0_6px_12px_rgba(244,132,95,0.3)]"
+      ></div>
       <div>
-        <p class="entry-title">{{ titleFor(entry) }}</p>
-        <p class="entry-meta">
+        <p class="text-sm font-semibold text-slate-900">{{ titleFor(entry) }}</p>
+        <p class="mt-1 text-sm text-slate-500">
           @switch (entry.type) {
             @case ('MEETING_HELD') {
               {{ entry.meetingId | meetingLabel: entry.occurredAt : entry.locationId }}

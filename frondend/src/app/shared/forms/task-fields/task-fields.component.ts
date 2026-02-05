@@ -2,13 +2,13 @@ import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { isControlInvalid, requiredMessage } from '../form-utils';
+import { TwFieldComponent } from '../../ui/tw/tw-field.component';
 
 @Component({
   selector: 'app-task-fields',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './task-fields.component.html',
-  styleUrl: './task-fields.component.css'
+  imports: [CommonModule, ReactiveFormsModule, TwFieldComponent],
+  templateUrl: './task-fields.component.html'
 })
 export class TaskFieldsComponent {
   @Input({ required: true }) form!: FormGroup;

@@ -6,8 +6,7 @@ import { ToastMessage, ToastService } from '../toast.service';
   selector: 'app-toast-host',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './toast-host.component.html',
-  styleUrl: './toast-host.component.css'
+  templateUrl: './toast-host.component.html'
 })
 export class ToastHostComponent {
   private readonly toastService = inject(ToastService);

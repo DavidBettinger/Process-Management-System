@@ -1,23 +1,43 @@
-<section class="case-shell">
-  <header class="case-header">
+<section class="space-y-6">
+  <header class="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white/80 p-6 shadow-sm md:flex-row md:items-end md:justify-between">
     <div>
-      <p class="eyebrow">Prozess-Workspace</p>
-      <h1>Prozess-Workspace</h1>
-      <p class="subtitle">Organisiere Besprechungen, Aufgaben und Zeitlinien-Eintraege fuer diesen Prozess.</p>
+      <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Prozess-Workspace</p>
+      <h1 class="mt-2 text-2xl font-semibold text-slate-900">Prozess-Workspace</h1>
+      <p class="mt-2 text-sm text-slate-600">
+        Organisiere Besprechungen, Aufgaben und Zeitlinien-Eintraege fuer diesen Prozess.
+      </p>
     </div>
-    <div class="case-actions">
-      <button class="secondary-button" type="button">Stakeholder hinzufuegen</button>
-      <button class="primary-button" type="button">Besprechung planen</button>
+    <div class="flex flex-wrap gap-3">
+      <button appTwButton="secondary" size="sm" type="button">Stakeholder hinzufuegen</button>
+      <button appTwButton="primary" size="sm" type="button">Besprechung planen</button>
     </div>
   </header>
 
-  <nav class="tabs">
-    <a routerLink="tasks" routerLinkActive="active">Aufgaben</a>
-    <a routerLink="meetings" routerLinkActive="active">Besprechungen</a>
-    <a routerLink="timeline" routerLinkActive="active">Zeitlinie</a>
+  <nav class="flex flex-wrap gap-2 rounded-full bg-slate-900/5 p-1">
+    <a
+      routerLink="tasks"
+      routerLinkActive="bg-slate-900 text-white shadow-sm"
+      class="rounded-full px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900"
+    >
+      Aufgaben
+    </a>
+    <a
+      routerLink="meetings"
+      routerLinkActive="bg-slate-900 text-white shadow-sm"
+      class="rounded-full px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900"
+    >
+      Besprechungen
+    </a>
+    <a
+      routerLink="timeline"
+      routerLinkActive="bg-slate-900 text-white shadow-sm"
+      class="rounded-full px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900"
+    >
+      Zeitlinie
+    </a>
   </nav>
 
-  <div class="case-content">
+  <div class="rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm">
     <router-outlet />
   </div>
 </section>

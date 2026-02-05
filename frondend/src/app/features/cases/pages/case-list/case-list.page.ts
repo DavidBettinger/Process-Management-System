@@ -11,13 +11,20 @@ import { LocationsStore } from '../../../locations/state/locations.store';
 import { ToastService } from '../../../../shared/ui/toast.service';
 import { TwBadgeComponent, TwBadgeVariant } from '../../../../shared/ui/tw/tw-badge.component';
 import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
+import { TwCardComponent } from '../../../../shared/ui/tw/tw-card.component';
 
 @Component({
   selector: 'app-case-list-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, CaseCreateDialogComponent, TwBadgeComponent, TwButtonDirective],
-  templateUrl: './case-list.page.html',
-  styleUrl: './case-list.page.css'
+  imports: [
+    CommonModule,
+    RouterLink,
+    CaseCreateDialogComponent,
+    TwBadgeComponent,
+    TwButtonDirective,
+    TwCardComponent
+  ],
+  templateUrl: './case-list.page.html'
 })
 export class CaseListPageComponent implements OnInit {
   readonly casesStore = inject(CasesStore);

@@ -1,43 +1,41 @@
-<section class="page">
-  <header class="page-header">
-    <div>
-      <p class="eyebrow">Stammdaten</p>
-      <h1>Beteiligte verwalten</h1>
-      <p class="subtitle">Lege Personen an, die in Prozessen Rollen uebernehmen.</p>
-    </div>
+<section class="space-y-6">
+  <header class="space-y-2">
+    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Stammdaten</p>
+    <h1 class="text-3xl font-semibold text-slate-900">Beteiligte verwalten</h1>
+    <p class="max-w-2xl text-sm text-slate-600">Lege Personen an, die in Prozessen Rollen uebernehmen.</p>
   </header>
 
-  <div class="content-grid">
+  <div class="grid gap-6 lg:grid-cols-[minmax(0,0.45fr)_minmax(0,0.55fr)]">
     <app-stakeholder-form [isSubmitting]="isLoading()" (create)="handleCreate($event)" />
 
-    <div class="list-panel">
+    <app-tw-card [className]="'min-h-[260px] space-y-4'">
       @if (isLoading()) {
-        <div class="state">
-          <div class="skeleton"></div>
-          <div class="skeleton"></div>
+        <div class="space-y-3 animate-pulse">
+          <div class="h-4 w-3/4 rounded-full bg-slate-200"></div>
+          <div class="h-4 w-2/3 rounded-full bg-slate-200"></div>
         </div>
       }
 
       @if (status() === 'error') {
-        <div class="state">
-          <p class="state-title">Beteiligte konnten nicht geladen werden</p>
-          <p class="state-text">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
-          <button class="ghost-button" type="button" (click)="stakeholdersStore.loadStakeholders()">
+        <div class="space-y-2">
+          <p class="text-sm font-semibold text-slate-900">Beteiligte konnten nicht geladen werden</p>
+          <p class="text-sm text-slate-600">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
+          <button appTwButton="ghost" size="sm" type="button" (click)="stakeholdersStore.loadStakeholders()">
             Erneut versuchen
           </button>
         </div>
       }
 
       @if (isEmpty()) {
-        <div class="state">
-          <p class="state-title">Noch keine Beteiligten vorhanden</p>
-          <p class="state-text">Lege eine Person an, damit du sie Prozessen zuordnen kannst.</p>
+        <div class="space-y-2">
+          <p class="text-sm font-semibold text-slate-900">Noch keine Beteiligten vorhanden</p>
+          <p class="text-sm text-slate-600">Lege eine Person an, damit du sie Prozessen zuordnen kannst.</p>
         </div>
       }
 
       @if (status() === 'success' && stakeholders().length > 0) {
         <app-stakeholder-list [stakeholders]="stakeholders()" />
       }
-    </div>
+    </app-tw-card>
   </div>
 </section>

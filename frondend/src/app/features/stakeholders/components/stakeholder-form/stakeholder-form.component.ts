@@ -3,6 +3,9 @@ import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CreateStakeholderRequest, StakeholderRole } from '../../../../core/models/stakeholder.model';
 import { isControlInvalid, requiredMessage } from '../../../../shared/forms/form-utils';
+import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
+import { TwCardComponent } from '../../../../shared/ui/tw/tw-card.component';
+import { TwFieldComponent } from '../../../../shared/ui/tw/tw-field.component';
 
 interface RoleOption {
   value: StakeholderRole;
@@ -12,9 +15,8 @@ interface RoleOption {
 @Component({
   selector: 'app-stakeholder-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './stakeholder-form.component.html',
-  styleUrl: './stakeholder-form.component.css'
+  imports: [CommonModule, ReactiveFormsModule, TwButtonDirective, TwCardComponent, TwFieldComponent],
+  templateUrl: './stakeholder-form.component.html'
 })
 export class StakeholderFormComponent {
   @Input() isSubmitting = false;

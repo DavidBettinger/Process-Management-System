@@ -7,13 +7,14 @@ import { StakeholderRole } from '../../../../core/models/stakeholder.model';
 import { TaskState } from '../../../../core/models/task.model';
 import { CasesStore } from '../../../cases/state/cases.store';
 import { ProcessLabelPipe } from '../../../../shared/labels/process-label.pipe';
+import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
+import { TwCardComponent } from '../../../../shared/ui/tw/tw-card.component';
 
 @Component({
   selector: 'app-stakeholder-detail-page',
   standalone: true,
-  imports: [CommonModule, ProcessLabelPipe],
-  templateUrl: './stakeholder-detail-page.page.html',
-  styleUrl: './stakeholder-detail-page.page.css'
+  imports: [CommonModule, ProcessLabelPipe, TwButtonDirective, TwCardComponent],
+  templateUrl: './stakeholder-detail-page.page.html'
 })
 export class StakeholderDetailPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);

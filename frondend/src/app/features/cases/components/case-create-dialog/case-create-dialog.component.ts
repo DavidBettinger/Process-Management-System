@@ -1,18 +1,27 @@
-import { Component, EventEmitter, Input, Output, signal, inject } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Component, EventEmitter, Input, Output, inject, signal } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CreateCaseRequest } from '../../../../core/models/case.model';
 import { Kita } from '../../../../core/models/kita.model';
 import { Location } from '../../../../core/models/location.model';
 import { isControlInvalid, requiredMessage } from '../../../../shared/forms/form-utils';
+import { TwCardComponent } from '../../../../shared/ui/tw/tw-card.component';
+import { TwFieldComponent } from '../../../../shared/ui/tw/tw-field.component';
+import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
 
 @Component({
   selector: 'app-case-create-dialog',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
-  templateUrl: './case-create-dialog.component.html',
-  styleUrl: './case-create-dialog.component.css'
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterLink,
+    TwCardComponent,
+    TwFieldComponent,
+    TwButtonDirective
+  ],
+  templateUrl: './case-create-dialog.component.html'
 })
 export class CaseCreateDialogComponent {
   @Input() kitas: Kita[] = [];

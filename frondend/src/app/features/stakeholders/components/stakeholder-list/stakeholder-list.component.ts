@@ -7,8 +7,7 @@ import { Stakeholder, StakeholderRole } from '../../../../core/models/stakeholde
   selector: 'app-stakeholder-list',
   standalone: true,
   imports: [CommonModule, RouterLink],
-  templateUrl: './stakeholder-list.component.html',
-  styleUrl: './stakeholder-list.component.css'
+  templateUrl: './stakeholder-list.component.html'
 })
 export class StakeholderListComponent {
   @Input() stakeholders: Stakeholder[] = [];

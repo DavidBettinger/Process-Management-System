@@ -1,58 +1,60 @@
-<section class="page">
-  <header class="page-header">
-    <div>
-      <p class="eyebrow">Prozesse</p>
-      <h1>Alle Prozesse</h1>
-      <p class="subtitle">Erstelle neue Prozesse und behalte Status sowie Details im Blick.</p>
-    </div>
+<section class="space-y-6">
+  <header class="space-y-2">
+    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Prozesse</p>
+    <h1 class="text-3xl font-semibold text-slate-900">Alle Prozesse</h1>
+    <p class="max-w-2xl text-sm text-slate-600">
+      Erstelle neue Prozesse und behalte Status sowie Details im Blick.
+    </p>
   </header>
 
-  <div class="content-grid">
+  <div class="grid gap-6 lg:grid-cols-[minmax(0,0.45fr)_minmax(0,0.55fr)]">
     <app-case-create-dialog
       [kitas]="kitas()"
       [locations]="locations()"
       (create)="handleCreate($event)"
     />
 
-    <div class="list-panel">
+    <app-tw-card [className]="'min-h-[260px] space-y-4'">
       @if (isLoading()) {
-        <div class="state">
-          <div class="skeleton"></div>
-          <div class="skeleton"></div>
+        <div class="space-y-3 animate-pulse">
+          <div class="h-4 w-3/4 rounded-full bg-slate-200"></div>
+          <div class="h-4 w-2/3 rounded-full bg-slate-200"></div>
         </div>
       }
 
       @if (status() === 'error') {
-        <div class="state">
-          <p class="state-title">Daten konnten nicht geladen werden</p>
-          <p class="state-text">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
-          <button appTwButton="ghost" type="button" (click)="casesStore.loadCases()">
+        <div class="space-y-2">
+          <p class="text-sm font-semibold text-slate-900">Daten konnten nicht geladen werden</p>
+          <p class="text-sm text-slate-600">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
+          <button appTwButton="ghost" size="sm" type="button" (click)="casesStore.loadCases()">
             Erneut versuchen
           </button>
         </div>
       }
 
       @if (isEmpty()) {
-        <div class="state">
-          <p class="state-title">Keine Prozesse vorhanden</p>
-          <p class="state-text">Lege den ersten Prozess an, um zu starten.</p>
+        <div class="space-y-2">
+          <p class="text-sm font-semibold text-slate-900">Keine Prozesse vorhanden</p>
+          <p class="text-sm text-slate-600">Lege den ersten Prozess an, um zu starten.</p>
         </div>
       }
 
       @if (status() === 'success' && cases().length > 0) {
-        <ul class="case-list">
+        <ul class="space-y-3">
           @for (item of cases(); track item.id) {
-            <li class="case-card">
-              <div class="case-meta">
+            <li class="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div class="flex items-center justify-between text-xs text-slate-500">
                 <app-tw-badge [variant]="statusVariant(item.status)">{{ statusLabel(item.status) }}</app-tw-badge>
-                <span class="time">{{ kitaLabel(item.kitaId) }}</span>
+                <span>{{ kitaLabel(item.kitaId) }}</span>
               </div>
-              <h2>{{ item.title }}</h2>
-              <a class="link" [routerLink]="['/cases', item.id]">Prozess oeffnen</a>
+              <h2 class="text-base font-semibold text-slate-900">{{ item.title }}</h2>
+              <a class="text-sm font-semibold text-slate-900 hover:text-slate-700" [routerLink]="['/cases', item.id]">
+                Prozess oeffnen
+              </a>
             </li>
           }
         </ul>
       }
-    </div>
+    </app-tw-card>
   </div>
 </section>

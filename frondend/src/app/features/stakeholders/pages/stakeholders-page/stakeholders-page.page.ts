@@ -6,13 +6,20 @@ import { CreateStakeholderRequest } from '../../../../core/models/stakeholder.mo
 import { StakeholderFormComponent } from '../../components/stakeholder-form/stakeholder-form.component';
 import { StakeholderListComponent } from '../../components/stakeholder-list/stakeholder-list.component';
 import { ToastService } from '../../../../shared/ui/toast.service';
+import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
+import { TwCardComponent } from '../../../../shared/ui/tw/tw-card.component';
 
 @Component({
   selector: 'app-stakeholders-page',
   standalone: true,
-  imports: [CommonModule, StakeholderFormComponent, StakeholderListComponent],
-  templateUrl: './stakeholders-page.page.html',
-  styleUrl: './stakeholders-page.page.css'
+  imports: [
+    CommonModule,
+    StakeholderFormComponent,
+    StakeholderListComponent,
+    TwButtonDirective,
+    TwCardComponent
+  ],
+  templateUrl: './stakeholders-page.page.html'
 })
 export class StakeholdersPageComponent implements OnInit {
   readonly stakeholdersStore = inject(StakeholdersStore);

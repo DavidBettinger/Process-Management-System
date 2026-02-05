@@ -212,7 +212,7 @@ Add:
 
 ---
 
-## [ ] Task 8 — Repo-wide sweep to unify Tailwind layout (optional after feature conversions)
+## [x] Task 8 — Repo-wide sweep to unify Tailwind layout (optional after feature conversions)
 
 **Task ID:** FE-TW-SWEEP-008  
 **Objective:** A repo-wide sweep to:

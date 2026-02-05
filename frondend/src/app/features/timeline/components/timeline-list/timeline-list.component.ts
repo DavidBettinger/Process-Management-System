@@ -9,8 +9,7 @@ import { TaskLabelPipe } from '../../../../shared/labels/task-label.pipe';
   selector: 'app-timeline-list',
   standalone: true,
   imports: [CommonModule, MeetingLabelPipe, TaskLabelPipe, StakeholderLabelPipe],
-  templateUrl: './timeline-list.component.html',
-  styleUrl: './timeline-list.component.css'
+  templateUrl: './timeline-list.component.html'
 })
 export class TimelineListComponent {
   @Input() entries: TimelineEntry[] = [];

@@ -6,22 +6,7 @@ const appRoot = path.resolve(__dirname, '..', 'src', 'app');
 const forbiddenSuffixes = ['.component.css', '.component.scss'];
 
 const allowlist = new Set([
-  // Legacy component styles kept until each feature is migrated to Tailwind.
-  'shared/layout/app-shell/app-shell.component.css',
-  'shared/forms/task-fields/task-fields.component.css',
-  'shared/ui/stakeholder-select/stakeholder-select.component.css',
-  'shared/ui/toast/toast-host.component.css',
-  'shared/ui/confirm-dialog/confirm-dialog.component.css',
-  'features/cases/case-tasks/case-tasks.component.css',
-  'features/timeline/components/timeline-list/timeline-list.component.css',
-  'features/cases/case-detail/case-detail.component.css',
-  'features/cases/cases-page/cases-page.component.css',
-  'features/cases/case-meetings/case-meetings.component.css',
-  'features/cases/components/case-create-dialog/case-create-dialog.component.css',
-  'features/cases/case-timeline/case-timeline.component.css',
-  'features/stakeholders/components/stakeholder-form/stakeholder-form.component.css',
-  'features/stakeholders/components/stakeholder-list/stakeholder-list.component.css',
-  'features/case-detail/components/stakeholder-list/stakeholder-list.component.css'
+  // Add temporary exceptions here if a component still requires legacy CSS.
 ]);
 
 if (!fs.existsSync(appRoot)) {

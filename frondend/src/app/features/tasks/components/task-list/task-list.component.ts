@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { Task, TaskResolutionKind } from '../../../../core/models/task.model';
 import { Stakeholder } from '../../../../core/models/stakeholder.model';
 import { TaskActionsComponent } from '../task-actions/task-actions.component';
@@ -22,7 +22,18 @@ import { TwBadgeComponent, TwBadgeVariant } from '../../../../shared/ui/tw/tw-ba
   templateUrl: './task-list.component.html'
 })
 export class TaskListComponent {
-  @Input({ required: true }) tasks: Task[] = [];
+  private lastTaskCount = 0;
+  private tasksValue: Task[] = [];
+
+  @Input({ required: true })
+  set tasks(value: Task[]) {
+    this.tasksValue = value ?? [];
+    this.syncExpandedTask();
+  }
+  get tasks(): Task[] {
+    return this.tasksValue;
+  }
+
   @Input() busyTaskIds: Set<string> = new Set();
   @Input() stakeholders: Stakeholder[] = [];
   @Input() stakeholdersReady = true;
@@ -33,6 +44,8 @@ export class TaskListComponent {
   @Output() unblock = new EventEmitter<string>();
   @Output() decline = new EventEmitter<{ taskId: string; reason: string; suggestedAssigneeId?: string | null }>();
   @Output() resolve = new EventEmitter<{ taskId: string; kind: TaskResolutionKind; reason: string }>();
+
+  readonly expandedTaskId = signal<string | null>(null);
 
   statusLabel(state: Task['state']): string {
     if (state === 'OPEN') {
@@ -113,5 +126,32 @@ export class TaskListComponent {
 
   isBusy(taskId: string): boolean {
     return this.busyTaskIds.has(taskId);
+  }
+
+  toggleTask(taskId: string): void {
+    this.expandedTaskId.update((current) => (current === taskId ? null : taskId));
+  }
+
+  isExpanded(taskId: string): boolean {
+    return this.expandedTaskId() === taskId;
+  }
+
+  private syncExpandedTask(): void {
+    const count = this.tasksValue.length;
+    if (count === 1) {
+      this.expandedTaskId.set(this.tasksValue[0]?.id ?? null);
+    } else if (count > 1) {
+      if (this.lastTaskCount <= 1) {
+        this.expandedTaskId.set(null);
+      } else if (this.expandedTaskId()) {
+        const stillExists = this.tasksValue.some((task) => task.id === this.expandedTaskId());
+        if (!stillExists) {
+          this.expandedTaskId.set(null);
+        }
+      }
+    } else {
+      this.expandedTaskId.set(null);
+    }
+    this.lastTaskCount = count;
   }
 }

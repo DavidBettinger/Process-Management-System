@@ -130,7 +130,7 @@ Source: Screenshot notes (red annotations inside black frames).
 
 ---
 
-## [ ] Task 3 — Tasks List as Accordion: Collapse by default, show summary row (title/status/priority/assignee)
+## [x] Task 3 — Tasks List as Accordion: Collapse by default, show summary row (title/status/priority/assignee)
 
 **Task ID:** FE-TASK-UI-ACC-003  
 **Objective:** When multiple tasks exist, tasks should be collapsed (accordion). Only summary is visible for collapsed items.

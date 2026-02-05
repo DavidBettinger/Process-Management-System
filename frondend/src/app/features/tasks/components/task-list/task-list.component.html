@@ -1,7 +1,12 @@
 <ul class="space-y-4">
   @for (task of tasks; track task.id) {
-    <li class="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <li class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <button
+        type="button"
+        class="flex w-full flex-col gap-3 p-5 text-left transition hover:bg-slate-50 sm:flex-row sm:items-start sm:justify-between"
+        (click)="toggleTask(task.id)"
+        [attr.aria-expanded]="isExpanded(task.id)"
+      >
         <div class="space-y-2">
           <p class="text-base font-semibold text-slate-900">{{ task.title || 'Unbenannte Aufgabe' }}</p>
           <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500">
@@ -9,38 +14,43 @@
             <span [class]="priorityClass(task.priority)">
               Prioritaet: {{ priorityLabel(task.priority) }}
             </span>
-            @if (task.assigneeId) {
-              <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                Zustaendig: {{ task.assigneeId | stakeholderLabel }}
-              </span>
-            }
+            <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+              Zustaendig: {{ task.assigneeId ? (task.assigneeId | stakeholderLabel) : 'Nicht zugewiesen' }}
+            </span>
           </div>
         </div>
-      </div>
+        <span class="text-xs font-semibold text-slate-500">
+          {{ isExpanded(task.id) ? 'Details ausblenden' : 'Details anzeigen' }}
+        </span>
+      </button>
 
-      @if (task.description) {
-        <p class="text-sm leading-relaxed text-slate-600">{{ task.description }}</p>
+      @if (isExpanded(task.id)) {
+        <div class="space-y-4 border-t border-slate-200 px-5 pb-5 pt-4" data-testid="task-details">
+          @if (task.description) {
+            <p class="text-sm leading-relaxed text-slate-600">{{ task.description }}</p>
+          }
+
+          <app-task-attachments [taskId]="task.id"></app-task-attachments>
+          <app-task-reminders
+            [taskId]="task.id"
+            [stakeholders]="stakeholders"
+            [stakeholdersReady]="stakeholdersReady"
+          ></app-task-reminders>
+
+          <app-task-actions
+            [task]="task"
+            [busy]="isBusy(task.id)"
+            [stakeholders]="stakeholders"
+            [stakeholdersReady]="stakeholdersReady"
+            (assign)="assign.emit($event)"
+            (start)="start.emit($event)"
+            (block)="block.emit($event)"
+            (unblock)="unblock.emit($event)"
+            (decline)="decline.emit($event)"
+            (resolve)="resolve.emit($event)"
+          />
+        </div>
       }
-
-      <app-task-attachments [taskId]="task.id"></app-task-attachments>
-      <app-task-reminders
-        [taskId]="task.id"
-        [stakeholders]="stakeholders"
-        [stakeholdersReady]="stakeholdersReady"
-      ></app-task-reminders>
-
-      <app-task-actions
-        [task]="task"
-        [busy]="isBusy(task.id)"
-        [stakeholders]="stakeholders"
-        [stakeholdersReady]="stakeholdersReady"
-        (assign)="assign.emit($event)"
-        (start)="start.emit($event)"
-        (block)="block.emit($event)"
-        (unblock)="unblock.emit($event)"
-        (decline)="decline.emit($event)"
-        (resolve)="resolve.emit($event)"
-      />
     </li>
   }
 </ul>

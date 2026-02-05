@@ -3,13 +3,15 @@ import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CreateLocationRequest } from '../../../../core/models/location.model';
 import { isControlInvalid, requiredMessage } from '../../../../shared/forms/form-utils';
+import { TwCardComponent } from '../../../../shared/ui/tw/tw-card.component';
+import { TwFieldComponent } from '../../../../shared/ui/tw/tw-field.component';
+import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
 
 @Component({
   selector: 'app-location-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './location-form.component.html',
-  styleUrl: './location-form.component.css'
+  imports: [CommonModule, ReactiveFormsModule, TwCardComponent, TwFieldComponent, TwButtonDirective],
+  templateUrl: './location-form.component.html'
 })
 export class LocationFormComponent {
   @Input() isSubmitting = false;

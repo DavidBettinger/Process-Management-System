@@ -6,8 +6,7 @@ import { Location } from '../../../../core/models/location.model';
   selector: 'app-location-list',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './location-list.component.html',
-  styleUrl: './location-list.component.css'
+  templateUrl: './location-list.component.html'
 })
 export class LocationListComponent {
   @Input() locations: Location[] = [];

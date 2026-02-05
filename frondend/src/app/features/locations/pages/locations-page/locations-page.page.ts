@@ -6,13 +6,15 @@ import { CreateLocationRequest } from '../../../../core/models/location.model';
 import { LocationFormComponent } from '../../components/location-form/location-form.component';
 import { LocationListComponent } from '../../components/location-list/location-list.component';
 import { ToastService } from '../../../../shared/ui/toast.service';
+import { TwPageComponent } from '../../../../shared/ui/tw/tw-page.component';
+import { TwCardComponent } from '../../../../shared/ui/tw/tw-card.component';
+import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
 
 @Component({
   selector: 'app-locations-page',
   standalone: true,
-  imports: [CommonModule, LocationFormComponent, LocationListComponent],
-  templateUrl: './locations-page.page.html',
-  styleUrl: './locations-page.page.css'
+  imports: [CommonModule, LocationFormComponent, LocationListComponent, TwPageComponent, TwCardComponent, TwButtonDirective],
+  templateUrl: './locations-page.page.html'
 })
 export class LocationsPageComponent implements OnInit {
   readonly locationsStore = inject(LocationsStore);

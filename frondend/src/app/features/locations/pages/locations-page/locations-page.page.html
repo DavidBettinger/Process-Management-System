@@ -1,43 +1,45 @@
-<section class="page">
-  <header class="page-header">
+<app-tw-page>
+  <header class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
     <div>
-      <p class="eyebrow">Stammdaten</p>
-      <h1>Standorte verwalten</h1>
-      <p class="subtitle">Pflege Adressen, die du fuer Prozesse und Besprechungen brauchst.</p>
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Stammdaten</p>
+      <h1 class="mt-2 text-3xl font-semibold text-slate-900">Standorte verwalten</h1>
+      <p class="mt-2 max-w-2xl text-sm text-slate-600">
+        Pflege Adressen, die du fuer Prozesse und Besprechungen brauchst.
+      </p>
     </div>
+    <a appTwButton="primary" href="#location-form">Neuen Standort</a>
   </header>
 
-  <div class="content-grid">
-    <app-location-form [isSubmitting]="isLoading()" (create)="handleCreate($event)" />
+  <div class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,0.45fr)_minmax(0,0.55fr)]">
+    <app-location-form id="location-form" [isSubmitting]="isLoading()" (create)="handleCreate($event)" />
 
-    <div class="list-panel">
+    <app-tw-card [className]="'min-h-65 space-y-4'">
       @if (isLoading()) {
-        <div class="state">
-          <div class="skeleton"></div>
-          <div class="skeleton"></div>
+        <div class="space-y-3 animate-pulse">
+          <div class="h-4 w-3/4 rounded-full bg-slate-200"></div>
+          <div class="h-4 w-5/6 rounded-full bg-slate-200"></div>
+          <div class="h-4 w-2/3 rounded-full bg-slate-200"></div>
         </div>
       }
 
       @if (status() === 'error') {
-        <div class="state">
-          <p class="state-title">Standorte konnten nicht geladen werden</p>
-          <p class="state-text">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
-          <button class="ghost-button" type="button" (click)="locationsStore.loadLocations()">
-            Erneut versuchen
-          </button>
+        <div class="space-y-2">
+          <p class="text-sm font-semibold text-slate-900">Standorte konnten nicht geladen werden</p>
+          <p class="text-sm text-slate-600">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
+          <button appTwButton="ghost" type="button" (click)="locationsStore.loadLocations()">Erneut versuchen</button>
         </div>
       }
 
       @if (isEmpty()) {
-        <div class="state">
-          <p class="state-title">Keine Standorte vorhanden</p>
-          <p class="state-text">Lege einen Standort an, damit Prozesse darauf verweisen koennen.</p>
+        <div class="space-y-2">
+          <p class="text-sm font-semibold text-slate-900">Keine Standorte vorhanden</p>
+          <p class="text-sm text-slate-600">Lege einen Standort an, damit Prozesse darauf verweisen koennen.</p>
         </div>
       }
 
       @if (status() === 'success' && locations().length > 0) {
         <app-location-list [locations]="locations()" />
       }
-    </div>
+    </app-tw-card>
   </div>
-</section>
+</app-tw-page>

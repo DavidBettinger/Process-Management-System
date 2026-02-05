@@ -15,9 +15,9 @@ import { Stakeholder } from '../../../../core/models/stakeholder.model';
 class TaskRemindersStoreStub {
   readonly state = signal<Record<string, TaskRemindersState>>({});
 
-  loadReminders = jasmine.createSpy().and.returnValue(of(void 0));
-  createReminder = jasmine.createSpy().and.returnValue(of(void 0));
-  deleteReminder = jasmine.createSpy().and.returnValue(of(void 0));
+  loadReminders = vi.fn().mockReturnValue(of(void 0));
+  createReminder = vi.fn().mockReturnValue(of(void 0));
+  deleteReminder = vi.fn().mockReturnValue(of(void 0));
 
   getTaskState(taskId: string): TaskRemindersState {
     return this.state()[taskId] ?? initialTaskRemindersState();
@@ -31,14 +31,14 @@ class TaskRemindersStoreStub {
 }
 
 class ConfirmDialogServiceStub {
-  confirm(options?: unknown): ReturnType<typeof of> {
+  confirm(options?: unknown) {
     void options;
     return of(true);
   }
 }
 
 class ToastServiceStub {
-  error = jasmine.createSpy();
+  error = vi.fn();
 }
 
 class LabelResolverServiceStub {

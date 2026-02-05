@@ -13,10 +13,10 @@ import { ToastService } from '../../../../shared/ui/toast.service';
 class TaskAttachmentsStoreStub {
   readonly state = signal<Record<string, TaskAttachmentsState>>({});
 
-  loadAttachments = jasmine.createSpy().and.returnValue(of(void 0));
-  uploadAttachment = jasmine.createSpy().and.returnValue(of(void 0));
-  deleteAttachment = jasmine.createSpy().and.returnValue(of(void 0));
-  downloadAttachment = jasmine.createSpy().and.returnValue(of(new Blob(['file'])));
+  loadAttachments = vi.fn().mockReturnValue(of(void 0));
+  uploadAttachment = vi.fn().mockReturnValue(of(void 0));
+  deleteAttachment = vi.fn().mockReturnValue(of(void 0));
+  downloadAttachment = vi.fn().mockReturnValue(of(new Blob(['file'])));
 
   getTaskState(taskId: string): TaskAttachmentsState {
     return this.state()[taskId] ?? initialTaskAttachmentsState();
@@ -30,14 +30,14 @@ class TaskAttachmentsStoreStub {
 }
 
 class ConfirmDialogServiceStub {
-  confirm(options?: unknown): ReturnType<typeof of> {
+  confirm(options?: unknown) {
     void options;
     return of(true);
   }
 }
 
 class ToastServiceStub {
-  error = jasmine.createSpy();
+  error = vi.fn();
 }
 
 describe('TaskAttachmentsComponent', () => {
@@ -71,7 +71,7 @@ describe('TaskAttachmentsComponent', () => {
       0: file,
       length: 1,
       item: (index: number) => (index === 0 ? file : null)
-    } as FileList;
+    } as unknown as FileList;
 
     fixture.componentInstance.handleFileChange({ target: { files: fileList } } as unknown as Event);
     fixture.componentInstance.submitUpload();

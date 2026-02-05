@@ -124,9 +124,12 @@ describe('TasksApi', () => {
 
     const req = httpMock.expectOne('/api/tasks/task-1/attachments');
     expect(req.request.method).toBe('POST');
-    expect(req.request.body instanceof FormData).toBeTrue();
+    expect(req.request.body instanceof FormData).toBe(true);
     const body = req.request.body as FormData;
-    expect(body.get('file')).toBe(file);
+    const uploadedFile = body.get('file') as File | null;
+    expect(uploadedFile).toBeInstanceOf(File);
+    expect(uploadedFile?.name).toBe('bericht.pdf');
+    expect(uploadedFile?.type).toBe('application/pdf');
     req.flush({ id: 'att-1' });
   });
 

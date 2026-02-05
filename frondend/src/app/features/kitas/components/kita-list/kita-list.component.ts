@@ -7,8 +7,7 @@ import { Location } from '../../../../core/models/location.model';
   selector: 'app-kita-list',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './kita-list.component.html',
-  styleUrl: './kita-list.component.css'
+  templateUrl: './kita-list.component.html'
 })
 export class KitaListComponent {
   @Input() kitas: Kita[] = [];

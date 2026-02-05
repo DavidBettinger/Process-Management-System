@@ -112,7 +112,7 @@ Add to `CODEX_INSTRUCTIONS.md`:
 
 ---
 
-## [ ] Task 3 — Convert “Locations” UI to Tailwind (remove component CSS)
+## [x ] Task 3 — Convert “Locations” UI to Tailwind (remove component CSS)
 
 **Task ID:** FE-TW-LOC-003  
 **Objective:** Replace custom CSS in Locations feature with Tailwind classes.

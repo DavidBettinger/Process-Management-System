@@ -1,59 +1,60 @@
-<section class="page">
-  <header class="page-header">
+<app-tw-page>
+  <header class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
     <div>
-      <p class="eyebrow">Stammdaten</p>
-      <h1>Kitas verwalten</h1>
-      <p class="subtitle">Lege Kitas an und verknuepfe sie mit bestehenden Standorten.</p>
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Stammdaten</p>
+      <h1 class="mt-2 text-3xl font-semibold text-slate-900">Kitas verwalten</h1>
+      <p class="mt-2 max-w-2xl text-sm text-slate-600">
+        Lege Kitas an und verknuepfe sie mit bestehenden Standorten.
+      </p>
     </div>
+    <a appTwButton="primary" href="#kita-form">Neue Kita</a>
   </header>
 
-  <div class="content-grid">
-    <div class="form-stack">
+  <div class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,0.45fr)_minmax(0,0.55fr)]">
+    <div class="space-y-4">
       <app-kita-form
+        id="kita-form"
         [locations]="locations()"
         [isSubmitting]="isLoading()"
         (create)="handleCreate($event)"
       />
 
       @if (locationsStatus() === 'error') {
-        <div class="state">
-          <p class="state-title">Standorte konnten nicht geladen werden</p>
-          <p class="state-text">{{ locationsError()?.message ?? 'Unbekannter Fehler' }}</p>
-          <button class="ghost-button" type="button" (click)="retryLocations()">
-            Erneut versuchen
-          </button>
-        </div>
+        <app-tw-card [className]="'space-y-2'">
+          <p class="text-sm font-semibold text-slate-900">Standorte konnten nicht geladen werden</p>
+          <p class="text-sm text-slate-600">{{ locationsError()?.message ?? 'Unbekannter Fehler' }}</p>
+          <button appTwButton="ghost" type="button" (click)="retryLocations()">Erneut versuchen</button>
+        </app-tw-card>
       }
     </div>
 
-    <div class="list-panel">
+    <app-tw-card [className]="'min-h-[260px] space-y-4'">
       @if (isLoading()) {
-        <div class="state">
-          <div class="skeleton"></div>
-          <div class="skeleton"></div>
+        <div class="space-y-3 animate-pulse">
+          <div class="h-4 w-3/4 rounded-full bg-slate-200"></div>
+          <div class="h-4 w-5/6 rounded-full bg-slate-200"></div>
+          <div class="h-4 w-2/3 rounded-full bg-slate-200"></div>
         </div>
       }
 
       @if (status() === 'error') {
-        <div class="state">
-          <p class="state-title">Kitas konnten nicht geladen werden</p>
-          <p class="state-text">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
-          <button class="ghost-button" type="button" (click)="kitasStore.loadKitas()">
-            Erneut versuchen
-          </button>
+        <div class="space-y-2">
+          <p class="text-sm font-semibold text-slate-900">Kitas konnten nicht geladen werden</p>
+          <p class="text-sm text-slate-600">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
+          <button appTwButton="ghost" type="button" (click)="kitasStore.loadKitas()">Erneut versuchen</button>
         </div>
       }
 
       @if (isEmpty()) {
-        <div class="state">
-          <p class="state-title">Keine Kitas vorhanden</p>
-          <p class="state-text">Lege eine Kita an oder erstelle zunaechst einen Standort.</p>
+        <div class="space-y-2">
+          <p class="text-sm font-semibold text-slate-900">Keine Kitas vorhanden</p>
+          <p class="text-sm text-slate-600">Lege eine Kita an oder erstelle zunaechst einen Standort.</p>
         </div>
       }
 
       @if (status() === 'success' && kitas().length > 0) {
         <app-kita-list [kitas]="kitas()" [locations]="locations()" />
       }
-    </div>
+    </app-tw-card>
   </div>
-</section>
+</app-tw-page>

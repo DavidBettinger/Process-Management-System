@@ -5,13 +5,15 @@ import { RouterLink } from '@angular/router';
 import { CreateKitaRequest } from '../../../../core/models/kita.model';
 import { Location } from '../../../../core/models/location.model';
 import { isControlInvalid, requiredMessage } from '../../../../shared/forms/form-utils';
+import { TwCardComponent } from '../../../../shared/ui/tw/tw-card.component';
+import { TwFieldComponent } from '../../../../shared/ui/tw/tw-field.component';
+import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
 
 @Component({
   selector: 'app-kita-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
-  templateUrl: './kita-form.component.html',
-  styleUrl: './kita-form.component.css'
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, TwCardComponent, TwFieldComponent, TwButtonDirective],
+  templateUrl: './kita-form.component.html'
 })
 export class KitaFormComponent {
   @Input() locations: Location[] = [];

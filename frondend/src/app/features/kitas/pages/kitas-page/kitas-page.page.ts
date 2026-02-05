@@ -7,13 +7,15 @@ import { CreateKitaRequest } from '../../../../core/models/kita.model';
 import { KitaFormComponent } from '../../components/kita-form/kita-form.component';
 import { KitaListComponent } from '../../components/kita-list/kita-list.component';
 import { ToastService } from '../../../../shared/ui/toast.service';
+import { TwPageComponent } from '../../../../shared/ui/tw/tw-page.component';
+import { TwCardComponent } from '../../../../shared/ui/tw/tw-card.component';
+import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
 
 @Component({
   selector: 'app-kitas-page',
   standalone: true,
-  imports: [CommonModule, KitaFormComponent, KitaListComponent],
-  templateUrl: './kitas-page.page.html',
-  styleUrl: './kitas-page.page.css'
+  imports: [CommonModule, KitaFormComponent, KitaListComponent, TwPageComponent, TwCardComponent, TwButtonDirective],
+  templateUrl: './kitas-page.page.html'
 })
 export class KitasPageComponent implements OnInit {
   readonly kitasStore = inject(KitasStore);

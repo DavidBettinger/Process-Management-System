@@ -1,22 +1,39 @@
-<section class="form-panel">
-  <header>
-    <p class="eyebrow">Kitas</p>
-    <h2>Neue Kita anlegen</h2>
-    <p class="subtitle">Verbinde die Kita mit einem Standort, damit Prozesse korrekt zugeordnet sind.</p>
+<app-tw-card [className]="'space-y-5'">
+  <header class="space-y-2">
+    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Kitas</p>
+    <h2 class="text-xl font-semibold text-slate-900">Neue Kita anlegen</h2>
+    <p class="text-sm text-slate-600">
+      Verbinde die Kita mit einem Standort, damit Prozesse korrekt zugeordnet sind.
+    </p>
   </header>
 
-  <form class="form" [formGroup]="form" (ngSubmit)="submit()">
-    <label>
-      Name der Kita
-      <input type="text" formControlName="name" placeholder="z.B. Kita Sonnenblume" />
-      @if (isInvalid('name')) {
-        <span class="field-error">{{ requiredMessage('Name der Kita') }}</span>
-      }
-    </label>
+  <form class="space-y-4" [formGroup]="form" (ngSubmit)="submit()">
+    <app-tw-field
+      label="Name der Kita"
+      forId="kita-name"
+      [required]="true"
+      [error]="isInvalid('name') ? requiredMessage('Name der Kita') : null"
+    >
+      <input
+        id="kita-name"
+        type="text"
+        formControlName="name"
+        placeholder="z.B. Kita Sonnenblume"
+        class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+      />
+    </app-tw-field>
 
-    <label>
-      Standort
-      <select formControlName="locationId">
+    <app-tw-field
+      label="Standort"
+      forId="kita-location"
+      [required]="true"
+      [error]="isInvalid('locationId') ? requiredMessage('Standort') : null"
+    >
+      <select
+        id="kita-location"
+        formControlName="locationId"
+        class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+      >
         <option value="">Bitte waehlen</option>
         @for (location of locations; track location.id) {
           <option [value]="location.id">
@@ -24,19 +41,16 @@
           </option>
         }
       </select>
-      @if (isInvalid('locationId')) {
-        <span class="field-error">{{ requiredMessage('Standort') }}</span>
-      }
-    </label>
+    </app-tw-field>
 
     @if (locations.length === 0) {
-      <p class="hint">
+      <p class="text-xs text-slate-500">
         Es sind noch keine Standorte vorhanden. Bitte zuerst einen Standort anlegen.
       </p>
     }
 
-    <a class="link" routerLink="/locations">Neuen Standort anlegen</a>
+    <a appTwButton="ghost" size="sm" routerLink="/locations">Neuen Standort anlegen</a>
 
-    <button class="primary-button" type="submit" [disabled]="isSubmitting">Kita speichern</button>
+    <button appTwButton="primary" type="submit" [disabled]="isSubmitting">Kita speichern</button>
   </form>
-</section>
+</app-tw-card>

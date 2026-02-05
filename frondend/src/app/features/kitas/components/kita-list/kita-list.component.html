@@ -1,10 +1,10 @@
-<ul class="kita-list">
+<ul class="space-y-4">
   @for (kita of kitas; track kita.id) {
-    <li class="kita-card">
-      <div class="kita-header">
-        <h3>{{ kita.name }}</h3>
+    <li class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="flex items-start justify-between gap-4">
+        <h3 class="text-base font-semibold text-slate-900">{{ kita.name }}</h3>
       </div>
-      <p class="location">Standort: {{ locationLabel(kita.locationId) }}</p>
+      <p class="mt-2 text-sm text-slate-600">Standort: {{ locationLabel(kita.locationId) }}</p>
     </li>
   }
 </ul>

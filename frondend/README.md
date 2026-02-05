@@ -44,6 +44,14 @@ To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use th
 ng test
 ```
 
+## Style guard
+
+To ensure no new component CSS/SCSS files are introduced, run:
+
+```bash
+npm run check:styles
+```
+
 ## Running end-to-end tests
 
 For end-to-end (e2e) testing, run:

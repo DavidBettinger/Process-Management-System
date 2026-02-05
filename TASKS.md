@@ -186,7 +186,7 @@ Add to `CODEX_INSTRUCTIONS.md`:
 
 ---
 
-## [ ] Task 7 — Add a guard to prevent new component CSS files (enforce Tailwind)
+## [x] Task 7 — Add a guard to prevent new component CSS files (enforce Tailwind)
 
 **Task ID:** FE-TW-GUARD-007  
 **Objective:** Add an automated check that fails if new component CSS/SCSS files are introduced.

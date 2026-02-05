@@ -1,0 +1,80 @@
+<section class="reminders">
+  <button type="button" class="reminders-toggle" (click)="toggleOpen()">
+    {{ isOpen() ? 'Erinnerungen ausblenden' : 'Erinnerungen anzeigen' }}
+  </button>
+
+  @if (isOpen()) {
+    <div class="reminders-body">
+      <form class="reminder-form" [formGroup]="form" (ngSubmit)="submit()">
+        <div class="reminder-field">
+          <label class="field-label">Beteiligte Person</label>
+          <app-stakeholder-select
+            [stakeholders]="stakeholders"
+            [selectedId]="form.controls.stakeholderId.value"
+            [disabled]="!stakeholdersReady"
+            [required]="true"
+            [placeholder]="'Bitte waehlen'"
+            (selectedIdChange)="updateStakeholder($event)"
+          />
+          @if (isInvalid('stakeholderId')) {
+            <span class="error">{{ requiredMessage('Beteiligte Person') }}</span>
+          }
+        </div>
+
+        <label class="field-label">
+          Erinnerungszeitpunkt
+          <input type="datetime-local" formControlName="remindAt" />
+          @if (isInvalid('remindAt')) {
+            <span class="error">{{ requiredMessage('Erinnerungszeitpunkt') }}</span>
+          }
+        </label>
+
+        <label class="field-label">
+          Notiz (optional)
+          <textarea formControlName="note" rows="2" placeholder="Kurzer Hinweis"></textarea>
+        </label>
+
+        <button type="submit" class="primary" [disabled]="form.invalid || isCreating() || !stakeholdersReady">
+          {{ isCreating() ? 'Speichern...' : 'Erinnerung erstellen' }}
+        </button>
+      </form>
+
+      @if (status() === 'loading') {
+        <p class="status">Laedt...</p>
+      }
+      @if (error()) {
+        <p class="error">{{ error()?.message ?? 'Erinnerungen konnten nicht geladen werden.' }}</p>
+      }
+      @if (isEmpty()) {
+        <p class="empty">Keine Erinnerungen vorhanden.</p>
+      }
+
+      @if (reminders().length > 0) {
+        <ul class="reminders-list">
+          @for (reminder of reminders(); track reminder.id) {
+            <li class="reminder-item">
+              <div>
+                <p class="reminder-title">
+                  {{ reminder.remindAt | date: 'short' }} - {{ reminder.stakeholderId | stakeholderLabel }}
+                </p>
+                @if (reminder.note) {
+                  <p class="reminder-note">{{ reminder.note }}</p>
+                }
+              </div>
+              <div class="reminder-actions">
+                <button
+                  type="button"
+                  class="danger"
+                  (click)="confirmDelete(reminder)"
+                  [disabled]="isBusy(reminder.id)"
+                >
+                  Loeschen
+                </button>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  }
+</section>

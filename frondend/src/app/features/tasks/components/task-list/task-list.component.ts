@@ -5,11 +5,18 @@ import { Stakeholder } from '../../../../core/models/stakeholder.model';
 import { TaskActionsComponent } from '../task-actions/task-actions.component';
 import { StakeholderLabelPipe } from '../../../../shared/labels/stakeholder-label.pipe';
 import { TaskAttachmentsComponent } from '../task-attachments/task-attachments.component';
+import { TaskRemindersComponent } from '../task-reminders/task-reminders.component';
 
 @Component({
   selector: 'app-task-list',
   standalone: true,
-  imports: [CommonModule, TaskActionsComponent, StakeholderLabelPipe, TaskAttachmentsComponent],
+  imports: [
+    CommonModule,
+    TaskActionsComponent,
+    StakeholderLabelPipe,
+    TaskAttachmentsComponent,
+    TaskRemindersComponent
+  ],
   templateUrl: './task-list.component.html',
   styleUrl: './task-list.component.css'
 })

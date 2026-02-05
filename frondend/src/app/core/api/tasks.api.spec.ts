@@ -9,6 +9,7 @@ import {
   ResolveTaskRequest
 } from '../models/task.model';
 import { TaskAttachment } from '../models/task-attachment.model';
+import { TaskReminder } from '../models/task-reminder.model';
 
 describe('TasksApi', () => {
   let api: TasksApi;
@@ -161,6 +162,43 @@ describe('TasksApi', () => {
     api.deleteAttachment('task-1', 'att-1').subscribe();
 
     const req = httpMock.expectOne('/api/tasks/task-1/attachments/att-1');
+    expect(req.request.method).toBe('DELETE');
+    req.flush(null);
+  });
+
+  it('creates a reminder', () => {
+    const payload = { stakeholderId: 's-1', remindAt: '2026-02-05T09:00:00Z', note: 'Bitte erinnern' };
+
+    api.createReminder('task-1', payload).subscribe();
+
+    const req = httpMock.expectOne('/api/tasks/task-1/reminders');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(payload);
+    req.flush({ id: 'rem-1' });
+  });
+
+  it('lists reminders', () => {
+    api.listReminders('task-1').subscribe();
+
+    const req = httpMock.expectOne('/api/tasks/task-1/reminders');
+    expect(req.request.method).toBe('GET');
+    const items: TaskReminder[] = [
+      {
+        id: 'rem-1',
+        taskId: 'task-1',
+        stakeholderId: 's-1',
+        remindAt: '2026-02-05T09:00:00Z',
+        note: 'Bitte erinnern',
+        createdAt: '2026-02-01T10:00:00Z'
+      }
+    ];
+    req.flush({ items });
+  });
+
+  it('deletes a reminder', () => {
+    api.deleteReminder('task-1', 'rem-1').subscribe();
+
+    const req = httpMock.expectOne('/api/tasks/task-1/reminders/rem-1');
     expect(req.request.method).toBe('DELETE');
     req.flush(null);
   });

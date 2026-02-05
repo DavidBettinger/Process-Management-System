@@ -15,6 +15,11 @@ import {
   TaskAttachmentsResponse,
   UploadAttachmentResponse
 } from '../models/task-attachment.model';
+import {
+  CreateTaskReminderRequest,
+  CreateTaskReminderResponse,
+  TaskRemindersResponse
+} from '../models/task-reminder.model';
 import { buildApiUrl } from './api.config';
 
 @Injectable({ providedIn: 'root' })
@@ -71,5 +76,20 @@ export class TasksApi {
 
   deleteAttachment(taskId: string, attachmentId: string): Observable<void> {
     return this.http.delete<void>(buildApiUrl(`/tasks/${taskId}/attachments/${attachmentId}`));
+  }
+
+  createReminder(
+    taskId: string,
+    request: CreateTaskReminderRequest
+  ): Observable<CreateTaskReminderResponse> {
+    return this.http.post<CreateTaskReminderResponse>(buildApiUrl(`/tasks/${taskId}/reminders`), request);
+  }
+
+  listReminders(taskId: string): Observable<TaskRemindersResponse> {
+    return this.http.get<TaskRemindersResponse>(buildApiUrl(`/tasks/${taskId}/reminders`));
+  }
+
+  deleteReminder(taskId: string, reminderId: string): Observable<void> {
+    return this.http.delete<void>(buildApiUrl(`/tasks/${taskId}/reminders/${reminderId}`));
   }
 }

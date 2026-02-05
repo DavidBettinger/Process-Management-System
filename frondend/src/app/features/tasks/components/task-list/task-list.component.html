@@ -19,6 +19,11 @@
         <p class="task-description">{{ task.description }}</p>
       }
       <app-task-attachments [taskId]="task.id"></app-task-attachments>
+      <app-task-reminders
+        [taskId]="task.id"
+        [stakeholders]="stakeholders"
+        [stakeholdersReady]="stakeholdersReady"
+      ></app-task-reminders>
       <app-task-actions
         [task]="task"
         [busy]="isBusy(task.id)"

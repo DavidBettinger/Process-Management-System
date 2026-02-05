@@ -576,6 +576,8 @@ Response 200:
 ```
 Idempotency rule:
 •	actionItems[].key must be stable per meeting. If repeated, do not create duplicates.
+Behavior:
+•	If `actionItems[].assigneeId` is provided, the created task starts in `ASSIGNED`.
 
 Tasks
 
@@ -587,13 +589,17 @@ Request:
   "title": "Prepare checklist",
   "description": "Longer text describing the task...",
   "priority": 3,
-  "dueDate": "2026-02-10"
+  "dueDate": "2026-02-10",
+  "assigneeId": "u-201"
 }
 ```
 Response 201:
 ```json
-{ "id": "uuid", "state": "OPEN" }
+{ "id": "uuid", "state": "ASSIGNED" }
 ```
+Behavior:
+•	If `assigneeId` is provided, the task is created with `state = ASSIGNED`.
+•	If `assigneeId` is provided, a `TaskAssigned` outbox event is stored.
 List tasks
 GET /api/cases/{caseId}/tasks
 Response 200:

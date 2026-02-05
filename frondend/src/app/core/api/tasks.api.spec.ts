@@ -28,7 +28,13 @@ describe('TasksApi', () => {
   });
 
   it('creates a task', () => {
-    const payload: CreateTaskRequest = { title: 'Titel', description: 'Desc', priority: 2, dueDate: null };
+    const payload: CreateTaskRequest = {
+      title: 'Titel',
+      description: 'Desc',
+      priority: 2,
+      dueDate: null,
+      assigneeId: 'u-3'
+    };
 
     api.createTask('case-1', payload).subscribe();
 

@@ -27,13 +27,22 @@ public class TaskCommandService {
 
 	@Transactional
 	public TaskEntity createTask(UUID caseId, String title, String description, int priority,
-								 java.time.LocalDate dueDate) {
+								 java.time.LocalDate dueDate, String assigneeId) {
+		String normalizedAssigneeId = normalizeAssigneeId(assigneeId);
 		Task task = Task.create(caseId, title, description, priority);
+		if (normalizedAssigneeId != null) {
+			task.assign(normalizedAssigneeId);
+		}
 		TaskEntity entity = TaskEntity.fromDomain(task);
 		entity.setDueDate(dueDate);
 		taskRepository.save(entity);
 		outboxEventRepository.save(outboxEvent(task.getId(), "TaskCreated",
 				"{\"taskId\":\"" + task.getId() + "\",\"caseId\":\"" + caseId + "\"}"));
+		if (normalizedAssigneeId != null) {
+			outboxEventRepository.save(outboxEvent(task.getId(), "TaskAssigned",
+					"{\"taskId\":\"" + task.getId() + "\",\"caseId\":\"" + caseId + "\",\"assigneeId\":\""
+							+ normalizedAssigneeId + "\"}"));
+		}
 		return entity;
 	}
 
@@ -115,5 +124,13 @@ public class TaskCommandService {
 				null,
 				null
 		);
+	}
+
+	private String normalizeAssigneeId(String assigneeId) {
+		if (assigneeId == null) {
+			return null;
+		}
+		String normalized = assigneeId.trim();
+		return normalized.isEmpty() ? null : normalized;
 	}
 }

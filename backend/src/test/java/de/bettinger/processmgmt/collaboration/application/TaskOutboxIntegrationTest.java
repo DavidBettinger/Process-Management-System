@@ -24,7 +24,7 @@ class TaskOutboxIntegrationTest {
 	void writesOutboxEventsForTaskLifecycle() {
 		outboxEventRepository.deleteAll();
 		UUID caseId = UUID.randomUUID();
-		UUID taskId = taskCommandService.createTask(caseId, "Title", "Desc", 3, null).getId();
+		UUID taskId = taskCommandService.createTask(caseId, "Title", "Desc", 3, null, null).getId();
 
 		taskCommandService.assignTask(taskId, "u-1");
 		taskCommandService.resolveTask(taskId, TaskResolutionKind.COMPLETED, "Done", "u-1");

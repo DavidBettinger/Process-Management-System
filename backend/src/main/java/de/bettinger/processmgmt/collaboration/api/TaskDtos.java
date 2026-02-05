@@ -20,7 +20,8 @@ public final class TaskDtos {
 			@NotBlank String title,
 			@Size(max = 10_000) String description,
 			@NotNull @Min(1) @Max(5) Integer priority,
-			LocalDate dueDate
+			LocalDate dueDate,
+			String assigneeId
 	) {
 	}
 

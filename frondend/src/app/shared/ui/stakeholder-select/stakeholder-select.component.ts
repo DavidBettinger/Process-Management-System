@@ -14,6 +14,7 @@ export class StakeholderSelectComponent {
   @Input() disabled = false;
   @Input() required = false;
   @Input() placeholder = 'Bitte waehlen';
+  @Input() selectId?: string;
 
   @Output() selectedIdChange = new EventEmitter<string | null>();
 

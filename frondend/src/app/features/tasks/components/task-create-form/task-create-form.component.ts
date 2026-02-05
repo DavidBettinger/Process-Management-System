@@ -2,14 +2,16 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CreateTaskRequest } from '../../../../core/models/task.model';
+import { Stakeholder } from '../../../../core/models/stakeholder.model';
 import { isControlInvalid, requiredMessage } from '../../../../shared/forms/form-utils';
+import { StakeholderSelectComponent } from '../../../../shared/ui/stakeholder-select/stakeholder-select.component';
 import { TwFieldComponent } from '../../../../shared/ui/tw/tw-field.component';
 import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
 
 @Component({
   selector: 'app-task-create-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TwFieldComponent, TwButtonDirective],
+  imports: [CommonModule, ReactiveFormsModule, StakeholderSelectComponent, TwFieldComponent, TwButtonDirective],
   templateUrl: './task-create-form.component.html'
 })
 export class TaskCreateFormComponent {
@@ -22,6 +24,10 @@ export class TaskCreateFormComponent {
   @Input() showPriority = true;
   @Input() showDescription = true;
   @Input() showDueDate = true;
+  @Input() showAssignee = false;
+  @Input() assigneePlaceholder = 'Bitte waehlen';
+  @Input() assigneeDisabled = false;
+  @Input() stakeholders: Stakeholder[] = [];
   @Input() useFormTag = true;
   @Input() loading = false;
   @Output() create = new EventEmitter<CreateTaskRequest>();
@@ -43,7 +49,8 @@ export class TaskCreateFormComponent {
     title: ['', Validators.required],
     priority: [3, Validators.required],
     description: [''],
-    dueDate: ['']
+    dueDate: [''],
+    assigneeId: ['']
   });
 
   submit(): void {
@@ -54,13 +61,15 @@ export class TaskCreateFormComponent {
     const value = this.form.getRawValue();
     const description = value.description?.trim() ? value.description.trim() : null;
     const dueDate = value.dueDate?.trim() ? value.dueDate.trim() : null;
+    const assigneeId = value.assigneeId?.trim() ? value.assigneeId.trim() : null;
     const priority = Number(value.priority ?? 3);
 
     this.create.emit({
       title: value.title ?? '',
       description,
       priority,
-      dueDate
+      dueDate,
+      assigneeId
     });
 
     this.resetForm();
@@ -76,11 +85,16 @@ export class TaskCreateFormComponent {
       title: '',
       priority: 3,
       description: '',
-      dueDate: ''
+      dueDate: '',
+      assigneeId: ''
     });
   }
 
   isInvalid(controlName: string): boolean {
     return isControlInvalid(this.form, controlName);
+  }
+
+  handleAssigneeChange(value: string | null): void {
+    this.form.controls.assigneeId.setValue(value ?? '');
   }
 }

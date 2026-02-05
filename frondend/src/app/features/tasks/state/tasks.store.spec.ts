@@ -48,7 +48,9 @@ describe('TasksStore', () => {
   it('sets error when caseId is missing for createTask', () => {
     const store = new TasksStore(createApi());
 
-    store.createTask({ title: 'Titel', description: 'Desc', priority: 3, dueDate: null }).subscribe();
+    store
+      .createTask({ title: 'Titel', description: 'Desc', priority: 3, dueDate: null, assigneeId: null })
+      .subscribe();
 
     expect(store.status()).toBe('error');
     expect(store.error()?.code).toBe('MISSING_CASE_ID');
@@ -64,9 +66,23 @@ describe('TasksStore', () => {
     }));
     store.setCaseId('case-1');
 
-    store.createTask({ title: 'Titel', description: 'Desc', priority: 2, dueDate: null }).subscribe();
+    store
+      .createTask({
+        title: 'Titel',
+        description: 'Desc',
+        priority: 2,
+        dueDate: null,
+        assigneeId: 'u-9'
+      })
+      .subscribe();
 
-    expect(received).toEqual({ title: 'Titel', description: 'Desc', priority: 2, dueDate: null });
+    expect(received).toEqual({
+      title: 'Titel',
+      description: 'Desc',
+      priority: 2,
+      dueDate: null,
+      assigneeId: 'u-9'
+    });
   });
 
   it('sets error when caseId is missing for loadTasks', () => {

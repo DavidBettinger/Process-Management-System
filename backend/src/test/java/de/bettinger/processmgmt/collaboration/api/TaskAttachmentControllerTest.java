@@ -135,6 +135,6 @@ class TaskAttachmentControllerTest {
 				Instant.now()
 		);
 		processCaseRepository.saveAndFlush(processCase);
-		return taskCommandService.createTask(caseId, "Attachment Task", "Desc", 3, null);
+		return taskCommandService.createTask(caseId, "Attachment Task", "Desc", 3, null, null);
 	}
 }

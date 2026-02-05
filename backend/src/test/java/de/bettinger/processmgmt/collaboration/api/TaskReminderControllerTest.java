@@ -168,7 +168,7 @@ class TaskReminderControllerTest {
 				Instant.now()
 		);
 		processCaseRepository.saveAndFlush(processCase);
-		return taskCommandService.createTask(caseId, "Reminder Task", "Desc", 3, null);
+		return taskCommandService.createTask(caseId, "Reminder Task", "Desc", 3, null, null);
 	}
 
 	private StakeholderEntity seedStakeholder(String tenantId) {

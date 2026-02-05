@@ -95,6 +95,11 @@ public class MeetingCommandService {
 
 	private UUID createTaskFromActionItem(MeetingEntity meeting, MeetingActionItemCommand command) {
 		UUID taskId = UUID.randomUUID();
+		String normalizedAssigneeId = normalizeAssigneeId(command.assigneeId());
+		de.bettinger.processmgmt.collaboration.domain.task.TaskState state =
+				normalizedAssigneeId == null
+						? de.bettinger.processmgmt.collaboration.domain.task.TaskState.OPEN
+						: de.bettinger.processmgmt.collaboration.domain.task.TaskState.ASSIGNED;
 		// TODO: allow meeting action items to specify priority; default to medium for now.
 		TaskEntity task = new TaskEntity(
 				taskId,
@@ -104,8 +109,8 @@ public class MeetingCommandService {
 				"",
 				command.dueDate(),
 				de.bettinger.processmgmt.collaboration.domain.task.Task.DEFAULT_PRIORITY,
-				command.assigneeId(),
-				de.bettinger.processmgmt.collaboration.domain.task.TaskState.OPEN,
+				normalizedAssigneeId,
+				state,
 				null,
 				null,
 				null,
@@ -118,6 +123,11 @@ public class MeetingCommandService {
 		outboxEventRepository.save(outboxEvent("Task", taskId, "TaskCreated",
 				"{\"taskId\":\"" + taskId + "\",\"caseId\":\"" + meeting.getCaseId() + "\",\"meetingId\":\""
 						+ meeting.getId() + "\"}"));
+		if (normalizedAssigneeId != null) {
+			outboxEventRepository.save(outboxEvent("Task", taskId, "TaskAssigned",
+					"{\"taskId\":\"" + taskId + "\",\"caseId\":\"" + meeting.getCaseId()
+							+ "\",\"assigneeId\":\"" + normalizedAssigneeId + "\"}"));
+		}
 		return taskId;
 	}
 
@@ -149,5 +159,13 @@ public class MeetingCommandService {
 		if (!exists) {
 			throw new NotFoundException("Location not found: " + locationId);
 		}
+	}
+
+	private String normalizeAssigneeId(String assigneeId) {
+		if (assigneeId == null) {
+			return null;
+		}
+		String normalized = assigneeId.trim();
+		return normalized.isEmpty() ? null : normalized;
 	}
 }

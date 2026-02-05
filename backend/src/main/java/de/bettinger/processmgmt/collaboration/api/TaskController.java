@@ -44,7 +44,7 @@ public class TaskController {
 			@Valid @RequestBody CreateTaskRequest request
 	) {
 		TaskEntity task = taskCommandService.createTask(caseId, request.title(), request.description(),
-				request.priority(), request.dueDate());
+				request.priority(), request.dueDate(), request.assigneeId());
 		return ResponseEntity.status(HttpStatus.CREATED)
 				.body(new CreateTaskResponse(task.getId(), task.getState()));
 	}

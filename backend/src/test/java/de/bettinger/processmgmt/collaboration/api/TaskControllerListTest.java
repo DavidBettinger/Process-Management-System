@@ -35,8 +35,8 @@ class TaskControllerListTest {
 	void listsTasksByCase() throws Exception {
 		UUID caseId = UUID.randomUUID();
 		UUID otherCaseId = UUID.randomUUID();
-		UUID taskId = taskCommandService.createTask(caseId, "Titel 1", "Desc", 2, null).getId();
-		taskCommandService.createTask(otherCaseId, "Titel 2", "Desc", 3, null);
+		UUID taskId = taskCommandService.createTask(caseId, "Titel 1", "Desc", 2, null, null).getId();
+		taskCommandService.createTask(otherCaseId, "Titel 2", "Desc", 3, null, null);
 
 		mockMvc.perform(get("/api/cases/{caseId}/tasks", caseId)
 						.header(DevAuthFilter.USER_HEADER, "u-1")

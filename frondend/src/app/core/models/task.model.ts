@@ -7,6 +7,7 @@ export interface CreateTaskRequest {
   description?: string | null;
   priority: number;
   dueDate?: string | null;
+  assigneeId?: string | null;
 }
 
 export interface CreateTaskResponse {

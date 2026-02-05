@@ -86,7 +86,7 @@ Source: Screenshot notes (red annotations inside black frames).
 
 ---
 
-## [ ] Task 2 — Add “Zuständig” (Assignee) dropdown to Create Task Form
+## [x] Task 2 — Add “Zuständig” (Assignee) dropdown to Create Task Form
 
 **Task ID:** FE-TASK-UI-ASSIGNEE-002  
 **Objective:** The create task form must include a stakeholder dropdown to assign the task during creation.

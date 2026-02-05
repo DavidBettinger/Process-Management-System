@@ -97,6 +97,7 @@ A process management app for **Kita consulting** (Fachberatung) to document and 
     - state (OPEN, ASSIGNED, IN_PROGRESS, BLOCKED, RESOLVED)
     - resolutionKind? (COMPLETED, NOT_COMPLETED, NOT_APPLICABLE, CANCELLED)
     - resolutionReason?, resolvedBy?, resolvedAt?
+    - If `assigneeId` is provided on creation, the task starts in `ASSIGNED` and a `TaskAssigned` event is emitted.
 
 ### Domain Events (minimal)
 - CaseCreated

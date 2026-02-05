@@ -23,6 +23,20 @@
         />
       </app-tw-field>
 
+      @if (showAssignee) {
+        <app-tw-field label="Zustaendig (optional)" forId="task-assignee">
+          <app-stakeholder-select
+            class="w-full"
+            [stakeholders]="stakeholders"
+            [selectedId]="form.controls.assigneeId.value || null"
+            [disabled]="assigneeDisabled || loading"
+            [placeholder]="assigneePlaceholder"
+            [selectId]="'task-assignee'"
+            (selectedIdChange)="handleAssigneeChange($event)"
+          />
+        </app-tw-field>
+      }
+
       @if (showPriority) {
         <app-tw-field
           label="Prioritaet"
@@ -92,6 +106,20 @@
           class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
         />
       </app-tw-field>
+
+      @if (showAssignee) {
+        <app-tw-field label="Zustaendig (optional)" forId="task-assignee-inline">
+          <app-stakeholder-select
+            class="w-full"
+            [stakeholders]="stakeholders"
+            [selectedId]="form.controls.assigneeId.value || null"
+            [disabled]="assigneeDisabled || loading"
+            [placeholder]="assigneePlaceholder"
+            [selectId]="'task-assignee-inline'"
+            (selectedIdChange)="handleAssigneeChange($event)"
+          />
+        </app-tw-field>
+      }
 
       @if (showPriority) {
         <app-tw-field

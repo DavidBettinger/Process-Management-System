@@ -1,14 +1,18 @@
-<section class="reminders">
-  <button type="button" class="reminders-toggle" (click)="toggleOpen()">
+<section class="space-y-3 border-t border-dashed border-slate-200 pt-4">
+  <button type="button" class="text-sm font-semibold text-slate-700 hover:text-slate-900" (click)="toggleOpen()">
     {{ isOpen() ? 'Erinnerungen ausblenden' : 'Erinnerungen anzeigen' }}
   </button>
 
   @if (isOpen()) {
-    <div class="reminders-body">
-      <form class="reminder-form" [formGroup]="form" (ngSubmit)="submit()">
-        <div class="reminder-field">
-          <label class="field-label">Beteiligte Person</label>
+    <div class="space-y-4">
+      <form class="space-y-4" [formGroup]="form" (ngSubmit)="submit()">
+        <app-tw-field
+          label="Beteiligte Person"
+          [required]="true"
+          [error]="isInvalid('stakeholderId') ? requiredMessage('Beteiligte Person') : null"
+        >
           <app-stakeholder-select
+            class="w-full"
             [stakeholders]="stakeholders"
             [selectedId]="form.controls.stakeholderId.value"
             [disabled]="!stakeholdersReady"
@@ -16,55 +20,69 @@
             [placeholder]="'Bitte waehlen'"
             (selectedIdChange)="updateStakeholder($event)"
           />
-          @if (isInvalid('stakeholderId')) {
-            <span class="error">{{ requiredMessage('Beteiligte Person') }}</span>
-          }
-        </div>
+        </app-tw-field>
 
-        <label class="field-label">
-          Erinnerungszeitpunkt
-          <input type="datetime-local" formControlName="remindAt" />
-          @if (isInvalid('remindAt')) {
-            <span class="error">{{ requiredMessage('Erinnerungszeitpunkt') }}</span>
-          }
-        </label>
+        <app-tw-field
+          label="Erinnerungszeitpunkt"
+          [forId]="'remind-at-' + taskIdValue()"
+          [required]="true"
+          [error]="isInvalid('remindAt') ? requiredMessage('Erinnerungszeitpunkt') : null"
+        >
+          <input
+            [id]="'remind-at-' + taskIdValue()"
+            type="datetime-local"
+            formControlName="remindAt"
+            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+          />
+        </app-tw-field>
 
-        <label class="field-label">
-          Notiz (optional)
-          <textarea formControlName="note" rows="2" placeholder="Kurzer Hinweis"></textarea>
-        </label>
+        <app-tw-field label="Notiz (optional)" [forId]="'reminder-note-' + taskIdValue()">
+          <textarea
+            [id]="'reminder-note-' + taskIdValue()"
+            formControlName="note"
+            rows="2"
+            placeholder="Kurzer Hinweis"
+            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+          ></textarea>
+        </app-tw-field>
 
-        <button type="submit" class="primary" [disabled]="form.invalid || isCreating() || !stakeholdersReady">
+        <button
+          appTwButton="primary"
+          size="sm"
+          type="submit"
+          [disabled]="form.invalid || isCreating() || !stakeholdersReady"
+        >
           {{ isCreating() ? 'Speichern...' : 'Erinnerung erstellen' }}
         </button>
       </form>
 
       @if (status() === 'loading') {
-        <p class="status">Laedt...</p>
+        <p class="text-xs text-slate-500">Laedt...</p>
       }
       @if (error()) {
-        <p class="error">{{ error()?.message ?? 'Erinnerungen konnten nicht geladen werden.' }}</p>
+        <p class="text-xs text-rose-600">{{ error()?.message ?? 'Erinnerungen konnten nicht geladen werden.' }}</p>
       }
       @if (isEmpty()) {
-        <p class="empty">Keine Erinnerungen vorhanden.</p>
+        <p class="text-xs text-slate-500">Keine Erinnerungen vorhanden.</p>
       }
 
       @if (reminders().length > 0) {
-        <ul class="reminders-list">
+        <ul class="space-y-3">
           @for (reminder of reminders(); track reminder.id) {
-            <li class="reminder-item">
-              <div>
-                <p class="reminder-title">
+            <li class="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">
+              <div class="space-y-1">
+                <p class="text-sm font-semibold text-slate-900">
                   {{ reminder.remindAt | date: 'short' }} - {{ reminder.stakeholderId | stakeholderLabel }}
                 </p>
                 @if (reminder.note) {
-                  <p class="reminder-note">{{ reminder.note }}</p>
+                  <p class="text-xs text-slate-500">{{ reminder.note }}</p>
                 }
               </div>
-              <div class="reminder-actions">
+              <div class="flex flex-wrap gap-2">
                 <button
+                  appTwButton="danger"
+                  size="sm"
                   type="button"
-                  class="danger"
                   (click)="confirmDelete(reminder)"
                   [disabled]="isBusy(reminder.id)"
                 >

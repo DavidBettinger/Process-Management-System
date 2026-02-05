@@ -3,13 +3,14 @@ import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CreateTaskRequest } from '../../../../core/models/task.model';
 import { isControlInvalid, requiredMessage } from '../../../../shared/forms/form-utils';
+import { TwFieldComponent } from '../../../../shared/ui/tw/tw-field.component';
+import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
 
 @Component({
   selector: 'app-task-create-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './task-create-form.component.html',
-  styleUrl: './task-create-form.component.css'
+  imports: [CommonModule, ReactiveFormsModule, TwFieldComponent, TwButtonDirective],
+  templateUrl: './task-create-form.component.html'
 })
 export class TaskCreateFormComponent {
   @Input() showHeader = true;

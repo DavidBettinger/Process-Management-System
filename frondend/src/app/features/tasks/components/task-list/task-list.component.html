@@ -1,29 +1,34 @@
-<ul class="task-list">
+<ul class="space-y-4">
   @for (task of tasks; track task.id) {
-    <li class="task-card">
-      <div class="task-header">
-        <div>
-          <p class="task-title">{{ task.title || 'Unbenannte Aufgabe' }}</p>
-          <p class="task-meta">
-            Status: {{ statusLabel(task.state) }}
-            <span class="priority-badge" [class]="priorityClass(task.priority)">
+    <li class="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div class="space-y-2">
+          <p class="text-base font-semibold text-slate-900">{{ task.title || 'Unbenannte Aufgabe' }}</p>
+          <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+            <app-tw-badge [variant]="statusVariant(task.state)">{{ statusLabel(task.state) }}</app-tw-badge>
+            <span [class]="priorityClass(task.priority)">
               Prioritaet: {{ priorityLabel(task.priority) }}
             </span>
-          </p>
+            @if (task.assigneeId) {
+              <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                Zustaendig: {{ task.assigneeId | stakeholderLabel }}
+              </span>
+            }
+          </div>
         </div>
-        @if (task.assigneeId) {
-          <span class="assignee">Zustaendig: {{ task.assigneeId | stakeholderLabel }}</span>
-        }
       </div>
+
       @if (task.description) {
-        <p class="task-description">{{ task.description }}</p>
+        <p class="text-sm leading-relaxed text-slate-600">{{ task.description }}</p>
       }
+
       <app-task-attachments [taskId]="task.id"></app-task-attachments>
       <app-task-reminders
         [taskId]="task.id"
         [stakeholders]="stakeholders"
         [stakeholdersReady]="stakeholdersReady"
       ></app-task-reminders>
+
       <app-task-actions
         [task]="task"
         [busy]="isBusy(task.id)"

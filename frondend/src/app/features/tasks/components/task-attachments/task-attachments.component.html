@@ -1,61 +1,64 @@
-<section class="attachments">
-  <button type="button" class="attachments-toggle" (click)="toggleOpen()">
+<section class="space-y-3 border-t border-dashed border-slate-200 pt-4">
+  <button type="button" class="text-sm font-semibold text-slate-700 hover:text-slate-900" (click)="toggleOpen()">
     {{ isOpen() ? 'Anhaenge ausblenden' : 'Anhaenge anzeigen' }}
   </button>
 
   @if (isOpen()) {
-    <div class="attachments-body">
-      <form class="upload-form" [formGroup]="form" (ngSubmit)="submitUpload()">
-        <div class="upload-field">
-          <label class="file-label" [attr.for]="'file-' + taskIdValue()">Datei</label>
+    <div class="space-y-4">
+      <form class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end" [formGroup]="form" (ngSubmit)="submitUpload()">
+        <app-tw-field
+          label="Datei"
+          [forId]="'file-' + taskIdValue()"
+          [required]="true"
+          [error]="isInvalid('file') ? requiredMessage('Datei') : null"
+        >
           <input
             #fileInput
-            class="file-input"
+            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900"
             type="file"
             [id]="'file-' + taskIdValue()"
             (change)="handleFileChange($event)"
           />
-          @if (isInvalid('file')) {
-            <span class="error">{{ requiredMessage('Datei') }}</span>
-          }
-        </div>
-        <button type="submit" class="primary" [disabled]="isUploading()">
+        </app-tw-field>
+        <button appTwButton="primary" size="sm" type="submit" [disabled]="isUploading()">
           {{ isUploading() ? 'Lade hoch...' : 'Hochladen' }}
         </button>
       </form>
 
       @if (status() === 'loading') {
-        <p class="status">Laedt...</p>
+        <p class="text-xs text-slate-500">Laedt...</p>
       }
       @if (error()) {
-        <p class="error">{{ error()?.message ?? 'Anhaenge konnten nicht geladen werden.' }}</p>
+        <p class="text-xs text-rose-600">{{ error()?.message ?? 'Anhaenge konnten nicht geladen werden.' }}</p>
       }
       @if (isEmpty()) {
-        <p class="empty">Keine Anhaenge vorhanden.</p>
+        <p class="text-xs text-slate-500">Keine Anhaenge vorhanden.</p>
       }
 
       @if (attachments().length > 0) {
-        <ul class="attachments-list">
+        <ul class="space-y-3">
           @for (attachment of attachments(); track attachment.id) {
-            <li class="attachment-item">
-              <div>
-                <p class="attachment-name">{{ attachment.fileName }}</p>
-                <p class="attachment-meta">
+            <li class="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">
+              <div class="space-y-1">
+                <p class="text-sm font-semibold text-slate-900">{{ attachment.fileName }}</p>
+                <p class="text-xs text-slate-500">
                   {{ formatBytes(attachment.sizeBytes) }} | {{ attachment.uploadedAt | date: 'short' }}
                 </p>
               </div>
-              <div class="attachment-actions">
+              <div class="flex flex-wrap gap-2">
                 <button
+                  appTwButton="ghost"
+                  size="sm"
                   type="button"
-                  class="ghost"
                   (click)="downloadAttachment(attachment)"
                   [disabled]="isBusy(attachment.id)"
                 >
                   Herunterladen
                 </button>
                 <button
+                  appTwButton="danger"
+                  size="sm"
                   type="button"
-                  class="danger"
                   (click)="confirmDelete(attachment)"
                   [disabled]="isBusy(attachment.id)"
                 >

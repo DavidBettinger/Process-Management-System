@@ -6,6 +6,7 @@ import { TaskActionsComponent } from '../task-actions/task-actions.component';
 import { StakeholderLabelPipe } from '../../../../shared/labels/stakeholder-label.pipe';
 import { TaskAttachmentsComponent } from '../task-attachments/task-attachments.component';
 import { TaskRemindersComponent } from '../task-reminders/task-reminders.component';
+import { TwBadgeComponent, TwBadgeVariant } from '../../../../shared/ui/tw/tw-badge.component';
 
 @Component({
   selector: 'app-task-list',
@@ -15,10 +16,10 @@ import { TaskRemindersComponent } from '../task-reminders/task-reminders.compone
     TaskActionsComponent,
     StakeholderLabelPipe,
     TaskAttachmentsComponent,
-    TaskRemindersComponent
+    TaskRemindersComponent,
+    TwBadgeComponent
   ],
-  templateUrl: './task-list.component.html',
-  styleUrl: './task-list.component.css'
+  templateUrl: './task-list.component.html'
 })
 export class TaskListComponent {
   @Input({ required: true }) tasks: Task[] = [];
@@ -72,10 +73,42 @@ export class TaskListComponent {
   }
 
   priorityClass(priority: number): string {
-    if (priority >= 1 && priority <= 5) {
-      return `priority-${priority}`;
+    const base = 'inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold';
+    if (priority === 1) {
+      return `${base} border-rose-200 bg-rose-50 text-rose-700`;
     }
-    return '';
+    if (priority === 2) {
+      return `${base} border-amber-200 bg-amber-50 text-amber-700`;
+    }
+    if (priority === 3) {
+      return `${base} border-sky-200 bg-sky-50 text-sky-700`;
+    }
+    if (priority === 4) {
+      return `${base} border-slate-200 bg-slate-50 text-slate-600`;
+    }
+    if (priority === 5) {
+      return `${base} border-slate-200 bg-slate-100 text-slate-500`;
+    }
+    return `${base} border-slate-200 bg-slate-50 text-slate-600`;
+  }
+
+  statusVariant(state: Task['state']): TwBadgeVariant {
+    if (state === 'OPEN') {
+      return 'info';
+    }
+    if (state === 'ASSIGNED') {
+      return 'warning';
+    }
+    if (state === 'IN_PROGRESS') {
+      return 'info';
+    }
+    if (state === 'BLOCKED') {
+      return 'danger';
+    }
+    if (state === 'RESOLVED') {
+      return 'success';
+    }
+    return 'neutral';
   }
 
   isBusy(taskId: string): boolean {

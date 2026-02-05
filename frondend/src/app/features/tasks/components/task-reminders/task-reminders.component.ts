@@ -19,13 +19,21 @@ import { ToastService } from '../../../../shared/ui/toast.service';
 import { isControlInvalid, requiredMessage } from '../../../../shared/forms/form-utils';
 import { StakeholderSelectComponent } from '../../../../shared/ui/stakeholder-select/stakeholder-select.component';
 import { StakeholderLabelPipe } from '../../../../shared/labels/stakeholder-label.pipe';
+import { TwFieldComponent } from '../../../../shared/ui/tw/tw-field.component';
+import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
 
 @Component({
   selector: 'app-task-reminders',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, StakeholderSelectComponent, StakeholderLabelPipe],
-  templateUrl: './task-reminders.component.html',
-  styleUrl: './task-reminders.component.css'
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    StakeholderSelectComponent,
+    StakeholderLabelPipe,
+    TwFieldComponent,
+    TwButtonDirective
+  ],
+  templateUrl: './task-reminders.component.html'
 })
 export class TaskRemindersComponent {
   private readonly formBuilder = inject(FormBuilder);

@@ -18,13 +18,14 @@ import { TaskAttachmentsStore } from '../../state/task-attachments.store';
 import { ConfirmDialogService } from '../../../../shared/ui/confirm-dialog/confirm-dialog.service';
 import { ToastService } from '../../../../shared/ui/toast.service';
 import { isControlInvalid, requiredMessage } from '../../../../shared/forms/form-utils';
+import { TwFieldComponent } from '../../../../shared/ui/tw/tw-field.component';
+import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
 
 @Component({
   selector: 'app-task-attachments',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './task-attachments.component.html',
-  styleUrl: './task-attachments.component.css'
+  imports: [CommonModule, ReactiveFormsModule, TwFieldComponent, TwButtonDirective],
+  templateUrl: './task-attachments.component.html'
 })
 export class TaskAttachmentsComponent {
   private readonly formBuilder = inject(FormBuilder);

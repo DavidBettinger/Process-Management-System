@@ -170,7 +170,7 @@ Add to `CODEX_INSTRUCTIONS.md`:
 
 ---
 
-## [ ] Task 6 — Convert “Tasks” UI to Tailwind (list, actions, detail sections)
+## [x] Task 6 — Convert “Tasks” UI to Tailwind (list, actions, detail sections)
 
 **Task ID:** FE-TW-TASK-006  
 **Objective:** Replace custom CSS in Tasks feature with Tailwind classes.

@@ -16,13 +16,14 @@ import { finalize, switchMap } from 'rxjs/operators';
 import { ToastService } from '../../../../shared/ui/toast.service';
 import { ConfirmDialogService } from '../../../../shared/ui/confirm-dialog/confirm-dialog.service';
 import { TaskCreateFormComponent } from '../../components/task-create-form/task-create-form.component';
+import { TwCardComponent } from '../../../../shared/ui/tw/tw-card.component';
+import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
 
 @Component({
   selector: 'app-tasks-tab-page',
   standalone: true,
-  imports: [CommonModule, TaskListComponent, TaskCreateFormComponent],
-  templateUrl: './tasks-tab.page.html',
-  styleUrl: './tasks-tab.page.css'
+  imports: [CommonModule, TaskListComponent, TaskCreateFormComponent, TwCardComponent, TwButtonDirective],
+  templateUrl: './tasks-tab.page.html'
 })
 export class TasksTabPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);

@@ -1,100 +1,134 @@
-<section class="task-create">
+<section class="space-y-4">
   @if (showHeader) {
-    <div class="task-create-header">
-      <h3>{{ headerTitle }}</h3>
-      <p>{{ headerSubtitle }}</p>
-    </div>
+    <header class="space-y-1">
+      <h3 class="text-lg font-semibold text-slate-900">{{ headerTitle }}</h3>
+      <p class="text-sm text-slate-600">{{ headerSubtitle }}</p>
+    </header>
   }
 
   @if (useFormTag) {
-    <form class="form" [formGroup]="form" (ngSubmit)="submit()">
-      <label>
-        Titel
-        <input type="text" formControlName="title" placeholder="z.B. Konzeptentwurf vorbereiten" />
-        @if (isInvalid('title')) {
-          <span class="error">{{ requiredMessage('Titel') }}</span>
-        }
-      </label>
+    <form class="space-y-4" [formGroup]="form" (ngSubmit)="submit()">
+      <app-tw-field
+        label="Titel"
+        forId="task-title"
+        [required]="true"
+        [error]="isInvalid('title') ? requiredMessage('Titel') : null"
+      >
+        <input
+          id="task-title"
+          type="text"
+          formControlName="title"
+          placeholder="z.B. Konzeptentwurf vorbereiten"
+          class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+        />
+      </app-tw-field>
 
       @if (showPriority) {
-        <label>
-          Prioritaet
-          <select formControlName="priority">
+        <app-tw-field
+          label="Prioritaet"
+          forId="task-priority"
+          [required]="true"
+          [error]="isInvalid('priority') ? requiredMessage('Prioritaet') : null"
+        >
+          <select
+            id="task-priority"
+            formControlName="priority"
+            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+          >
             @for (option of priorityOptions; track option.value) {
               <option [value]="option.value">{{ option.label }}</option>
             }
           </select>
-          @if (isInvalid('priority')) {
-            <span class="error">{{ requiredMessage('Prioritaet') }}</span>
-          }
-        </label>
+        </app-tw-field>
       }
 
       @if (showDescription) {
-        <label>
-          Beschreibung (optional)
+        <app-tw-field label="Beschreibung (optional)" forId="task-description">
           <textarea
+            id="task-description"
             formControlName="description"
             rows="3"
             placeholder="Weitere Details oder Hinweise"
+            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
           ></textarea>
-        </label>
+        </app-tw-field>
       }
 
       @if (showDueDate) {
-        <label>
-          Faellig bis (optional)
-          <input type="date" formControlName="dueDate" />
-        </label>
+        <app-tw-field label="Faellig bis (optional)" forId="task-due-date">
+          <input
+            id="task-due-date"
+            type="date"
+            formControlName="dueDate"
+            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+          />
+        </app-tw-field>
       }
 
-      <button class="primary-button" type="submit" [disabled]="loading">
+      <button appTwButton="primary" type="submit" [disabled]="loading">
         {{ submitLabel }}
       </button>
     </form>
   } @else {
-    <div class="form" [formGroup]="form">
-      <label>
-        Titel
-        <input type="text" formControlName="title" placeholder="z.B. Konzeptentwurf vorbereiten" />
-        @if (isInvalid('title')) {
-          <span class="error">{{ requiredMessage('Titel') }}</span>
-        }
-      </label>
+    <div class="space-y-4" [formGroup]="form">
+      <app-tw-field
+        label="Titel"
+        forId="task-title-inline"
+        [required]="true"
+        [error]="isInvalid('title') ? requiredMessage('Titel') : null"
+      >
+        <input
+          id="task-title-inline"
+          type="text"
+          formControlName="title"
+          placeholder="z.B. Konzeptentwurf vorbereiten"
+          class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+        />
+      </app-tw-field>
 
       @if (showPriority) {
-        <label>
-          Prioritaet
-          <select formControlName="priority">
+        <app-tw-field
+          label="Prioritaet"
+          forId="task-priority-inline"
+          [required]="true"
+          [error]="isInvalid('priority') ? requiredMessage('Prioritaet') : null"
+        >
+          <select
+            id="task-priority-inline"
+            formControlName="priority"
+            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+          >
             @for (option of priorityOptions; track option.value) {
               <option [value]="option.value">{{ option.label }}</option>
             }
           </select>
-          @if (isInvalid('priority')) {
-            <span class="error">{{ requiredMessage('Prioritaet') }}</span>
-          }
-        </label>
+        </app-tw-field>
       }
 
       @if (showDescription) {
-        <label>
-          Beschreibung (optional)
+        <app-tw-field label="Beschreibung (optional)" forId="task-description-inline">
           <textarea
+            id="task-description-inline"
             formControlName="description"
             rows="3"
             placeholder="Weitere Details oder Hinweise"
+            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
           ></textarea>
-        </label>
+        </app-tw-field>
       }
 
       @if (showDueDate) {
-        <label>
-          Faellig bis (optional)
-          <input type="date" formControlName="dueDate" />
-        </label>
+        <app-tw-field label="Faellig bis (optional)" forId="task-due-date-inline">
+          <input
+            id="task-due-date-inline"
+            type="date"
+            formControlName="dueDate"
+            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+          />
+        </app-tw-field>
       }
 
-      <button class="primary-button" type="button" [disabled]="loading" (click)="submit()">
+      <button appTwButton="primary" type="button" [disabled]="loading" (click)="submit()">
         {{ submitLabel }}
       </button>
     </div>

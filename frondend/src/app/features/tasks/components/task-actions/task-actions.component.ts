@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Task, TaskResolutionKind } from '../../../../core/models/task.model';
 import { Stakeholder } from '../../../../core/models/stakeholder.model';
 import { StakeholderSelectComponent } from '../../../../shared/ui/stakeholder-select/stakeholder-select.component';
+import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
 
 interface AssignPayload {
   taskId: string;
@@ -30,9 +31,8 @@ interface ResolvePayload {
 @Component({
   selector: 'app-task-actions',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, StakeholderSelectComponent],
-  templateUrl: './task-actions.component.html',
-  styleUrl: './task-actions.component.css'
+  imports: [CommonModule, ReactiveFormsModule, StakeholderSelectComponent, TwButtonDirective],
+  templateUrl: './task-actions.component.html'
 })
 export class TaskActionsComponent {
   private readonly formBuilder = inject(FormBuilder);

@@ -1,49 +1,47 @@
-<section class="tab">
-  <header class="tab-header">
-    <div>
-      <h2>Aufgaben</h2>
-      <p>Verwalte Aufgaben fuer diesen Prozess und halte den Fortschritt aktuell.</p>
-    </div>
+<section class="space-y-6">
+  <header class="space-y-2">
+    <h2 class="text-xl font-semibold text-slate-900">Aufgaben</h2>
+    <p class="text-sm text-slate-600">Verwalte Aufgaben fuer diesen Prozess und halte den Fortschritt aktuell.</p>
   </header>
 
-  <div class="panel">
+  <app-tw-card [className]="'space-y-6'">
     <app-task-create-form [loading]="isLoading()" (create)="handleCreate($event)" />
-    <div class="divider"></div>
+    <div class="h-px bg-slate-200"></div>
 
     @if (stakeholdersStatus() === 'loading') {
-      <div class="state">
-        <p class="state-title">Beteiligte werden geladen</p>
+      <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-600">
+        Beteiligte werden geladen
       </div>
     }
 
     @if (stakeholdersStatus() === 'error') {
-      <div class="state">
-        <p class="state-title">Beteiligte konnten nicht geladen werden</p>
-        <p class="state-text">{{ stakeholdersError()?.message ?? 'Unbekannter Fehler' }}</p>
+      <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        <p class="font-semibold text-slate-900">Beteiligte konnten nicht geladen werden</p>
+        <p class="mt-1 text-sm">{{ stakeholdersError()?.message ?? 'Unbekannter Fehler' }}</p>
       </div>
     }
 
     @if (isLoading()) {
-      <div class="state">
-        <div class="skeleton"></div>
-        <div class="skeleton"></div>
+      <div class="space-y-3 animate-pulse">
+        <div class="h-4 w-3/4 rounded-full bg-slate-200"></div>
+        <div class="h-4 w-2/3 rounded-full bg-slate-200"></div>
       </div>
     }
 
     @if (status() === 'error') {
-      <div class="state">
-        <p class="state-title">Aufgaben konnten nicht geladen werden</p>
-        <p class="state-text">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
-        <button class="ghost-button" type="button" (click)="tasksStore.loadTasks()">
+      <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 space-y-2">
+        <p class="font-semibold text-slate-900">Aufgaben konnten nicht geladen werden</p>
+        <p class="text-sm">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
+        <button appTwButton="ghost" size="sm" type="button" (click)="tasksStore.loadTasks()">
           Erneut versuchen
         </button>
       </div>
     }
 
     @if (status() === 'success' && tasks().length === 0) {
-      <div class="state">
-        <p class="state-title">Keine Aufgaben vorhanden</p>
-        <p class="state-text">Erstelle Aufgaben in Terminen oder fuege sie spaeter hinzu.</p>
+      <div class="rounded-xl border border-dashed border-slate-200 px-4 py-3 text-sm text-slate-600">
+        <p class="font-semibold text-slate-900">Keine Aufgaben vorhanden</p>
+        <p class="mt-1">Erstelle Aufgaben in Terminen oder fuege sie spaeter hinzu.</p>
       </div>
     }
 
@@ -61,5 +59,5 @@
         (resolve)="handleResolve($event)"
       />
     }
-  </div>
+  </app-tw-card>
 </section>

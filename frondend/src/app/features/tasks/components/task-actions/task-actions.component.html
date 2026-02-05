@@ -1,13 +1,14 @@
-<div class="actions">
+<div class="space-y-4">
   @if (isResolved()) {
-    <p class="resolved">Aufgabe ist abgeschlossen. Aktionen sind deaktiviert.</p>
+    <p class="text-xs font-semibold text-emerald-700">Aufgabe ist abgeschlossen. Aktionen sind deaktiviert.</p>
   }
 
-  <div class="action-row">
-    <div class="action-block">
-      <h4>Zuweisen</h4>
-      <form [formGroup]="assignForm" (ngSubmit)="submitAssign()">
+  <div class="grid gap-4 md:grid-cols-3">
+    <div class="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <h4 class="text-sm font-semibold text-slate-900">Zuweisen</h4>
+      <form class="space-y-3" [formGroup]="assignForm" (ngSubmit)="submitAssign()">
         <app-stakeholder-select
+          class="w-full"
           [stakeholders]="stakeholders"
           [selectedId]="assignForm.controls.assigneeId.value"
           [disabled]="!stakeholdersReady"
@@ -15,8 +16,9 @@
           (selectedIdChange)="assignForm.controls.assigneeId.setValue($event ?? '')"
         />
         <button
+          appTwButton="ghost"
+          size="sm"
           type="submit"
-          class="ghost-button"
           [disabled]="!canAssign() || busy || !stakeholdersReady || assignForm.invalid"
         >
           Zuweisen
@@ -24,37 +26,65 @@
       </form>
     </div>
 
-    <div class="action-block">
-      <h4>Starten</h4>
-      <button type="button" class="ghost-button" [disabled]="!canStart() || busy" (click)="submitStart()">
+    <div class="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <h4 class="text-sm font-semibold text-slate-900">Starten</h4>
+      <button
+        appTwButton="ghost"
+        size="sm"
+        type="button"
+        [disabled]="!canStart() || busy"
+        (click)="submitStart()"
+      >
         Starten
       </button>
     </div>
 
-    <div class="action-block">
-      <h4>Blockieren</h4>
-      <form [formGroup]="blockForm" (ngSubmit)="submitBlock()">
-        <input type="text" formControlName="reason" placeholder="Grund" />
-        <button type="submit" class="ghost-button" [disabled]="!canBlock() || busy || blockForm.invalid">
+    <div class="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <h4 class="text-sm font-semibold text-slate-900">Blockieren</h4>
+      <form class="space-y-3" [formGroup]="blockForm" (ngSubmit)="submitBlock()">
+        <input
+          type="text"
+          formControlName="reason"
+          placeholder="Grund"
+          class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+        />
+        <button
+          appTwButton="ghost"
+          size="sm"
+          type="submit"
+          [disabled]="!canBlock() || busy || blockForm.invalid"
+        >
           Blockieren
         </button>
       </form>
     </div>
   </div>
 
-  <div class="action-row">
-    <div class="action-block">
-      <h4>Entsperren</h4>
-      <button type="button" class="ghost-button" [disabled]="!canUnblock() || busy" (click)="submitUnblock()">
+  <div class="grid gap-4 md:grid-cols-3">
+    <div class="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <h4 class="text-sm font-semibold text-slate-900">Entsperren</h4>
+      <button
+        appTwButton="ghost"
+        size="sm"
+        type="button"
+        [disabled]="!canUnblock() || busy"
+        (click)="submitUnblock()"
+      >
         Entsperren
       </button>
     </div>
 
-    <div class="action-block">
-      <h4>Abgeben</h4>
-      <form [formGroup]="declineForm" (ngSubmit)="submitDecline()">
-        <input type="text" formControlName="reason" placeholder="Grund" />
+    <div class="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <h4 class="text-sm font-semibold text-slate-900">Abgeben</h4>
+      <form class="space-y-3" [formGroup]="declineForm" (ngSubmit)="submitDecline()">
+        <input
+          type="text"
+          formControlName="reason"
+          placeholder="Grund"
+          class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+        />
         <app-stakeholder-select
+          class="w-full"
           [stakeholders]="stakeholders"
           [selectedId]="declineForm.controls.suggestedAssigneeId.value"
           [disabled]="!stakeholdersReady"
@@ -62,22 +92,40 @@
           [placeholder]="'Vorschlag (optional)'"
           (selectedIdChange)="declineForm.controls.suggestedAssigneeId.setValue($event ?? '')"
         />
-        <button type="submit" class="ghost-button" [disabled]="!canDecline() || busy || declineForm.invalid">
+        <button
+          appTwButton="ghost"
+          size="sm"
+          type="submit"
+          [disabled]="!canDecline() || busy || declineForm.invalid"
+        >
           Abgeben
         </button>
       </form>
     </div>
 
-    <div class="action-block">
-      <h4>Abschliessen</h4>
-      <form [formGroup]="resolveForm" (ngSubmit)="submitResolve()">
-        <select formControlName="kind">
+    <div class="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <h4 class="text-sm font-semibold text-slate-900">Abschliessen</h4>
+      <form class="space-y-3" [formGroup]="resolveForm" (ngSubmit)="submitResolve()">
+        <select
+          formControlName="kind"
+          class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+        >
           @for (option of resolveKinds; track option.value) {
             <option [value]="option.value">{{ option.label }}</option>
           }
         </select>
-        <input type="text" formControlName="reason" placeholder="Begruendung" />
-        <button type="submit" class="ghost-button" [disabled]="!canResolve() || busy || resolveForm.invalid">
+        <input
+          type="text"
+          formControlName="reason"
+          placeholder="Begruendung"
+          class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+        />
+        <button
+          appTwButton="primary"
+          size="sm"
+          type="submit"
+          [disabled]="!canResolve() || busy || resolveForm.invalid"
+        >
           Abschliessen
         </button>
       </form>

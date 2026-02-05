@@ -38,207 +38,186 @@ This task set implements new requirements:
 > Where endpoints are not yet defined, update `ARCHITECTURE.md` first and do not invent behavior silently.
 
 ---
-Tasks — Replace custom CSS with Tailwind (Angular) and enforce Tailwind usage going forward
+# Tasks — Update “Aufgaben” UI Flow (Overlay Create + Assignee + Accordion)
 
 Language: **English** for code/docs/tests.  
-UI-visible text can be German.
+UI labels can remain **German** (as shown in screenshot).
 
-## Context
-Tailwind CSS is integrated in the Angular project, but Codex has been adding regular CSS files/classes.  
-Goal:
-1) Replace existing custom CSS with a consistent Tailwind-based layout **where reasonable**.
-2) Establish rules so future code uses Tailwind by default.
-
-> These tasks are intentionally small (30–90 min each) and can be repeated per feature.
+Source: Screenshot notes (red annotations inside black frames).
 
 ---
 
-## [x] Task 1 — Document Tailwind-only UI rule in SPEC.md + CODEX instructions
+## [x] Task 1 — Open “Aufgabe erstellen” as an Overlay (Modal) with Create/Cancel
 
-**Task ID:** DOC-TW-001  
-**Objective:** Make Tailwind usage explicit so Codex stops writing plain CSS.
+**Task ID:** FE-TASK-UI-OVL-001  
+**Objective:** Replace the inline “Aufgabe erstellen” form with an overlay/modal opened by the “Aufgabe erstellen” button.
 
-### Files to touch
-- `SPEC.md`
-- `CODEX_INSTRUCTIONS.md` (or create it if missing)
-- Optional: `ARCHITECTURE.md` (frontend conventions section)
+### Requirements
+- Clicking **“Aufgabe erstellen”** opens an overlay (modal).
+- Overlay contains:
+  - Title: “Aufgabe erstellen”
+  - Form fields (existing + see Task 2 for assignee field)
+  - Buttons:
+    - Primary: **„Erstellen“**
+    - Secondary: **„Abbrechen“** (closes overlay, resets form)
+- Closing overlay via:
+  - Cancel button
+  - ESC
+  - clicking backdrop (optional; choose and document)
 
-### Required content to add (example)
-Add to `SPEC.md` under Constraints → Frontend:
-```md
-### Styling rules (Tailwind)
-- Use Tailwind utility classes for all UI styling.
-- Do not add new component CSS/SCSS files unless absolutely necessary (document why).
-- Prefer shared Tailwind-based UI components over one-off styles.
-- If a style cannot be expressed with Tailwind utilities, use Tailwind config or a single global stylesheet section (no per-component CSS).
-```
+### Reuse
+- Reuse the existing overlay/dialog component (do not create a second modal system).
 
-Add to `CODEX_INSTRUCTIONS.md`:
-- “Never introduce new `.css/.scss` files for components.”
-- “Prefer Tailwind classes and shared UI components.”
-- “When changing HTML structure, update tests.”
+### Files to touch (likely)
+- `frontend/src/app/features/tasks/pages/tasks-tab/*`
+- `frontend/src/app/features/tasks/components/task-create-form/*`
+- `frontend/src/app/shared/ui/overlay/*` (only if enhancements needed)
 
-### DoD
-- Rules exist in docs and are unambiguous.
-
----
-
-## [x] Task 2 — Add shared Tailwind design primitives (layout, buttons, inputs)
-
-**Task ID:** FE-TW-PRIM-002  
-**Objective:** Create a minimal set of reusable primitives so Tailwind usage stays consistent:
-- Page container layout
-- Card
-- Button variants
-- Form field layout
-- Badge
-
-### Files to touch / create
-- `frontend/src/app/shared/ui/tw/*`
-  - `tw-page.component.ts/html` (or just a documented class recipe)
-  - `tw-card.component.ts/html`
-  - `tw-button.directive.ts` (preferred) OR component
-  - `tw-field.component.ts/html`
-  - `tw-badge.component.ts/html`
-- `frontend/src/styles.css` (only if you define Tailwind component classes via `@layer components`)
-
-### Implementation guidance
-- Prefer **utility classes** directly in templates.
-- Optional: define a few reusable classes (`.btn`, `.card`, `.field-*`) using Tailwind `@layer components` to keep templates readable.
+### Tests (required for DoD)
+- Component test:
+  - clicking “Aufgabe erstellen” opens overlay
+  - clicking “Abbrechen” closes overlay and clears form state
+  - clicking backdrop/ESC closes overlay if supported
 
 ### DoD
-- Primitives exist and are used in at least one page.
+- Inline create form removed from page.
+- Overlay open/close works.
 - `npm test` passes.
 
 ---
 
-## [x ] Task 3 — Convert “Locations” UI to Tailwind (remove component CSS)
+## [ ] Task 2 — Add “Zuständig” (Assignee) dropdown to Create Task Form
 
-**Task ID:** FE-TW-LOC-003  
-**Objective:** Replace custom CSS in Locations feature with Tailwind classes.
+**Task ID:** FE-TASK-UI-ASSIGNEE-002  
+**Objective:** The create task form must include a stakeholder dropdown to assign the task during creation.
 
-### Files to touch
-- `frontend/src/app/features/locations/**/*.html`
-- `frontend/src/app/features/locations/**/*.css|scss` (delete or empty if no longer needed)
+### Requirements
+- Add field to create task overlay:
+  - Label: “Zuständig (optional)” (or similar)
+  - Control: stakeholder dropdown showing **“Vorname Nachname — Rolle”**
+- If a stakeholder is selected:
+  - Task is created with `assigneeId` set
+  - UI should show the created task with that assignee already set (see Task 4)
+- If no stakeholder is selected:
+  - Create with `assigneeId = null`
 
-### Layout requirements
-- Standard page skeleton:
-  - max-width container
-  - title row with primary action button
-  - form in a card
-  - list in a card
-- Input styling: consistent spacing and focus rings
-- Empty/loading/error states
+### Data loading
+- Ensure stakeholders are loaded before dropdown is used:
+  - call `StakeholdersStore.loadStakeholders()` when overlay opens (or on Tasks tab init)
+
+### API/Store implications
+- If backend `createTask` does not accept `assigneeId` yet:
+  - Add a backend task to extend CreateTaskRequest (document in `ARCHITECTURE.md`)
+  - Do not fake assignment on frontend.
+
+### Files to touch (likely)
+- `frontend/src/app/features/tasks/components/task-create-form/*`
+- `frontend/src/app/features/tasks/state/tasks.store.ts`
+- `frontend/src/app/core/api/tasks.api.ts` (typing updates)
+- `frontend/src/app/features/stakeholders/state/stakeholders.store.ts`
+
+### Tests (required for DoD)
+- Form test:
+  - stakeholder dropdown renders labels (name + role)
+  - selected stakeholder id is included in create payload
+- Store test:
+  - createTask sends `assigneeId` when present
 
 ### DoD
-- No feature-specific CSS remains in Locations (unless documented exception).
-- UI looks consistent on desktop and narrow widths.
+- Assignee selection available during create.
+- Works end-to-end (with backend support).
 - `npm test` passes.
 
 ---
 
-## [x] Task 4 — Convert “Kitas” UI to Tailwind (remove component CSS)
+## [ ] Task 3 — Tasks List as Accordion: Collapse by default, show summary row (title/status/priority/assignee)
 
-**Task ID:** FE-TW-KITA-004  
-**Objective:** Replace custom CSS in Kitas feature with Tailwind classes.
+**Task ID:** FE-TASK-UI-ACC-003  
+**Objective:** When multiple tasks exist, tasks should be collapsed (accordion). Only summary is visible for collapsed items.
 
-### Files to touch
-- `frontend/src/app/features/kitas/**/*.html`
-- `frontend/src/app/features/kitas/**/*.css|scss` (delete)
+### Requirements
+- When there is **more than one** task:
+  - show tasks as an accordion list:
+    - collapsed state shows only:
+      - **Titel**
+      - **Status** (badge)
+      - **Priorität** (badge)
+      - **Zuständig** (label; “Nicht zugewiesen” if null)
+- Expanded state shows the full task detail/actions UI (the big panel).
+
+### UX rules
+- Tasks are **collapsed by default** when list loads.
+- If there is **exactly one** task:
+  - it may be expanded by default (optional; choose and document)
+
+### Implementation suggestion
+- Keep expanded task id in component/store state:
+  - `expandedTaskId: signal<string|null>`
+- Render list:
+  - summary row is clickable to expand/collapse
+
+### Files to touch (likely)
+- `frontend/src/app/features/tasks/pages/tasks-tab/*`
+- `frontend/src/app/features/tasks/components/task-accordion/*` (new) or refactor existing list component
+
+### Tests (required for DoD)
+- Component test:
+  - when tasks length > 1, only summaries are visible by default
+  - summary displays title/status/priority/assignee label
+  - expanding shows detail UI
 
 ### DoD
-- No feature-specific CSS remains in Kitas (unless documented exception).
-- Dropdown + form layout consistent with Locations.
+- Accordion behavior implemented.
+- Summary row never shows raw IDs.
 - `npm test` passes.
 
 ---
 
-## [x] Task 5 — Convert “Meetings” UI to Tailwind (overlay + forms)
+## [ ] Task 4 — Only one task expanded at a time + assignee dropdown preselected when task already assigned
 
-**Task ID:** FE-TW-MEET-005  
-**Objective:** Tailwind refactor for Meetings UI, including overlays and forms.
+**Task ID:** FE-TASK-UI-ACC-004  
+**Objective:** Ensure only one task can be expanded at a time and the “Zuweisen” dropdown preselects the currently assigned stakeholder.
 
-### Files to touch
-- `frontend/src/app/features/meetings/**/*.html`
-- `frontend/src/app/features/meetings/**/*.css|scss` (delete)
-- Overlay component templates if they currently use CSS
+### Requirements
+- Accordion rule:
+  - Expanding a task collapses any other expanded task.
+- “Zuweisen” action panel:
+  - If `task.assigneeId` exists, the dropdown must show that stakeholder selected by default.
+  - If task is created with assignee, it must be selected immediately once the task appears.
+- If stakeholder list is not loaded yet:
+  - show loading placeholder and disable assign action until loaded.
+
+### Files to touch (likely)
+- `frontend/src/app/features/tasks/components/task-actions/*`
+- `frontend/src/app/shared/ui/stakeholder-select/*` (if exists)
+- `frontend/src/app/features/tasks/pages/tasks-tab/*`
+
+### Tests (required for DoD)
+- Accordion test:
+  - expand task A then expand task B → task A collapses
+- Assign UI test:
+  - given task with assigneeId and stakeholder list contains that id → dropdown preselects it
+  - ensure UI does not show the raw assigneeId
 
 ### DoD
-- Meeting list, meeting creation overlay, nested location overlay use Tailwind.
-- Overlays: proper backdrop, centered panel, responsive spacing.
+- Exactly one expanded task at a time.
+- Assignee dropdown reflects current assignment.
 - `npm test` passes.
 
 ---
 
-## [x] Task 6 — Convert “Tasks” UI to Tailwind (list, actions, detail sections)
+## Documentation Update (required)
+Add a small section to `UI_SPEC.md` (or create it if missing) describing:
+- Tasks tab create flow via overlay
+- Accordion behavior and summary fields
+- Assignee selection during create and assign
 
-**Task ID:** FE-TW-TASK-006  
-**Objective:** Replace custom CSS in Tasks feature with Tailwind classes.
-
-### Files to touch
-- `frontend/src/app/features/tasks/**/*.html`
-- `frontend/src/app/features/tasks/**/*.css|scss` (delete)
-
-### DoD
-- Task list rows use consistent spacing/typography.
-- Actions use Tailwind buttons/badges.
-- `npm test` passes.
+**DoD:** Docs updated and aligned with implementation.
 
 ---
 
-## [x] Task 7 — Add a guard to prevent new component CSS files (enforce Tailwind)
-
-**Task ID:** FE-TW-GUARD-007  
-**Objective:** Add an automated check that fails if new component CSS/SCSS files are introduced.
-
-### Option A (recommended): Node script check
-Create:
-- `frontend/scripts/check-no-component-css.js`
-  Add npm script:
-- `"check:styles": "node frontend/scripts/check-no-component-css.js"`
-
-Script must:
-- fail if it finds `.component.css` or `.component.scss` under `frontend/src/app/**`
-- allow exceptions only in a small allowlist (document in code)
-
-### Option B: Unit test meta-check
-Add:
-- `frontend/src/app/_meta/no-component-css.spec.ts`
-  that scans for forbidden files.
-
-### DoD
-- `npm run check:styles` fails when forbidden files are present.
-- Add to CI (if CI exists) or document how to run locally.
-
----
-
-## [x] Task 8 — Repo-wide sweep to unify Tailwind layout (optional after feature conversions)
-
-**Task ID:** FE-TW-SWEEP-008  
-**Objective:** A repo-wide sweep to:
-- remove leftover CSS usage
-- eliminate inline `style=""` where possible
-- unify spacing/typography patterns
-
-### Steps
-1) Search for:
-  - `.component.css`, `.component.scss`
-  - `<style>` blocks
-  - inline `style="..."`
-2) Replace with Tailwind utilities / primitives.
-
-### DoD
-- Search results for component CSS files are 0 (or documented allowlist).
-- UI looks consistent across features.
-- `npm test` passes.
-
----
-
-## Global Acceptance Criteria
-- Tailwind is the default styling method across the frontend.
-- No new per-component CSS files are introduced.
-- UI follows a consistent layout system (container + cards + form fields + buttons).
-- All tests pass: `cd frontend && npm test`
+## Optional follow-up (nice-to-have, not required)
+- Add “Anhänge anzeigen” and “Erinnerungen anzeigen” sections as collapsible panels inside the expanded task card, with consistent Tailwind spacing.
 ---
 
 ## 3) DevOps / Local Dev

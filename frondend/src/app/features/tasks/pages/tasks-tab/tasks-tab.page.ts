@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TasksStore } from '../../state/tasks.store';
@@ -14,7 +14,11 @@ import { StakeholdersStore } from '../../../stakeholders/state/stakeholders.stor
 import { Observable, of } from 'rxjs';
 import { finalize, switchMap } from 'rxjs/operators';
 import { ToastService } from '../../../../shared/ui/toast.service';
-import { ConfirmDialogService } from '../../../../shared/ui/confirm-dialog/confirm-dialog.service';
+import {
+  ConfirmDialogService,
+  DialogRef,
+  TemplateDialogContext
+} from '../../../../shared/ui/confirm-dialog/confirm-dialog.service';
 import { TaskCreateFormComponent } from '../../components/task-create-form/task-create-form.component';
 import { TwCardComponent } from '../../../../shared/ui/tw/tw-card.component';
 import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
@@ -26,6 +30,9 @@ import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive'
   templateUrl: './tasks-tab.page.html'
 })
 export class TasksTabPageComponent implements OnInit {
+  @ViewChild('createTaskDialog') private createTaskDialog?: TemplateRef<TemplateDialogContext>;
+  private createDialogRef: DialogRef | null = null;
+
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   readonly tasksStore = inject(TasksStore);
@@ -59,8 +66,30 @@ export class TasksTabPageComponent implements OnInit {
     this.runAction(this.tasksStore.assignTask(payload.taskId, req));
   }
 
-  handleCreate(payload: CreateTaskRequest): void {
+  handleCreateFromOverlay(payload: CreateTaskRequest): void {
     this.runAction(this.tasksStore.createTask(payload));
+    this.closeCreateDialog();
+  }
+
+  handleCreateCancel(): void {
+    this.closeCreateDialog();
+  }
+
+  openCreateDialog(): void {
+    if (this.createDialogRef || !this.createTaskDialog) {
+      return;
+    }
+    const dialogRef = this.confirmDialog.openTemplate({
+      title: 'Aufgabe erstellen',
+      template: this.createTaskDialog,
+      panelClass: 'max-w-2xl'
+    });
+    this.createDialogRef = dialogRef;
+    dialogRef.afterClosed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      if (this.createDialogRef === dialogRef) {
+        this.createDialogRef = null;
+      }
+    });
   }
 
   handleStart(taskId: string): void {
@@ -119,5 +148,9 @@ export class TasksTabPageComponent implements OnInit {
         })
       )
       .subscribe();
+  }
+
+  private closeCreateDialog(): void {
+    this.createDialogRef?.close();
   }
 }

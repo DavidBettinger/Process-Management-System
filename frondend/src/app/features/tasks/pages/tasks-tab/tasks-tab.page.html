@@ -1,13 +1,13 @@
 <section class="space-y-6">
-  <header class="space-y-2">
-    <h2 class="text-xl font-semibold text-slate-900">Aufgaben</h2>
-    <p class="text-sm text-slate-600">Verwalte Aufgaben fuer diesen Prozess und halte den Fortschritt aktuell.</p>
+  <header class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <div class="space-y-2">
+      <h2 class="text-xl font-semibold text-slate-900">Aufgaben</h2>
+      <p class="text-sm text-slate-600">Verwalte Aufgaben fuer diesen Prozess und halte den Fortschritt aktuell.</p>
+    </div>
+    <button appTwButton="primary" type="button" (click)="openCreateDialog()">Aufgabe erstellen</button>
   </header>
 
   <app-tw-card [className]="'space-y-6'">
-    <app-task-create-form [loading]="isLoading()" (create)="handleCreate($event)" />
-    <div class="h-px bg-slate-200"></div>
-
     @if (stakeholdersStatus() === 'loading') {
       <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-600">
         Beteiligte werden geladen
@@ -61,3 +61,15 @@
     }
   </app-tw-card>
 </section>
+
+<ng-template #createTaskDialog>
+  <app-task-create-form
+    [showHeader]="false"
+    [submitLabel]="'Erstellen'"
+    [showCancel]="true"
+    [cancelLabel]="'Abbrechen'"
+    [loading]="isLoading()"
+    (cancel)="handleCreateCancel()"
+    (create)="handleCreateFromOverlay($event)"
+  />
+</ng-template>

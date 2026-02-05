@@ -17,12 +17,15 @@ export class TaskCreateFormComponent {
   @Input() headerTitle = 'Aufgabe erstellen';
   @Input() headerSubtitle = 'Lege eine neue Aufgabe fuer diesen Prozess an.';
   @Input() submitLabel = 'Aufgabe erstellen';
+  @Input() showCancel = false;
+  @Input() cancelLabel = 'Abbrechen';
   @Input() showPriority = true;
   @Input() showDescription = true;
   @Input() showDueDate = true;
   @Input() useFormTag = true;
   @Input() loading = false;
   @Output() create = new EventEmitter<CreateTaskRequest>();
+  @Output() cancel = new EventEmitter<void>();
 
   readonly requiredMessage = requiredMessage;
 
@@ -60,6 +63,15 @@ export class TaskCreateFormComponent {
       dueDate
     });
 
+    this.resetForm();
+  }
+
+  handleCancel(): void {
+    this.resetForm();
+    this.cancel.emit();
+  }
+
+  resetForm(): void {
     this.form.reset({
       title: '',
       priority: 3,

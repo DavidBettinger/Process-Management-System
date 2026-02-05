@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
 import { TasksTabPageComponent } from './tasks-tab.page';
@@ -8,6 +8,7 @@ import { StakeholdersStore } from '../../../stakeholders/state/stakeholders.stor
 import { initialListState, ListState, StoreError } from '../../../../core/state/state.types';
 import { Task } from '../../../../core/models/task.model';
 import { Stakeholder } from '../../../../core/models/stakeholder.model';
+import { ConfirmDialogComponent } from '../../../../shared/ui/confirm-dialog/confirm-dialog.component';
 
 class TasksStoreStub {
   state = signal<ListState<Task>>(initialListState());
@@ -20,12 +21,17 @@ class TasksStoreStub {
   assignCalls: { taskId: string; assigneeId: string }[] = [];
   startCalls: string[] = [];
   setCaseIdValue: string | null = null;
+  createCalls = 0;
 
   setCaseId = (caseId: string) => {
     this.setCaseIdValue = caseId;
   };
   loadTasks = () => {
     this.loadCalls += 1;
+    return of(void 0);
+  };
+  createTask = () => {
+    this.createCalls += 1;
     return of(void 0);
   };
   assignTask = (taskId: string, req: { assigneeId: string }) => {
@@ -54,6 +60,13 @@ class StakeholdersStoreStub {
     return of(void 0);
   };
 }
+
+@Component({
+  template: '<app-tasks-tab-page></app-tasks-tab-page><app-confirm-dialog></app-confirm-dialog>',
+  standalone: true,
+  imports: [TasksTabPageComponent, ConfirmDialogComponent]
+})
+class TasksTabHostComponent {}
 
 describe('TasksTabPageComponent', () => {
   it('shows empty state', () => {
@@ -141,5 +154,120 @@ describe('TasksTabPageComponent', () => {
     component.handleStart('task-9');
 
     expect(store.startCalls).toEqual(['task-9']);
+  });
+
+  it('opens create overlay and resets on cancel', () => {
+    const store = new TasksStoreStub();
+    const stakeholdersStore = new StakeholdersStoreStub();
+
+    TestBed.configureTestingModule({
+      imports: [TasksTabHostComponent],
+      providers: [
+        { provide: TasksStore, useValue: store },
+        { provide: StakeholdersStore, useValue: stakeholdersStore },
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ caseId: 'case-1' })) } }
+      ]
+    });
+
+    const fixture = TestBed.createComponent(TasksTabHostComponent);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const openButton = Array.from(compiled.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('Aufgabe erstellen')
+    ) as HTMLButtonElement;
+
+    openButton.click();
+    fixture.detectChanges();
+
+    let dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+    expect(dialog).not.toBeNull();
+    expect(dialog.textContent).toContain('Aufgabe erstellen');
+
+    const titleInput = dialog.querySelector('#task-title') as HTMLInputElement;
+    titleInput.value = 'Neue Aufgabe';
+    titleInput.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    const cancelButton = Array.from(dialog.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('Abbrechen')
+    ) as HTMLButtonElement;
+
+    cancelButton.click();
+    fixture.detectChanges();
+
+    expect(compiled.querySelector('[role="dialog"]')).toBeNull();
+
+    openButton.click();
+    fixture.detectChanges();
+
+    dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+    const reopenedInput = dialog.querySelector('#task-title') as HTMLInputElement;
+    expect(reopenedInput.value).toBe('');
+  });
+
+  it('closes create overlay on escape', () => {
+    const store = new TasksStoreStub();
+    const stakeholdersStore = new StakeholdersStoreStub();
+
+    TestBed.configureTestingModule({
+      imports: [TasksTabHostComponent],
+      providers: [
+        { provide: TasksStore, useValue: store },
+        { provide: StakeholdersStore, useValue: stakeholdersStore },
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ caseId: 'case-1' })) } }
+      ]
+    });
+
+    const fixture = TestBed.createComponent(TasksTabHostComponent);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const openButton = Array.from(compiled.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('Aufgabe erstellen')
+    ) as HTMLButtonElement;
+
+    openButton.click();
+    fixture.detectChanges();
+
+    expect(compiled.querySelector('[role="dialog"]')).not.toBeNull();
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    fixture.detectChanges();
+
+    expect(compiled.querySelector('[role="dialog"]')).toBeNull();
+  });
+
+  it('closes create overlay on backdrop click', () => {
+    const store = new TasksStoreStub();
+    const stakeholdersStore = new StakeholdersStoreStub();
+
+    TestBed.configureTestingModule({
+      imports: [TasksTabHostComponent],
+      providers: [
+        { provide: TasksStore, useValue: store },
+        { provide: StakeholdersStore, useValue: stakeholdersStore },
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ caseId: 'case-1' })) } }
+      ]
+    });
+
+    const fixture = TestBed.createComponent(TasksTabHostComponent);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const openButton = Array.from(compiled.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('Aufgabe erstellen')
+    ) as HTMLButtonElement;
+
+    openButton.click();
+    fixture.detectChanges();
+
+    const backdrop = compiled.querySelector('.fixed.inset-0') as HTMLDivElement;
+    expect(backdrop).not.toBeNull();
+
+    backdrop.click();
+    fixture.detectChanges();
+
+    expect(compiled.querySelector('[role="dialog"]')).toBeNull();
   });
 });

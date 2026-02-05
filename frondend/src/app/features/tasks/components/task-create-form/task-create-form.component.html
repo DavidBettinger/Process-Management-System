@@ -65,9 +65,16 @@
         </app-tw-field>
       }
 
-      <button appTwButton="primary" type="submit" [disabled]="loading">
-        {{ submitLabel }}
-      </button>
+      <div class="flex flex-wrap justify-end gap-3">
+        @if (showCancel) {
+          <button appTwButton="ghost" type="button" [disabled]="loading" (click)="handleCancel()">
+            {{ cancelLabel }}
+          </button>
+        }
+        <button appTwButton="primary" type="submit" [disabled]="loading">
+          {{ submitLabel }}
+        </button>
+      </div>
     </form>
   } @else {
     <div class="space-y-4" [formGroup]="form">
@@ -128,9 +135,16 @@
         </app-tw-field>
       }
 
-      <button appTwButton="primary" type="button" [disabled]="loading" (click)="submit()">
-        {{ submitLabel }}
-      </button>
+      <div class="flex flex-wrap justify-end gap-3">
+        @if (showCancel) {
+          <button appTwButton="ghost" type="button" [disabled]="loading" (click)="handleCancel()">
+            {{ cancelLabel }}
+          </button>
+        }
+        <button appTwButton="primary" type="button" [disabled]="loading" (click)="submit()">
+          {{ submitLabel }}
+        </button>
+      </div>
     </div>
   }
 </section>

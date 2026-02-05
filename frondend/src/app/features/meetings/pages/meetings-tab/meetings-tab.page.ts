@@ -11,13 +11,26 @@ import { KitasStore } from '../../../kitas/state/kitas.store';
 import { CaseDetailStore } from '../../../case-detail/state/case-detail.store';
 import { Meeting } from '../../../../core/models/meeting.model';
 import { StakeholdersStore } from '../../../stakeholders/state/stakeholders.store';
+import { TwCardComponent } from '../../../../shared/ui/tw/tw-card.component';
+import { TwFieldComponent } from '../../../../shared/ui/tw/tw-field.component';
+import { TwBadgeComponent } from '../../../../shared/ui/tw/tw-badge.component';
+import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
+import { isControlInvalid, requiredMessage } from '../../../../shared/forms/form-utils';
 
 @Component({
   selector: 'app-meetings-tab-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MeetingHoldFormComponent, StakeholderSelectComponent],
-  templateUrl: './meetings-tab.page.html',
-  styleUrl: './meetings-tab.page.css'
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MeetingHoldFormComponent,
+    StakeholderSelectComponent,
+    TwCardComponent,
+    TwFieldComponent,
+    TwBadgeComponent,
+    TwButtonDirective
+  ],
+  templateUrl: './meetings-tab.page.html'
 })
 export class MeetingsTabPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
@@ -40,6 +53,7 @@ export class MeetingsTabPageComponent implements OnInit {
   readonly stakeholders = this.stakeholdersStore.stakeholders;
   readonly stakeholdersStatus = this.stakeholdersStore.status;
   readonly stakeholdersError = this.stakeholdersStore.error;
+  readonly requiredMessage = requiredMessage;
 
   readonly scheduleForm = this.formBuilder.group({
     scheduledAt: ['', [Validators.required]],
@@ -101,6 +115,10 @@ export class MeetingsTabPageComponent implements OnInit {
           this.scheduleParticipants = [''];
         }
       });
+  }
+
+  isScheduleInvalid(controlName: string): boolean {
+    return isControlInvalid(this.scheduleForm, controlName);
   }
 
   handleHold(payload: HoldMeetingPayload): void {

@@ -137,7 +137,7 @@ Add to `CODEX_INSTRUCTIONS.md`:
 
 ---
 
-## [ ] Task 4 — Convert “Kitas” UI to Tailwind (remove component CSS)
+## [x] Task 4 — Convert “Kitas” UI to Tailwind (remove component CSS)
 
 **Task ID:** FE-TW-KITA-004  
 **Objective:** Replace custom CSS in Kitas feature with Tailwind classes.
@@ -153,7 +153,7 @@ Add to `CODEX_INSTRUCTIONS.md`:
 
 ---
 
-## [ ] Task 5 — Convert “Meetings” UI to Tailwind (overlay + forms)
+## [x] Task 5 — Convert “Meetings” UI to Tailwind (overlay + forms)
 
 **Task ID:** FE-TW-MEET-005  
 **Objective:** Tailwind refactor for Meetings UI, including overlays and forms.

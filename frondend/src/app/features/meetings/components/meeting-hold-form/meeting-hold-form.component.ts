@@ -8,6 +8,8 @@ import { ActionItemDraft, ActionItemsEditorComponent } from '../action-items-edi
 import { RouterLink } from '@angular/router';
 import { StakeholderSelectComponent } from '../../../../shared/ui/stakeholder-select/stakeholder-select.component';
 import { isControlInvalid, requiredMessage } from '../../../../shared/forms/form-utils';
+import { TwFieldComponent } from '../../../../shared/ui/tw/tw-field.component';
+import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
 
 export interface HoldMeetingPayload {
   meetingId: string;
@@ -17,9 +19,16 @@ export interface HoldMeetingPayload {
 @Component({
   selector: 'app-meeting-hold-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ActionItemsEditorComponent, RouterLink, StakeholderSelectComponent],
-  templateUrl: './meeting-hold-form.component.html',
-  styleUrl: './meeting-hold-form.component.css'
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    ActionItemsEditorComponent,
+    RouterLink,
+    StakeholderSelectComponent,
+    TwFieldComponent,
+    TwButtonDirective
+  ],
+  templateUrl: './meeting-hold-form.component.html'
 })
 export class MeetingHoldFormComponent implements OnChanges {
   private readonly formBuilder = inject(FormBuilder);

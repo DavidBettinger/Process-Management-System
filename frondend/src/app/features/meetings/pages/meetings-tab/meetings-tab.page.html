@@ -1,31 +1,51 @@
-<section class="tab">
-  <header class="tab-header">
-    <div>
-      <h2>Termine</h2>
-      <p>Plane Termine fuer diesen Prozess und halte Protokolle fest.</p>
-    </div>
+<section class="space-y-6">
+  <header class="space-y-2">
+    <h2 class="text-xl font-semibold text-slate-900">Termine</h2>
+    <p class="text-sm text-slate-600">Plane Termine fuer diesen Prozess und halte Protokolle fest.</p>
   </header>
 
   @if (status() === 'error') {
-    <div class="panel">
-      <div class="state">
-        <p class="state-title">Termin konnte nicht gespeichert werden</p>
-        <p class="state-text">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
+    <app-tw-card [className]="'border-rose-200 bg-rose-50'">
+      <div class="space-y-2">
+        <p class="text-sm font-semibold text-slate-900">Termin konnte nicht gespeichert werden</p>
+        <p class="text-sm text-slate-700">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
       </div>
-    </div>
+    </app-tw-card>
   }
 
-  <div class="grid">
-    <section class="panel">
-      <h3>Termin planen</h3>
-      <form class="form" [formGroup]="scheduleForm" (ngSubmit)="submitSchedule()">
-        <label>
-          Geplant am
-          <input type="datetime-local" formControlName="scheduledAt" />
-        </label>
-        <label>
-          Standort
-          <select formControlName="locationId">
+  <div class="grid gap-6 lg:grid-cols-2">
+    <app-tw-card [className]="'space-y-5'">
+      <header class="space-y-1">
+        <h3 class="text-lg font-semibold text-slate-900">Termin planen</h3>
+        <p class="text-sm text-slate-600">Lege einen Termin fuer diesen Prozess an.</p>
+      </header>
+
+      <form class="space-y-4" [formGroup]="scheduleForm" (ngSubmit)="submitSchedule()">
+        <app-tw-field
+          label="Geplant am"
+          forId="meeting-scheduled-at"
+          [required]="true"
+          [error]="isScheduleInvalid('scheduledAt') ? requiredMessage('Geplant am') : null"
+        >
+          <input
+            id="meeting-scheduled-at"
+            type="datetime-local"
+            formControlName="scheduledAt"
+            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+          />
+        </app-tw-field>
+
+        <app-tw-field
+          label="Standort"
+          forId="meeting-location"
+          [required]="true"
+          [error]="isScheduleInvalid('locationId') ? requiredMessage('Standort') : null"
+        >
+          <select
+            id="meeting-location"
+            formControlName="locationId"
+            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+          >
             <option value="">Bitte waehlen</option>
             @for (location of locations(); track location.id) {
               <option [value]="location.id">
@@ -33,26 +53,35 @@
               </option>
             }
           </select>
-        </label>
+        </app-tw-field>
+
         @if (locationsStatus() === 'error') {
-          <div class="state">
-            <p class="state-title">Standorte konnten nicht geladen werden</p>
-            <p class="state-text">{{ locationsError()?.message ?? 'Unbekannter Fehler' }}</p>
-            <button class="ghost-button" type="button" (click)="retryLocations()">
+          <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            <p class="font-semibold">Standorte konnten nicht geladen werden</p>
+            <p class="mt-1 text-sm">{{ locationsError()?.message ?? 'Unbekannter Fehler' }}</p>
+            <button
+              appTwButton="ghost"
+              size="sm"
+              type="button"
+              class="mt-3"
+              (click)="retryLocations()"
+            >
               Erneut versuchen
             </button>
           </div>
         }
-        <div class="participants">
-          <div class="participants-header">
-            <p>Teilnehmende</p>
-            <button class="ghost-button" type="button" (click)="addScheduleParticipant()">
+
+        <div class="space-y-3">
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p class="text-sm font-semibold text-slate-900">Teilnehmende</p>
+            <button appTwButton="ghost" size="sm" type="button" (click)="addScheduleParticipant()">
               Teilnehmende hinzufuegen
             </button>
           </div>
           @for (participantId of scheduleParticipants; track $index; let i = $index) {
-            <div class="participant-row">
+            <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
               <app-stakeholder-select
+                class="w-full"
                 [stakeholders]="stakeholders()"
                 [selectedId]="participantId || null"
                 [disabled]="stakeholdersStatus() !== 'success'"
@@ -60,7 +89,8 @@
                 (selectedIdChange)="updateScheduleParticipant(i, $event)"
               />
               <button
-                class="ghost-button"
+                appTwButton="ghost"
+                size="sm"
                 type="button"
                 (click)="removeScheduleParticipant(i)"
                 [disabled]="scheduleParticipants.length === 1"
@@ -70,22 +100,23 @@
             </div>
           }
           @if (scheduleParticipantsError) {
-            <p class="error">{{ scheduleParticipantsError }}</p>
+            <p class="text-xs font-medium text-rose-600">{{ scheduleParticipantsError }}</p>
           }
           @if (stakeholdersStatus() === 'loading') {
-            <div class="state">
-              <p class="state-title">Beteiligte werden geladen</p>
+            <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-600">
+              Beteiligte werden geladen
             </div>
           }
           @if (stakeholdersStatus() === 'error') {
-            <div class="state">
-              <p class="state-title">Beteiligte konnten nicht geladen werden</p>
-              <p class="state-text">{{ stakeholdersError()?.message ?? 'Unbekannter Fehler' }}</p>
+            <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700">
+              <p>Beteiligte konnten nicht geladen werden</p>
+              <p class="mt-1 text-xs font-normal">{{ stakeholdersError()?.message ?? 'Unbekannter Fehler' }}</p>
             </div>
           }
         </div>
+
         <button
-          class="primary-button"
+          appTwButton="primary"
           type="submit"
           [disabled]="isLoading() || stakeholdersStatus() !== 'success'"
         >
@@ -94,28 +125,35 @@
       </form>
 
       @if (meetings().length === 0) {
-        <div class="state">
-          <p class="state-title">Keine Termine geplant</p>
-          <p class="state-text">Plane einen Termin, um ihn im Prozess zu protokollieren.</p>
+        <div class="rounded-xl border border-dashed border-slate-200 px-4 py-3 text-sm text-slate-600">
+          <p class="font-semibold text-slate-900">Keine Termine geplant</p>
+          <p class="mt-1">Plane einen Termin, um ihn im Prozess zu protokollieren.</p>
         </div>
       }
 
       @if (meetings().length > 0) {
-        <div class="meeting-list">
+        <div class="space-y-3">
           @for (meeting of meetings(); track meeting.id) {
-            <article class="meeting-card">
-              <div class="meeting-meta">
-                <span class="status">{{ meetingStatusLabel(meeting.status) }}</span>
-                <span class="time">{{ meetingDateLabel(meeting) }}</span>
+            <app-tw-card
+              [padded]="false"
+              [className]="'p-4 space-y-2 bg-slate-50 border-slate-200/80 shadow-none'"
+            >
+              <div class="flex items-center justify-between text-xs text-slate-500">
+                <app-tw-badge
+                  [variant]="meeting.status === 'SCHEDULED' ? 'info' : meeting.status === 'HELD' ? 'success' : 'warning'"
+                >
+                  {{ meetingStatusLabel(meeting.status) }}
+                </app-tw-badge>
+                <span>{{ meetingDateLabel(meeting) }}</span>
               </div>
-              <p>Standort: {{ locationLabel(meeting.locationId) }}</p>
-            </article>
+              <p class="text-sm text-slate-700">Standort: {{ locationLabel(meeting.locationId) }}</p>
+            </app-tw-card>
           }
         </div>
       }
-    </section>
+    </app-tw-card>
 
-    <section class="panel">
+    <app-tw-card [className]="'space-y-5'">
       <app-meeting-hold-form
         [meetings]="meetings()"
         [locations]="locations()"
@@ -128,6 +166,6 @@
         (hold)="handleHold($event)"
         (clearResult)="clearHoldResult()"
       />
-    </section>
+    </app-tw-card>
   </div>
 </section>

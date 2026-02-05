@@ -4,6 +4,9 @@ import { CreateTaskRequest } from '../../../../core/models/task.model';
 import { Stakeholder } from '../../../../core/models/stakeholder.model';
 import { TaskCreateFormComponent } from '../../../tasks/components/task-create-form/task-create-form.component';
 import { StakeholderSelectComponent } from '../../../../shared/ui/stakeholder-select/stakeholder-select.component';
+import { TwCardComponent } from '../../../../shared/ui/tw/tw-card.component';
+import { TwFieldComponent } from '../../../../shared/ui/tw/tw-field.component';
+import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
 
 export interface ActionItemDraft {
   key: string;
@@ -17,9 +20,8 @@ export interface ActionItemDraft {
 @Component({
   selector: 'app-action-items-editor',
   standalone: true,
-  imports: [CommonModule, TaskCreateFormComponent, StakeholderSelectComponent],
-  templateUrl: './action-items-editor.component.html',
-  styleUrl: './action-items-editor.component.css'
+  imports: [CommonModule, TaskCreateFormComponent, StakeholderSelectComponent, TwCardComponent, TwFieldComponent, TwButtonDirective],
+  templateUrl: './action-items-editor.component.html'
 })
 export class ActionItemsEditorComponent {
   @Input() items: ActionItemDraft[] = [];

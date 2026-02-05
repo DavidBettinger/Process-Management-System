@@ -1,43 +1,44 @@
-<section class="action-items">
-  <header class="action-items-header">
-    <div>
-      <h3>Aufgabenpunkte</h3>
-      <p>Erstelle Aufgaben, die aus dem Termin entstehen.</p>
+<section class="space-y-4">
+  <header class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+    <div class="space-y-1">
+      <h3 class="text-lg font-semibold text-slate-900">Aufgabenpunkte</h3>
+      <p class="text-sm text-slate-600">Erstelle Aufgaben, die aus dem Termin entstehen.</p>
     </div>
   </header>
 
-  <div class="action-item-form">
-    <label>
-      Verantwortlich (optional)
+  <app-tw-card [className]="'space-y-4 bg-slate-50/60 border-slate-200/70'">
+    <app-tw-field label="Verantwortlich (optional)">
       <app-stakeholder-select
+        class="w-full"
         [stakeholders]="stakeholders"
         [selectedId]="selectedAssigneeId"
         [disabled]="stakeholders.length === 0"
         [placeholder]="'Bitte waehlen'"
         (selectedIdChange)="selectedAssigneeId = $event"
       />
-    </label>
+    </app-tw-field>
+
     <app-task-create-form
       [showHeader]="false"
       [useFormTag]="false"
       [submitLabel]="'Aufgabenpunkt hinzufuegen'"
       (create)="handleCreate($event)"
     />
-  </div>
+  </app-tw-card>
 
   @if (items.length === 0) {
-    <div class="empty">
-      <p>Noch keine Aufgabenpunkte.</p>
+    <div class="rounded-xl border border-dashed border-slate-200 px-4 py-3 text-sm text-slate-600">
+      Noch keine Aufgabenpunkte.
     </div>
   }
 
   @if (items.length > 0) {
-    <ul class="action-items-list">
+    <ul class="space-y-3">
       @for (item of items; track item.key; let i = $index) {
-        <li class="action-item">
-          <div class="action-item-main">
-            <p class="action-item-title">{{ item.title }}</p>
-            <p class="action-item-meta">
+        <li class="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-start sm:justify-between">
+          <div class="space-y-2">
+            <p class="text-sm font-semibold text-slate-900">{{ item.title }}</p>
+            <p class="flex flex-wrap gap-3 text-xs text-slate-500">
               @if (item.assigneeId) {
                 <span>Verantwortlich: {{ assigneeLabel(item.assigneeId) }}</span>
               }
@@ -47,10 +48,12 @@
               <span>Faellig: {{ formatDate(item.dueDate) }}</span>
             </p>
             @if (item.description) {
-              <p class="action-item-description">{{ item.description }}</p>
+              <p class="text-sm text-slate-600 leading-relaxed">{{ item.description }}</p>
             }
           </div>
-          <button class="ghost-button" type="button" (click)="removeItem(i)">Entfernen</button>
+          <button appTwButton="ghost" size="sm" type="button" (click)="removeItem(i)">
+            Entfernen
+          </button>
         </li>
       }
     </ul>

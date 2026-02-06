@@ -128,6 +128,7 @@ public class MeetingCommandService {
 				taskId,
 				meeting.getCaseId(),
 				meeting.getId(),
+				meeting.getId(),
 				command.title(),
 				description,
 				command.dueDate(),

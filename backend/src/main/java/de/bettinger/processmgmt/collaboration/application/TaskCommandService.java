@@ -28,6 +28,12 @@ public class TaskCommandService {
 	@Transactional
 	public TaskEntity createTask(UUID caseId, String title, String description, int priority,
 								 java.time.LocalDate dueDate, String assigneeId) {
+		return createTask(caseId, title, description, priority, dueDate, assigneeId, null);
+	}
+
+	@Transactional
+	public TaskEntity createTask(UUID caseId, String title, String description, int priority,
+								 java.time.LocalDate dueDate, String assigneeId, UUID createdFromMeetingId) {
 		String normalizedAssigneeId = normalizeAssigneeId(assigneeId);
 		Task task = Task.create(caseId, title, description, priority);
 		if (normalizedAssigneeId != null) {
@@ -35,6 +41,8 @@ public class TaskCommandService {
 		}
 		TaskEntity entity = TaskEntity.fromDomain(task);
 		entity.setDueDate(dueDate);
+		entity.setOriginMeetingId(createdFromMeetingId);
+		entity.setCreatedFromMeetingId(createdFromMeetingId);
 		taskRepository.save(entity);
 		outboxEventRepository.save(outboxEvent(task.getId(), "TaskCreated",
 				"{\"taskId\":\"" + task.getId() + "\",\"caseId\":\"" + caseId + "\"}"));

@@ -44,16 +44,16 @@ public class TaskController {
 			@Valid @RequestBody CreateTaskRequest request
 	) {
 		TaskEntity task = taskCommandService.createTask(caseId, request.title(), request.description(),
-				request.priority(), request.dueDate(), request.assigneeId());
+				request.priority(), request.dueDate(), request.assigneeId(), request.createdFromMeetingId());
 		return ResponseEntity.status(HttpStatus.CREATED)
-				.body(new CreateTaskResponse(task.getId(), task.getState()));
+				.body(new CreateTaskResponse(task.getId(), task.getState(), task.getCreatedFromMeetingId()));
 	}
 
 	@GetMapping("/cases/{caseId}/tasks")
 	public TasksResponse listTasks(@PathVariable UUID caseId) {
 		List<TaskSummaryResponse> items = taskQueryService.listTasks(caseId).stream()
 				.map(task -> new TaskSummaryResponse(task.getId(), task.getTitle(), task.getDescription(),
-						task.getPriority(), task.getState(), task.getAssigneeId()))
+						task.getPriority(), task.getState(), task.getAssigneeId(), task.getCreatedFromMeetingId()))
 				.toList();
 		return new TasksResponse(items);
 	}
@@ -64,13 +64,15 @@ public class TaskController {
 			@Valid @RequestBody AssignTaskRequest request
 	) {
 		TaskEntity task = taskCommandService.assignTask(taskId, request.assigneeId());
-		return new TaskStatusResponse(task.getId(), task.getState(), task.getAssigneeId());
+		return new TaskStatusResponse(task.getId(), task.getState(), task.getAssigneeId(),
+				task.getCreatedFromMeetingId());
 	}
 
 	@PostMapping("/tasks/{taskId}/start")
 	public TaskStatusResponse startTask(@PathVariable UUID taskId) {
 		TaskEntity task = taskCommandService.startTask(taskId);
-		return new TaskStatusResponse(task.getId(), task.getState(), task.getAssigneeId());
+		return new TaskStatusResponse(task.getId(), task.getState(), task.getAssigneeId(),
+				task.getCreatedFromMeetingId());
 	}
 
 	@PostMapping("/tasks/{taskId}/block")
@@ -79,13 +81,15 @@ public class TaskController {
 			@Valid @RequestBody BlockTaskRequest request
 	) {
 		TaskEntity task = taskCommandService.blockTask(taskId, request.reason());
-		return new TaskStatusResponse(task.getId(), task.getState(), task.getAssigneeId());
+		return new TaskStatusResponse(task.getId(), task.getState(), task.getAssigneeId(),
+				task.getCreatedFromMeetingId());
 	}
 
 	@PostMapping("/tasks/{taskId}/unblock")
 	public TaskStatusResponse unblockTask(@PathVariable UUID taskId) {
 		TaskEntity task = taskCommandService.unblockTask(taskId);
-		return new TaskStatusResponse(task.getId(), task.getState(), task.getAssigneeId());
+		return new TaskStatusResponse(task.getId(), task.getState(), task.getAssigneeId(),
+				task.getCreatedFromMeetingId());
 	}
 
 	@PostMapping("/tasks/{taskId}/decline")
@@ -94,7 +98,8 @@ public class TaskController {
 			@Valid @RequestBody DeclineTaskRequest request
 	) {
 		TaskEntity task = taskCommandService.declineAssignment(taskId, request.reason(), request.suggestedAssigneeId());
-		return new TaskStatusResponse(task.getId(), task.getState(), task.getAssigneeId());
+		return new TaskStatusResponse(task.getId(), task.getState(), task.getAssigneeId(),
+				task.getCreatedFromMeetingId());
 	}
 
 	@PostMapping("/tasks/{taskId}/resolve")
@@ -104,6 +109,7 @@ public class TaskController {
 			@RequestHeader(DevAuthFilter.USER_HEADER) String resolvedBy
 	) {
 		TaskEntity task = taskCommandService.resolveTask(taskId, request.kind(), request.reason(), resolvedBy);
-		return new TaskStatusResponse(task.getId(), task.getState(), task.getAssigneeId());
+		return new TaskStatusResponse(task.getId(), task.getState(), task.getAssigneeId(),
+				task.getCreatedFromMeetingId());
 	}
 }

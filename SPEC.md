@@ -94,7 +94,7 @@ A process management app for **Kita consulting** (Fachberatung) to document and 
 - Meeting
     - id, caseId, title, description?, status, scheduledAt, heldAt, locationId, participants[], minutesText
 - Task
-    - id, caseId, originMeetingId?, title, description, dueDate?
+    - id, caseId, createdFromMeetingId?, title, description, dueDate?
     - assigneeId?
     - state (OPEN, ASSIGNED, IN_PROGRESS, BLOCKED, RESOLVED)
     - resolutionKind? (COMPLETED, NOT_COMPLETED, NOT_APPLICABLE, CANCELLED)
@@ -135,7 +135,7 @@ A process management app for **Kita consulting** (Fachberatung) to document and 
 {
   "id": "1d4e6c8a-6dc3-4a1b-9a68-5c4e5d2c84f0",
   "caseId": "2b1e6d57-8b52-41a8-a2d3-7c1f1a9f1d16",
-  "originMeetingId": "f8c25b59-5c5b-4d78-9d9c-57cb9d0f3cdb",
+  "createdFromMeetingId": "f8c25b59-5c5b-4d78-9d9c-57cb9d0f3cdb",
   "title": "Draft child protection concept v1",
   "state": "RESOLVED",
   "assigneeId": "u-201",

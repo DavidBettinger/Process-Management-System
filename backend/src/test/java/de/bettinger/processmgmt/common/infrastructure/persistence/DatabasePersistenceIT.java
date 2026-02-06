@@ -9,6 +9,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -21,12 +22,9 @@ class DatabasePersistenceIT {
 
 	@Test
 	void persistsDataAcrossContextRestart() {
-		String previousProfiles = System.getProperty("spring.profiles.active");
-		String previousDdlAuto = System.getProperty("spring.jpa.hibernate.ddl-auto");
-		System.setProperty("spring.profiles.active", "dev");
-		System.setProperty("spring.jpa.hibernate.ddl-auto", "none");
 		String dbPath = tempDir.resolve("app-db").toAbsolutePath().toString();
-		Map<String, Object> properties = Map.of(
+		Map<String, String> configuredProperties = Map.of(
+				"spring.profiles.active", "dev",
 				"spring.datasource.url",
 				"jdbc:h2:file:" + dbPath + ";MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;DATABASE_TO_UPPER=false",
 				"spring.datasource.driver-class-name", "org.h2.Driver",
@@ -38,12 +36,13 @@ class DatabasePersistenceIT {
 				"spring.flyway.locations", "classpath:db/migration",
 				"spring.main.web-application-type", "none"
 		);
+		Map<String, String> previousProperties = captureProperties(configuredProperties.keySet().stream().toList());
+		configuredProperties.forEach(System::setProperty);
 
 		UUID stakeholderId = UUID.randomUUID();
 
 		try {
 			try (ConfigurableApplicationContext context = new SpringApplicationBuilder(ProcessManagementApplication.class)
-					.properties(properties)
 					.run()) {
 				StakeholderRepository repository = context.getBean(StakeholderRepository.class);
 				repository.save(new StakeholderEntity(
@@ -57,15 +56,21 @@ class DatabasePersistenceIT {
 			}
 
 			try (ConfigurableApplicationContext context = new SpringApplicationBuilder(ProcessManagementApplication.class)
-					.properties(properties)
 					.run()) {
 				StakeholderRepository repository = context.getBean(StakeholderRepository.class);
 				assertThat(repository.findById(stakeholderId)).isPresent();
 			}
 		} finally {
-			restoreSystemProperty("spring.profiles.active", previousProfiles);
-			restoreSystemProperty("spring.jpa.hibernate.ddl-auto", previousDdlAuto);
+			previousProperties.forEach(DatabasePersistenceIT::restoreSystemProperty);
 		}
+	}
+
+	private static Map<String, String> captureProperties(List<String> keys) {
+		java.util.Map<String, String> values = new java.util.HashMap<>();
+		for (String key : keys) {
+			values.put(key, System.getProperty(key));
+		}
+		return values;
 	}
 
 	private static void restoreSystemProperty(String key, String value) {

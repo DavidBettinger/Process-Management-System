@@ -9,6 +9,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -26,8 +27,13 @@ public class TaskEntity {
 	@Column(name = "case_id", nullable = false)
 	private UUID caseId;
 
-	@Column(name = "origin_meeting_id")
+	@Setter
+    @Column(name = "origin_meeting_id")
 	private UUID originMeetingId;
+
+	@Setter
+    @Column(name = "created_from_meeting_id")
+	private UUID createdFromMeetingId;
 
 	@Column(name = "title", nullable = false)
 	private String title;
@@ -38,7 +44,8 @@ public class TaskEntity {
 	@Column(name = "priority", nullable = false)
 	private int priority;
 
-	@Column(name = "due_date")
+	@Setter
+    @Column(name = "due_date")
 	private LocalDate dueDate;
 
 	@Column(name = "assignee_id")
@@ -127,17 +134,39 @@ public class TaskEntity {
 		this.lastSuggestedAssigneeId = task.getLastSuggestedAssigneeId();
 	}
 
-	public void setDueDate(LocalDate dueDate) {
-		this.dueDate = dueDate;
-	}
-
-	public TaskEntity(UUID id, UUID caseId, UUID originMeetingId, String title, String description, LocalDate dueDate,
+    public TaskEntity(UUID id, UUID caseId, UUID originMeetingId, String title, String description, LocalDate dueDate,
 					 int priority, String assigneeId, TaskState state, TaskResolutionKind resolutionKind,
 					 String resolutionReason, String resolvedBy, Instant resolvedAt, String lastDeclineReason,
 					 String lastSuggestedAssigneeId, Instant createdAt) {
+		this(
+				id,
+				caseId,
+				originMeetingId,
+				null,
+				title,
+				description,
+				dueDate,
+				priority,
+				assigneeId,
+				state,
+				resolutionKind,
+				resolutionReason,
+				resolvedBy,
+				resolvedAt,
+				lastDeclineReason,
+				lastSuggestedAssigneeId,
+				createdAt
+		);
+	}
+
+	public TaskEntity(UUID id, UUID caseId, UUID originMeetingId, UUID createdFromMeetingId, String title,
+					 String description, LocalDate dueDate, int priority, String assigneeId, TaskState state,
+					 TaskResolutionKind resolutionKind, String resolutionReason, String resolvedBy, Instant resolvedAt,
+					 String lastDeclineReason, String lastSuggestedAssigneeId, Instant createdAt) {
 		this.id = id;
 		this.caseId = caseId;
 		this.originMeetingId = originMeetingId;
+		this.createdFromMeetingId = createdFromMeetingId;
 		this.title = title;
 		this.description = description;
 		this.priority = priority;

@@ -61,6 +61,7 @@ class MeetingActionItemTaskCreationTest {
 				.allSatisfy(task -> {
 					assertThat(task.getPriority()).isEqualTo(2);
 					assertThat(task.getDescription()).isEqualTo("First draft with milestones.");
+					assertThat(task.getCreatedFromMeetingId()).isEqualTo(meeting.getId());
 				});
 		MeetingEntity updated = meetingCommandService.holdMeeting(tenantId, meeting.getId(), locationId, Instant.now(),
 				"Minutes", List.of("u-1"), List.of(actionItem));

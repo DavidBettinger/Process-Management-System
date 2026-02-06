@@ -233,7 +233,7 @@ Fields:
 {
   "id": "1d4e6c8a-6dc3-4a1b-9a68-5c4e5d2c84f0",
   "caseId": "2b1e6d57-8b52-41a8-a2d3-7c1f1a9f1d16",
-  "originMeetingId": "f8c25b59-5c5b-4d78-9d9c-57cb9d0f3cdb",
+  "createdFromMeetingId": "f8c25b59-5c5b-4d78-9d9c-57cb9d0f3cdb",
   "title": "Draft child protection concept v1",
   "description": "Longer text describing the task...",
   "priority": 2,
@@ -642,7 +642,7 @@ Idempotency rule:
 •	actionItems[].key must be stable per meeting. If repeated, do not create duplicates.
 Behavior:
 •	If `actionItems[].assigneeId` is provided, the created task starts in `ASSIGNED`.
-•	Action-item tasks are created as regular tasks linked via `tasks.originMeetingId` (Option A).
+•	Action-item tasks are created as regular tasks linked via `tasks.createdFromMeetingId`.
 •	`actionItems[].priority` defaults to `3` if omitted.
 •	`actionItems[].description` is optional and stored in the created task.
 
@@ -657,16 +657,18 @@ Request:
   "description": "Longer text describing the task...",
   "priority": 3,
   "dueDate": "2026-02-10",
-  "assigneeId": "u-201"
+  "assigneeId": "u-201",
+  "createdFromMeetingId": "f8c25b59-5c5b-4d78-9d9c-57cb9d0f3cdb"
 }
 ```
 Response 201:
 ```json
-{ "id": "uuid", "state": "ASSIGNED" }
+{ "id": "uuid", "state": "ASSIGNED", "createdFromMeetingId": "f8c25b59-5c5b-4d78-9d9c-57cb9d0f3cdb" }
 ```
 Behavior:
 •	If `assigneeId` is provided, the task is created with `state = ASSIGNED`.
 •	If `assigneeId` is provided, a `TaskAssigned` outbox event is stored.
+•	`createdFromMeetingId` is optional; if omitted, it is `null`.
 List tasks
 GET /api/cases/{caseId}/tasks
 Response 200:
@@ -679,7 +681,8 @@ Response 200:
       "description": "Longer text describing the task...",
       "priority": 3,
       "state": "OPEN",
-      "assigneeId": null
+      "assigneeId": null,
+      "createdFromMeetingId": null
     }
   ]
 }
@@ -889,7 +892,7 @@ Semantics and rules:
 •	  tie-breaker for equal timestamps: task id ascending
 •	`generatedAt` is the server timestamp when the DTO is built.
 •	`now` is the server "current time" used by the frontend to render the "Heute" marker.
-•	For consistency with existing task APIs that still expose `originMeetingId`, `createdFromMeetingId` has the same semantic meaning in this read model.
+•	`createdFromMeetingId` has the same semantic meaning as the legacy persistence field `originMeetingId`.
 
 Edge Cases & Validation
 1) Location not found:

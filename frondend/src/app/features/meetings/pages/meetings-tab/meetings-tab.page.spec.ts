@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Component, signal } from '@angular/core';
+import { By } from '@angular/platform-browser';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { MeetingsTabPageComponent } from './meetings-tab.page';
@@ -8,7 +9,7 @@ import { LocationsStore } from '../../../locations/state/locations.store';
 import { KitasStore } from '../../../kitas/state/kitas.store';
 import { CaseDetailStore } from '../../../case-detail/state/case-detail.store';
 import { StakeholdersStore } from '../../../stakeholders/state/stakeholders.store';
-import { Meeting, ScheduleMeetingRequest } from '../../../../core/models/meeting.model';
+import { Meeting, ScheduleMeetingRequest, UpdateMeetingRequest } from '../../../../core/models/meeting.model';
 import { Location } from '../../../../core/models/location.model';
 import { Kita } from '../../../../core/models/kita.model';
 import { Stakeholder } from '../../../../core/models/stakeholder.model';
@@ -22,6 +23,7 @@ class MeetingsStoreStub {
   isLoading = signal(false);
   holdResult = signal(null);
   scheduleCalls: ScheduleMeetingRequest[] = [];
+  updateCalls: { meetingId: string; request: UpdateMeetingRequest }[] = [];
   setCaseIdValue: string | null = null;
   clearHoldResultCalls = 0;
   loadCalls = 0;
@@ -38,6 +40,10 @@ class MeetingsStoreStub {
   };
   scheduleMeeting = (req: ScheduleMeetingRequest) => {
     this.scheduleCalls.push(req);
+    return of(void 0);
+  };
+  updateMeeting = (meetingId: string, request: UpdateMeetingRequest) => {
+    this.updateCalls.push({ meetingId, request });
     return of(void 0);
   };
   holdMeeting = () => of(void 0);
@@ -184,6 +190,233 @@ describe('MeetingsTabPageComponent', () => {
     const dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
     expect(dialog).not.toBeNull();
     expect(dialog.textContent).toContain('Termin planen');
+  });
+
+  it('renders edit button for planned meetings and opens overlay with selected meeting id', () => {
+    const meetingsStore = new MeetingsStoreStub();
+    meetingsStore.meetings.set([
+      {
+        id: 'meeting-1',
+        status: 'SCHEDULED',
+        locationId: 'loc-1',
+        participantIds: ['s-1'],
+        title: 'Geplanter Termin',
+        description: 'Beschreibung geplant',
+        scheduledAt: '2026-02-01T10:00:00Z',
+        heldAt: null
+      },
+      {
+        id: 'meeting-2',
+        status: 'HELD',
+        locationId: 'loc-1',
+        participantIds: ['s-1'],
+        title: 'Abgeschlossener Termin',
+        description: null,
+        scheduledAt: '2026-01-01T10:00:00Z',
+        heldAt: '2026-01-01T10:00:00Z'
+      }
+    ]);
+    const locationsStore = new LocationsStoreStub();
+    locationsStore.locations.set([
+      {
+        id: 'loc-1',
+        label: 'Standort A',
+        address: { street: 'x', houseNumber: '1', postalCode: '10115', city: 'Berlin', country: 'DE' }
+      }
+    ]);
+    const kitasStore = new KitasStoreStub();
+    const caseStore = new CaseDetailStoreStub();
+    const stakeholdersStore = new StakeholdersStoreStub();
+    stakeholdersStore.status.set('success');
+    stakeholdersStore.stakeholders.set([
+      { id: 's-1', firstName: 'Ada', lastName: 'Lovelace', role: 'CONSULTANT' }
+    ]);
+
+    TestBed.configureTestingModule({
+      imports: [MeetingsTabHostComponent],
+      providers: [
+        provideRouter([]),
+        { provide: MeetingsStore, useValue: meetingsStore },
+        { provide: LocationsStore, useValue: locationsStore },
+        { provide: KitasStore, useValue: kitasStore },
+        { provide: CaseDetailStore, useValue: caseStore },
+        { provide: StakeholdersStore, useValue: stakeholdersStore },
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ caseId: 'case-1' })) } }
+      ]
+    });
+
+    const fixture = TestBed.createComponent(MeetingsTabHostComponent);
+    fixture.detectChanges();
+
+    const pageComponent = fixture.debugElement.query(By.directive(MeetingsTabPageComponent))
+      .componentInstance as MeetingsTabPageComponent;
+    const compiled = fixture.nativeElement as HTMLElement;
+    const plannedEditButton = compiled.querySelector('[data-testid="planned-meeting-edit-meeting-1"]') as HTMLButtonElement;
+    const heldEditButton = compiled.querySelector('[data-testid="planned-meeting-edit-meeting-2"]');
+
+    expect(plannedEditButton).not.toBeNull();
+    expect(heldEditButton).toBeNull();
+
+    plannedEditButton.click();
+    fixture.detectChanges();
+
+    const dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+    const titleInput = dialog.querySelector('#meeting-title') as HTMLInputElement;
+    const descriptionInput = dialog.querySelector('#meeting-description') as HTMLTextAreaElement;
+    const scheduledInput = dialog.querySelector('#meeting-scheduled-at') as HTMLInputElement;
+    const locationSelect = dialog.querySelector('#meeting-location') as HTMLSelectElement;
+    const participantSelect = dialog.querySelector('app-stakeholder-select select') as HTMLSelectElement;
+
+    expect(dialog).not.toBeNull();
+    expect(pageComponent.editingMeetingId).toBe('meeting-1');
+    expect(dialog.textContent).toContain('Termin bearbeiten');
+    expect(titleInput.value).toBe('Geplanter Termin');
+    expect(descriptionInput.value).toBe('Beschreibung geplant');
+    expect(scheduledInput.value).toBe(localDateTime('2026-02-01T10:00:00Z'));
+    expect(locationSelect.value).toBe('loc-1');
+    expect(participantSelect.value).toBe('s-1');
+    const saveButton = Array.from(dialog.querySelectorAll('button')).find((button) =>
+      button.textContent?.trim().includes('Speichern')
+    ) as HTMLButtonElement;
+    expect(saveButton).not.toBeNull();
+  });
+
+  it('discards unsaved edit changes on cancel and reopens with original values', () => {
+    const meetingsStore = new MeetingsStoreStub();
+    meetingsStore.meetings.set([
+      {
+        id: 'meeting-1',
+        status: 'SCHEDULED',
+        locationId: 'loc-1',
+        participantIds: ['s-1'],
+        title: 'Geplanter Termin',
+        description: 'Beschreibung geplant',
+        scheduledAt: '2026-02-01T10:00:00Z',
+        heldAt: null
+      }
+    ]);
+    const locationsStore = new LocationsStoreStub();
+    locationsStore.locations.set([
+      {
+        id: 'loc-1',
+        label: 'Standort A',
+        address: { street: 'x', houseNumber: '1', postalCode: '10115', city: 'Berlin', country: 'DE' }
+      }
+    ]);
+    const kitasStore = new KitasStoreStub();
+    const caseStore = new CaseDetailStoreStub();
+    const stakeholdersStore = new StakeholdersStoreStub();
+    stakeholdersStore.status.set('success');
+    stakeholdersStore.stakeholders.set([{ id: 's-1', firstName: 'Ada', lastName: 'Lovelace', role: 'CONSULTANT' }]);
+
+    TestBed.configureTestingModule({
+      imports: [MeetingsTabHostComponent],
+      providers: [
+        provideRouter([]),
+        { provide: MeetingsStore, useValue: meetingsStore },
+        { provide: LocationsStore, useValue: locationsStore },
+        { provide: KitasStore, useValue: kitasStore },
+        { provide: CaseDetailStore, useValue: caseStore },
+        { provide: StakeholdersStore, useValue: stakeholdersStore },
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ caseId: 'case-1' })) } }
+      ]
+    });
+
+    const fixture = TestBed.createComponent(MeetingsTabHostComponent);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const plannedEditButton = compiled.querySelector('[data-testid="planned-meeting-edit-meeting-1"]') as HTMLButtonElement;
+
+    plannedEditButton.click();
+    fixture.detectChanges();
+
+    let dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+    const titleInput = dialog.querySelector('#meeting-title') as HTMLInputElement;
+    titleInput.value = 'Veraendert';
+    titleInput.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    const cancelButton = Array.from(dialog.querySelectorAll('button')).find((button) =>
+      button.textContent?.trim().includes('Abbrechen')
+    ) as HTMLButtonElement;
+    cancelButton.click();
+    fixture.detectChanges();
+
+    plannedEditButton.click();
+    fixture.detectChanges();
+
+    dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+    const reopenedTitle = dialog.querySelector('#meeting-title') as HTMLInputElement;
+    expect(reopenedTitle.value).toBe('Geplanter Termin');
+  });
+
+  it('saves edited meeting via update endpoint and closes overlay', () => {
+    const meetingsStore = new MeetingsStoreStub();
+    meetingsStore.meetings.set([
+      {
+        id: 'meeting-1',
+        status: 'SCHEDULED',
+        locationId: 'loc-1',
+        participantIds: ['s-1'],
+        title: 'Geplanter Termin',
+        description: 'Beschreibung geplant',
+        scheduledAt: '2026-02-01T10:00:00Z',
+        heldAt: null
+      }
+    ]);
+    const locationsStore = new LocationsStoreStub();
+    locationsStore.locations.set([
+      {
+        id: 'loc-1',
+        label: 'Standort A',
+        address: { street: 'x', houseNumber: '1', postalCode: '10115', city: 'Berlin', country: 'DE' }
+      }
+    ]);
+    const kitasStore = new KitasStoreStub();
+    const caseStore = new CaseDetailStoreStub();
+    const stakeholdersStore = new StakeholdersStoreStub();
+    stakeholdersStore.status.set('success');
+    stakeholdersStore.stakeholders.set([{ id: 's-1', firstName: 'Ada', lastName: 'Lovelace', role: 'CONSULTANT' }]);
+
+    TestBed.configureTestingModule({
+      imports: [MeetingsTabHostComponent],
+      providers: [
+        provideRouter([]),
+        { provide: MeetingsStore, useValue: meetingsStore },
+        { provide: LocationsStore, useValue: locationsStore },
+        { provide: KitasStore, useValue: kitasStore },
+        { provide: CaseDetailStore, useValue: caseStore },
+        { provide: StakeholdersStore, useValue: stakeholdersStore },
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ caseId: 'case-1' })) } }
+      ]
+    });
+
+    const fixture = TestBed.createComponent(MeetingsTabHostComponent);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const plannedEditButton = compiled.querySelector('[data-testid="planned-meeting-edit-meeting-1"]') as HTMLButtonElement;
+    plannedEditButton.click();
+    fixture.detectChanges();
+
+    const dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+    const titleInput = dialog.querySelector('#meeting-title') as HTMLInputElement;
+    titleInput.value = 'Aktualisierter Termin';
+    titleInput.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    const saveButton = Array.from(dialog.querySelectorAll('button')).find((button) =>
+      button.textContent?.trim().includes('Speichern')
+    ) as HTMLButtonElement;
+    saveButton.click();
+    fixture.detectChanges();
+
+    expect(meetingsStore.updateCalls.length).toBe(1);
+    expect(meetingsStore.scheduleCalls.length).toBe(0);
+    expect(meetingsStore.updateCalls[0].meetingId).toBe('meeting-1');
+    expect(meetingsStore.updateCalls[0].request.title).toBe('Aktualisierter Termin');
+    expect(compiled.querySelector('[role="dialog"]')).toBeNull();
   });
 
   it('closes schedule overlay on cancel and clears form', () => {
@@ -341,3 +574,9 @@ describe('MeetingsTabPageComponent', () => {
     ]);
   });
 });
+
+const localDateTime = (value: string): string => {
+  const date = new Date(value);
+  const pad = (part: number): string => part.toString().padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};

@@ -11,6 +11,28 @@
 - If no planned meetings exist, show:
   - "Keine geplanten Termine vorhanden."
 
+### FE-MEET-LIST-EDIT-002 - Edit button for planned meetings
+
+- Planned meeting rows in the meetings list show a "Bearbeiten" button.
+- Clicking "Bearbeiten" opens the existing planning overlay with the selected meeting values prefilled.
+- The selected meeting id is captured as edit context for the next step (prefill/update in Task 3).
+- Non-planned meetings do not render a "Bearbeiten" action.
+
+### FE-MEET-LIST-EDIT-003 - Reuse planning overlay for editing
+
+- Edit mode uses the same schedule overlay form as create mode.
+- Overlay title in edit mode: "Termin bearbeiten".
+- Primary action in edit mode: "Speichern".
+- Secondary action in edit mode: "Abbrechen".
+- On cancel:
+  - overlay closes
+  - unsaved changes are discarded
+  - reopening edit loads the current persisted meeting values again
+- On save:
+  - frontend calls update endpoint
+  - overlay closes on success
+  - meetings list is refreshed
+
 #### Stage A - Selection and Preview
 - Initial state shows only:
   - Meeting selector ("Termin auswaehlen")

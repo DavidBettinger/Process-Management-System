@@ -17,6 +17,24 @@ export interface ScheduleMeetingResponse {
   description?: string | null;
 }
 
+export interface UpdateMeetingRequest {
+  scheduledAt: string;
+  locationId: string;
+  participantIds: string[];
+  title: string;
+  description?: string | null;
+}
+
+export interface UpdateMeetingResponse {
+  id: string;
+  status: MeetingStatus;
+  locationId: string;
+  participantIds: string[];
+  title: string;
+  description?: string | null;
+  scheduledAt: string;
+}
+
 export interface Meeting {
   id: string;
   status: MeetingStatus;

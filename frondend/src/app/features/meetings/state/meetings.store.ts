@@ -6,7 +6,8 @@ import {
   HoldMeetingRequest,
   HoldMeetingResponse,
   Meeting,
-  ScheduleMeetingRequest
+  ScheduleMeetingRequest,
+  UpdateMeetingRequest
 } from '../../../core/models/meeting.model';
 import { initialListState, ListState, StoreError, toStoreError } from '../../../core/state/state.types';
 
@@ -75,6 +76,25 @@ export class MeetingsStore {
             items: [meetingWithSchedule, ...current.items]
           }));
         }),
+        map(() => void 0),
+        catchError((error) => {
+          this.meetingsState.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));
+          return of(void 0);
+        })
+      );
+    });
+  }
+
+  updateMeeting(meetingId: string, req: UpdateMeetingRequest): Observable<void> {
+    return defer(() => {
+      const caseId = this.caseId();
+      if (!caseId) {
+        this.meetingsState.update((current) => ({ ...current, status: 'error', error: missingCaseIdError() }));
+        return of(void 0);
+      }
+      this.meetingsState.update((current) => ({ ...current, status: 'loading', error: undefined }));
+      return this.meetingsApi.updateMeeting(caseId, meetingId, req).pipe(
+        switchMap(() => this.loadMeetings()),
         map(() => void 0),
         catchError((error) => {
           this.meetingsState.update((current) => ({ ...current, status: 'error', error: toStoreError(error) }));

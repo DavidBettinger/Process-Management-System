@@ -21,6 +21,7 @@ import {
   DialogRef,
   TemplateDialogContext
 } from '../../../../shared/ui/confirm-dialog/confirm-dialog.service';
+import { ToastService } from '../../../../shared/ui/toast.service';
 
 @Component({
   selector: 'app-meetings-tab-page',
@@ -45,6 +46,7 @@ export class MeetingsTabPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly formBuilder = inject(FormBuilder);
   private readonly confirmDialog = inject(ConfirmDialogService);
+  private readonly toastService = inject(ToastService);
   readonly meetingsStore = inject(MeetingsStore);
   readonly locationsStore = inject(LocationsStore);
   readonly kitasStore = inject(KitasStore);
@@ -73,14 +75,8 @@ export class MeetingsTabPageComponent implements OnInit {
 
   scheduleParticipants: string[] = [''];
   scheduleParticipantsError: string | null = null;
-
-  private readonly defaultLocationEffect = effect(() => {
-    const defaultLocationId = this.defaultLocationId();
-    const locationControl = this.scheduleForm.controls.locationId;
-    if (!locationControl.value && defaultLocationId) {
-      locationControl.setValue(defaultLocationId, { emitEvent: false });
-    }
-  });
+  editingMeetingId: string | null = null;
+  scheduleDialogTitle = 'Termin planen';
 
   ngOnInit(): void {
     const parentRoute = this.route.parent ?? this.route;
@@ -97,12 +93,17 @@ export class MeetingsTabPageComponent implements OnInit {
     this.stakeholdersStore.loadStakeholders().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
-  openScheduleDialog(): void {
+  openScheduleDialog(meetingId: string | null = null): void {
     if (this.scheduleDialogRef || !this.scheduleDialog) {
       return;
     }
+    this.editingMeetingId = meetingId;
+    this.scheduleDialogTitle = this.isEditingSchedule() ? 'Termin bearbeiten' : 'Termin planen';
+    if (meetingId) {
+      this.prefillScheduleForm(meetingId);
+    }
     const dialogRef = this.confirmDialog.openTemplate({
-      title: 'Termin planen',
+      title: this.scheduleDialogTitle,
       template: this.scheduleDialog,
       panelClass: 'max-w-2xl'
     });
@@ -111,6 +112,8 @@ export class MeetingsTabPageComponent implements OnInit {
       if (this.scheduleDialogRef === dialogRef) {
         this.scheduleDialogRef = null;
       }
+      this.editingMeetingId = null;
+      this.scheduleDialogTitle = 'Termin planen';
       this.resetScheduleForm();
     });
   }
@@ -135,19 +138,29 @@ export class MeetingsTabPageComponent implements OnInit {
       return;
     }
     const value = this.scheduleForm.getRawValue();
-    this.meetingsStore
-      .scheduleMeeting({
-        scheduledAt: toIsoDateTime(value.scheduledAt ?? ''),
-        locationId: value.locationId ?? '',
-        participantIds,
-        title: value.title ?? '',
-        description: value.description?.trim() ? value.description.trim() : null
-      })
+    const request = {
+      scheduledAt: toIsoDateTime(value.scheduledAt ?? ''),
+      locationId: value.locationId ?? '',
+      participantIds,
+      title: value.title ?? '',
+      description: value.description?.trim() ? value.description.trim() : null
+    };
+    const save$ = this.isEditingSchedule() && this.editingMeetingId
+      ? this.meetingsStore.updateMeeting(this.editingMeetingId, request)
+      : this.meetingsStore.scheduleMeeting(request);
+
+    save$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
-        if (this.meetingsStore.status() !== 'error') {
-          this.closeScheduleDialog();
+        if (this.meetingsStore.status() === 'error') {
+          const message = this.meetingsStore.error()?.message ?? 'Termin konnte nicht gespeichert werden.';
+          this.toastService.error(message);
+          return;
         }
+        if (this.isEditingSchedule()) {
+          this.toastService.success('Termin wurde aktualisiert.');
+        }
+        this.closeScheduleDialog();
       });
   }
 
@@ -218,6 +231,14 @@ export class MeetingsTabPageComponent implements OnInit {
     return match ? match.label : 'Standort unbekannt';
   }
 
+  isPlannedMeeting(meeting: Meeting): boolean {
+    return meeting.status === 'SCHEDULED';
+  }
+
+  isEditingSchedule(): boolean {
+    return this.editingMeetingId !== null;
+  }
+
   retryLocations(): void {
     void this.locationsStore.loadLocations();
   }
@@ -253,9 +274,36 @@ export class MeetingsTabPageComponent implements OnInit {
     this.scheduleParticipants = [''];
     this.scheduleParticipantsError = null;
   }
+
+  private prefillScheduleForm(meetingId: string): void {
+    const meeting = this.meetings().find((item) => item.id === meetingId);
+    if (!meeting) {
+      return;
+    }
+    this.scheduleForm.reset({
+      title: meeting.title ?? '',
+      description: meeting.description ?? '',
+      scheduledAt: toDateTimeLocal(meeting.scheduledAt ?? meeting.heldAt ?? null),
+      locationId: meeting.locationId
+    });
+    this.scheduleParticipants = meeting.participantIds.length ? [...meeting.participantIds] : [''];
+    this.scheduleParticipantsError = null;
+  }
 }
 
 const toIsoDateTime = (value: string): string => {
   const date = new Date(value);
   return date.toISOString();
+};
+
+const toDateTimeLocal = (value: string | null): string => {
+  if (!value) {
+    return '';
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+  const pad = (part: number): string => part.toString().padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };

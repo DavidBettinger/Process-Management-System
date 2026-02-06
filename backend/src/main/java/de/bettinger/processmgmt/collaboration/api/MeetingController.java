@@ -6,6 +6,8 @@ import de.bettinger.processmgmt.collaboration.api.MeetingDtos.MeetingSummaryResp
 import de.bettinger.processmgmt.collaboration.api.MeetingDtos.MeetingsResponse;
 import de.bettinger.processmgmt.collaboration.api.MeetingDtos.ScheduleMeetingRequest;
 import de.bettinger.processmgmt.collaboration.api.MeetingDtos.ScheduleMeetingResponse;
+import de.bettinger.processmgmt.collaboration.api.MeetingDtos.UpdateMeetingRequest;
+import de.bettinger.processmgmt.collaboration.api.MeetingDtos.UpdateMeetingResponse;
 import de.bettinger.processmgmt.collaboration.application.MeetingActionItemCommand;
 import de.bettinger.processmgmt.collaboration.application.MeetingCommandService;
 import de.bettinger.processmgmt.collaboration.application.MeetingQueryService;
@@ -22,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -84,6 +87,36 @@ public class MeetingController {
 						meeting.getTitle(),
 						meeting.getDescription()
 				));
+	}
+
+	@PutMapping("/{meetingId}")
+	public UpdateMeetingResponse updateMeeting(
+			@PathVariable UUID caseId,
+			@PathVariable UUID meetingId,
+			@RequestHeader(DevAuthFilter.TENANT_HEADER) String tenantId,
+			@Valid @RequestBody UpdateMeetingRequest request
+	) {
+		MeetingEntity meeting = meetingCommandService.updateMeeting(
+				tenantId,
+				caseId,
+				meetingId,
+				request.locationId(),
+				request.title(),
+				request.description(),
+				request.scheduledAt(),
+				request.participantIds()
+		);
+		return new UpdateMeetingResponse(
+				meeting.getId(),
+				meeting.getStatus(),
+				meeting.getLocationId(),
+				meeting.getParticipants().stream()
+						.map(MeetingParticipantEntity::getUserId)
+						.toList(),
+				meeting.getTitle(),
+				meeting.getDescription(),
+				meeting.getScheduledAt()
+		);
 	}
 
 	@PostMapping("/{meetingId}/hold")

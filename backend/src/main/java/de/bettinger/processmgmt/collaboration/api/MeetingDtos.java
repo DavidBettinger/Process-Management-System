@@ -31,6 +31,19 @@ public final class MeetingDtos {
 										  String title, String description) {
 	}
 
+	public record UpdateMeetingRequest(
+			@NotNull Instant scheduledAt,
+			@NotNull UUID locationId,
+			@NotEmpty List<String> participantIds,
+			@NotBlank @Size(max = 200) String title,
+			@Size(max = 10_000) String description
+	) {
+	}
+
+	public record UpdateMeetingResponse(UUID id, MeetingStatus status, UUID locationId, List<String> participantIds,
+										String title, String description, Instant scheduledAt) {
+	}
+
 	public record HoldMeetingRequest(
 			@NotNull Instant heldAt,
 			@NotNull UUID locationId,

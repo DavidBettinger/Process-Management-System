@@ -39,12 +39,15 @@ public class MeetingEntity {
 	private MeetingStatus status;
 
 	@Column(name = "title", nullable = false, length = 200)
+	@Setter
 	private String title;
 
 	@Column(name = "description")
+	@Setter
 	private String description;
 
 	@Column(name = "scheduled_at")
+	@Setter
 	private Instant scheduledAt;
 
 	@Setter

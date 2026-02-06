@@ -6,7 +6,9 @@ import {
   HoldMeetingResponse,
   MeetingsResponse,
   ScheduleMeetingRequest,
-  ScheduleMeetingResponse
+  ScheduleMeetingResponse,
+  UpdateMeetingRequest,
+  UpdateMeetingResponse
 } from '../models/meeting.model';
 import { buildApiUrl } from './api.config';
 
@@ -16,6 +18,14 @@ export class MeetingsApi {
 
   scheduleMeeting(caseId: string, request: ScheduleMeetingRequest): Observable<ScheduleMeetingResponse> {
     return this.http.post<ScheduleMeetingResponse>(buildApiUrl(`/cases/${caseId}/meetings`), request);
+  }
+
+  updateMeeting(
+    caseId: string,
+    meetingId: string,
+    request: UpdateMeetingRequest
+  ): Observable<UpdateMeetingResponse> {
+    return this.http.put<UpdateMeetingResponse>(buildApiUrl(`/cases/${caseId}/meetings/${meetingId}`), request);
   }
 
   getMeetings(caseId: string): Observable<MeetingsResponse> {

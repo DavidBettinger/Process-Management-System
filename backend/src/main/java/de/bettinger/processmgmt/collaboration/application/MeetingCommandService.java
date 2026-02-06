@@ -55,6 +55,26 @@ public class MeetingCommandService {
 	}
 
 	@Transactional
+	public MeetingEntity updateMeeting(String tenantId, UUID caseId, UUID meetingId, UUID locationId, String title,
+									   String description, Instant scheduledAt, List<String> participantIds) {
+		validateLocation(tenantId, locationId);
+		MeetingEntity entity = meetingRepository.findById(meetingId)
+				.orElseThrow(() -> new NotFoundException("Meeting not found: " + meetingId));
+		if (!entity.getCaseId().equals(caseId)) {
+			throw new NotFoundException("Meeting not found: " + meetingId);
+		}
+		if (entity.getStatus() != MeetingStatus.SCHEDULED) {
+			throw new IllegalStateException("Only scheduled meetings can be edited");
+		}
+		entity.setScheduledAt(scheduledAt);
+		entity.setLocationId(locationId);
+		entity.setTitle(title);
+		entity.setDescription(description);
+		entity.replaceParticipants(participantIds);
+		return meetingRepository.save(entity);
+	}
+
+	@Transactional
 	public MeetingEntity holdMeeting(String tenantId, UUID meetingId, UUID locationId, Instant heldAt,
 									 String minutesText, List<String> participantIds,
 									 List<MeetingActionItemCommand> actionItems) {

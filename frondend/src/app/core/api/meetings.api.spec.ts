@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { MeetingsApi } from './meetings.api';
-import { HoldMeetingRequest, ScheduleMeetingRequest } from '../models/meeting.model';
+import { HoldMeetingRequest, ScheduleMeetingRequest, UpdateMeetingRequest } from '../models/meeting.model';
 
 describe('MeetingsApi', () => {
   let api: MeetingsApi;
@@ -77,6 +77,31 @@ describe('MeetingsApi', () => {
           scheduledAt: '2026-01-02T09:00:00Z'
         }
       ]
+    });
+  });
+
+  it('updates a meeting', () => {
+    const payload: UpdateMeetingRequest = {
+      scheduledAt: '2026-01-03T09:00:00Z',
+      locationId: 'location-1',
+      participantIds: ['u-1', 'u-2'],
+      title: 'Kickoff aktualisiert',
+      description: 'Neue Agenda'
+    };
+
+    api.updateMeeting('case-1', 'm-1', payload).subscribe();
+
+    const req = httpMock.expectOne('/api/cases/case-1/meetings/m-1');
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual(payload);
+    req.flush({
+      id: 'm-1',
+      status: 'SCHEDULED',
+      locationId: 'location-1',
+      participantIds: ['u-1', 'u-2'],
+      title: 'Kickoff aktualisiert',
+      description: 'Neue Agenda',
+      scheduledAt: '2026-01-03T09:00:00Z'
     });
   });
 });

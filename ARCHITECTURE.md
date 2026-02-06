@@ -576,6 +576,35 @@ Response 201:
 }
 ```
 
+#### Update meeting (planned meetings only)
+PUT /api/cases/{caseId}/meetings/{meetingId}
+Request:
+```json
+{
+  "title": "Kickoff aktualisiert",
+  "description": "Neue Agenda und Teilnehmerabgleich",
+  "scheduledAt": "2026-02-03T09:30:00Z",
+  "locationId": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8",
+  "participantIds": ["u-101","u-201","u-301"]
+}
+```
+Response 200:
+```json
+{
+  "id": "uuid",
+  "status": "SCHEDULED",
+  "locationId": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8",
+  "participantIds": ["u-101","u-201","u-301"],
+  "title": "Kickoff aktualisiert",
+  "description": "Neue Agenda und Teilnehmerabgleich",
+  "scheduledAt": "2026-02-03T09:30:00Z"
+}
+```
+Behavior:
+- Only meetings in `SCHEDULED` state can be updated.
+- Unknown meeting id returns `404`.
+- Validation rules are the same as schedule meeting.
+
 #### Hold meeting (store minutes + create tasks)
 POST /api/cases/{caseId}/meetings/{meetingId}/hold
 Request:

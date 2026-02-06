@@ -30,6 +30,16 @@ describe('MeetingsStore', () => {
           ]
         }),
       holdMeeting: () => of({ meetingId: 'm-1', createdTaskIds: [] }),
+      updateMeeting: () =>
+        of({
+          id: 'm-1',
+          status: 'SCHEDULED',
+          locationId: 'location-1',
+          participantIds: ['u-1'],
+          title: 'Kickoff aktualisiert',
+          description: null,
+          scheduledAt: '2026-01-03T09:00:00Z'
+        }),
       ...overrides
     } as MeetingsApi;
   };
@@ -94,6 +104,22 @@ describe('MeetingsStore', () => {
     expect(store.status()).toBe('success');
     expect(store.meetings().length).toBe(1);
     expect(store.meetings()[0].id).toBe('m-1');
+  });
+
+  it('updates meeting and refreshes list', () => {
+    const store = new MeetingsStore(createApi());
+    store.setCaseId('case-1');
+
+    store.updateMeeting('m-1', {
+      scheduledAt: '2026-01-03T09:00:00Z',
+      locationId: 'location-1',
+      participantIds: ['u-1'],
+      title: 'Kickoff aktualisiert',
+      description: null
+    }).subscribe();
+
+    expect(store.status()).toBe('success');
+    expect(store.meetings().length).toBe(1);
   });
 
   it('stores errors on holdMeeting', () => {

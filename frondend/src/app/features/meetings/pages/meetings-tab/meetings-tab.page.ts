@@ -78,6 +78,16 @@ export class MeetingsTabPageComponent implements OnInit {
   editingMeetingId: string | null = null;
   scheduleDialogTitle = 'Termin planen';
 
+  constructor() {
+    effect(() => {
+      const defaultLocationId = this.defaultLocationId();
+      const locationControl = this.scheduleForm.controls.locationId;
+      if (!locationControl.value && defaultLocationId) {
+        locationControl.setValue(defaultLocationId, { emitEvent: false });
+      }
+    });
+  }
+
   ngOnInit(): void {
     const parentRoute = this.route.parent ?? this.route;
     parentRoute.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {

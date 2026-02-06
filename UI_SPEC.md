@@ -102,3 +102,84 @@
 
 #### Labeling rules
 - Action-item list shows human-readable assignee labels (name), not raw IDs.
+
+## Timeline Tab
+
+### FE-TL-LAYOUT-001 - Graph layout and structure
+
+- The timeline tab renders a graph area plus a details panel on the right.
+- The graph is a two-axis mental model:
+  - Horizontal axis (X): time.
+  - Vertical grouping (Y): tasks above meetings, stakeholders below meetings.
+- Meetings are placed on the horizontal timeline line.
+- Tasks are placed in the upper row and linked to their source meeting.
+- Stakeholders are placed in the lower row and scoped per meeting node.
+- Tasks without `createdFromMeetingId` are rendered in an "Ohne Termin" bucket to the left.
+- A vertical "Heute" marker line is rendered at the server-provided `now` timestamp.
+
+#### Wireframe (ASCII)
+```text
++----------------------------------------------------------------------------------+
+| Zeitlinie                                                                        |
+|                                                                                  |
+|   [Ohne Termin]                                                                  |
+|      [Task A]    [Task B]                            [Task C]                    |
+|                                                                                  |
+|                o-------------------------o-------------------------o              |
+|                |                         |                         |              |
+|             Meeting 1                 Meeting 2                 Meeting 3         |
+|                |                         |                         |              |
+|         [Stakeholder 1]          [Stakeholder 3]           [Stakeholder 5]       |
+|         [Stakeholder 2]          [Stakeholder 4]           [Stakeholder 6]       |
+|                                                                                  |
+|                         | Heute                                                   |
++----------------------------------------------------------------------------------+
+| Details panel (right):                                                           |
+| - Termin: Titel, Datum, Ort, Beteiligte                                          |
+| - Aufgabe: Titel, Status, Prioritaet, Zustaendig                                 |
+| - Beteiligte: Name, Rolle, Zugeordneter Termin                                   |
++----------------------------------------------------------------------------------+
+```
+
+### FE-TL-INT-002 - Pan and drag behavior
+
+- Graph panning is implemented via pointer drag on the SVG surface.
+- Cursor behavior:
+  - default on graph: `grab`
+  - during drag: `grabbing`
+- While dragging, text selection is prevented.
+- Dragging updates the graph transform translation only.
+- Node click targets remain clickable (meeting/task/stakeholder).
+
+### FE-TL-INT-003 - Zoom behavior
+
+- Wheel zoom is supported on the graph surface.
+- Zoom is cursor-centric (focus point under cursor remains stable during zoom).
+- Zoom limits:
+  - minimum: `0.5x`
+  - maximum: `2.5x`
+- The "Heute" marker and all nodes/edges are transformed together with the graph layer.
+- No viewport persistence between page reloads/sessions (MVP behavior).
+
+### FE-TL-SEL-004 - Node selection and details panel
+
+- Clicking a meeting/task/stakeholder node selects it and applies highlighted styling.
+- Clicking empty graph background clears selection.
+- Details panel is context-sensitive by selected node type:
+  - meeting: title, date, location, participants
+  - task: title, status, priority, assignee label
+  - stakeholder: name, role, related meeting label
+- When nothing is selected, panel shows an instructional empty state.
+
+### FE-TL-LABEL-005 - Label and text rules
+
+- UI labels must always be human-readable and domain-facing.
+- Raw technical IDs (meetingId/taskId/stakeholderId) must never be displayed in graph labels or detail panel text.
+- Required label formats:
+  - Meeting node: `DD.MM.YYYY HH:mm — {locationLabel}`
+  - Task node: truncated task title + status + priority badge (`P1..P5`)
+  - Stakeholder node: `{FirstName} {LastName} — {Role}`
+- Fallback labels:
+  - missing location: `Ort offen`
+  - missing date: `Datum offen`
+  - unknown person: `Unbekannt`

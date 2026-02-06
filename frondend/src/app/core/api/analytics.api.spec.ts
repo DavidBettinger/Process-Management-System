@@ -25,4 +25,19 @@ describe('AnalyticsApi', () => {
     expect(req.request.method).toBe('GET');
     req.flush({ caseId: 'case-1', entries: [] });
   });
+
+  it('gets timeline graph for a case', () => {
+    api.getTimelineGraph('case-1').subscribe();
+
+    const req = httpMock.expectOne('/api/cases/case-1/timeline-graph');
+    expect(req.request.method).toBe('GET');
+    req.flush({
+      caseId: 'case-1',
+      generatedAt: '2026-02-06T12:00:00Z',
+      now: '2026-02-06T12:00:00Z',
+      meetings: [],
+      stakeholders: [],
+      tasks: []
+    });
+  });
 });

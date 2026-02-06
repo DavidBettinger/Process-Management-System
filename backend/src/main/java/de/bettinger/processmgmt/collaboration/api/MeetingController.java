@@ -114,7 +114,14 @@ public class MeetingController {
 			return List.of();
 		}
 		return actionItems.stream()
-				.map(item -> new MeetingActionItemCommand(item.key(), item.title(), item.assigneeId(), item.dueDate()))
+				.map(item -> new MeetingActionItemCommand(
+						item.key(),
+						item.title(),
+						item.assigneeId(),
+						item.dueDate(),
+						item.priority(),
+						item.description()
+				))
 				.toList();
 	}
 }

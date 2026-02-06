@@ -72,6 +72,7 @@ A process management app for **Kita consulting** (Fachberatung) to document and 
 
 1. **Create case → add stakeholders → activate case**
 2. **Schedule meeting → hold meeting → write minutes → create tasks from action items**
+   - Action items can include title, priority, description, due date, and optional assignee.
 3. **Assign task → assignee works → mark blocked/unblocked → resolve**
 4. **Assignee declines assignment → task returns to open → consultant reassigns**
 5. **View case timeline → filter by stakeholder/task resolution**

@@ -47,13 +47,21 @@ class MeetingActionItemTaskCreationTest {
 				"ai-1",
 				"Draft concept",
 				"u-1",
-				LocalDate.now()
+				LocalDate.now(),
+				2,
+				"First draft with milestones."
 		);
 
 		meetingCommandService.holdMeeting(tenantId, meeting.getId(), locationId, Instant.now(), "Minutes",
 				List.of("u-1"), List.of(actionItem));
 
 		assertThat(taskRepository.count()).isEqualTo(1);
+		assertThat(taskRepository.findAllByOriginMeetingId(meeting.getId()))
+				.hasSize(1)
+				.allSatisfy(task -> {
+					assertThat(task.getPriority()).isEqualTo(2);
+					assertThat(task.getDescription()).isEqualTo("First draft with milestones.");
+				});
 		MeetingEntity updated = meetingCommandService.holdMeeting(tenantId, meeting.getId(), locationId, Instant.now(),
 				"Minutes", List.of("u-1"), List.of(actionItem));
 		assertThat(updated.getActionItems())

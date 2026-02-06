@@ -106,12 +106,13 @@ export class MeetingHoldFormComponent implements OnChanges {
       locationId: value.locationId ?? '',
       participantIds,
       minutesText: value.minutesText ?? '',
-      // TODO: Include priority/description once the hold meeting API supports them.
       actionItems: this.actionItems.length ? this.actionItems.map((item) => ({
         key: item.key,
         title: item.title.trim(),
         assigneeId: item.assigneeId?.trim() ? item.assigneeId.trim() : null,
-        dueDate: item.dueDate ?? null
+        dueDate: item.dueDate ?? null,
+        priority: item.priority ?? null,
+        description: item.description?.trim() ? item.description.trim() : null
       })) : []
     };
 

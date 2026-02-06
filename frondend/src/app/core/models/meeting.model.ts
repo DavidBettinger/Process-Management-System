@@ -37,6 +37,8 @@ export interface ActionItemRequest {
   title: string;
   assigneeId?: string | null;
   dueDate?: string | null;
+  priority?: number | null;
+  description?: string | null;
 }
 
 export interface HoldMeetingRequest {

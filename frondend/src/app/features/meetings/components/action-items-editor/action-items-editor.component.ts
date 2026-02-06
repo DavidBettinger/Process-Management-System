@@ -1,12 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, DestroyRef, EventEmitter, Input, Output, TemplateRef, ViewChild, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CreateTaskRequest } from '../../../../core/models/task.model';
 import { Stakeholder } from '../../../../core/models/stakeholder.model';
 import { TaskCreateFormComponent } from '../../../tasks/components/task-create-form/task-create-form.component';
-import { StakeholderSelectComponent } from '../../../../shared/ui/stakeholder-select/stakeholder-select.component';
-import { TwCardComponent } from '../../../../shared/ui/tw/tw-card.component';
-import { TwFieldComponent } from '../../../../shared/ui/tw/tw-field.component';
 import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
+import {
+  ConfirmDialogService,
+  DialogRef,
+  TemplateDialogContext
+} from '../../../../shared/ui/confirm-dialog/confirm-dialog.service';
 
 export interface ActionItemDraft {
   key: string;
@@ -20,20 +23,40 @@ export interface ActionItemDraft {
 @Component({
   selector: 'app-action-items-editor',
   standalone: true,
-  imports: [CommonModule, TaskCreateFormComponent, StakeholderSelectComponent, TwCardComponent, TwFieldComponent, TwButtonDirective],
+  imports: [CommonModule, TaskCreateFormComponent, TwButtonDirective],
   templateUrl: './action-items-editor.component.html'
 })
 export class ActionItemsEditorComponent {
+  @ViewChild('actionItemDialog') private actionItemDialog?: TemplateRef<TemplateDialogContext>;
+
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly confirmDialog = inject(ConfirmDialogService);
+  private actionItemDialogRef: DialogRef | null = null;
+
   @Input() items: ActionItemDraft[] = [];
   @Input() stakeholders: Stakeholder[] = [];
   @Output() itemsChange = new EventEmitter<ActionItemDraft[]>();
 
-  removeItem(index: number): void {
-    const next = this.items.filter((_, idx) => idx !== index);
-    this.itemsChange.emit(next);
+  openCreateDialog(): void {
+    if (this.actionItemDialogRef || !this.actionItemDialog) {
+      return;
+    }
+    const dialogRef = this.confirmDialog.openTemplate({
+      title: 'Aufgabenpunkt hinzufuegen',
+      template: this.actionItemDialog,
+      panelClass: 'max-w-2xl'
+    });
+    this.actionItemDialogRef = dialogRef;
+    dialogRef.afterClosed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      if (this.actionItemDialogRef === dialogRef) {
+        this.actionItemDialogRef = null;
+      }
+    });
   }
 
-  selectedAssigneeId: string | null = null;
+  closeCreateDialog(): void {
+    this.actionItemDialogRef?.close();
+  }
 
   handleCreate(request: CreateTaskRequest): void {
     const title = request.title.trim();
@@ -46,14 +69,19 @@ export class ActionItemsEditorComponent {
       {
         key: this.createKey(),
         title,
-        assigneeId: this.selectedAssigneeId ?? null,
+        assigneeId: request.assigneeId ?? null,
         dueDate: request.dueDate ?? null,
         priority: request.priority,
         description
       }
     ];
     this.itemsChange.emit(next);
-    this.selectedAssigneeId = null;
+    this.closeCreateDialog();
+  }
+
+  removeItem(index: number): void {
+    const next = this.items.filter((_, idx) => idx !== index);
+    this.itemsChange.emit(next);
   }
 
   trackByKey(_: number, item: ActionItemDraft): string {

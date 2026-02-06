@@ -197,4 +197,41 @@ describe('MeetingHoldFormComponent', () => {
     expect(fixture.nativeElement.querySelector('[data-testid="meeting-stage-a-preview"]')).toBeNull();
     expect(fixture.nativeElement.querySelector('[data-testid="meeting-stage-b"]')).toBeNull();
   });
+
+  it('includes action item priority and description in hold request', () => {
+    const { fixture, component } = setup();
+    const emitted: HoldMeetingPayload[] = [];
+    component.hold.subscribe((payload) => emitted.push(payload));
+
+    selectMeeting(fixture);
+
+    const runButton = findButton(fixture.nativeElement, 'Termin durchfuehren');
+    runButton.click();
+    fixture.detectChanges();
+
+    component.actionItems = [
+      {
+        key: 'ai-1',
+        title: 'Konzeptentwurf',
+        assigneeId: 'u-101',
+        dueDate: '2026-02-11',
+        priority: 2,
+        description: 'Ersten Entwurf schreiben'
+      }
+    ];
+    component.form.controls.minutesText.setValue('Wichtige Ergebnisse');
+    component.submit();
+
+    expect(emitted.length).toBe(1);
+    expect(emitted[0].request.actionItems).toEqual([
+      {
+        key: 'ai-1',
+        title: 'Konzeptentwurf',
+        assigneeId: 'u-101',
+        dueDate: '2026-02-11',
+        priority: 2,
+        description: 'Ersten Entwurf schreiben'
+      }
+    ]);
+  });
 });

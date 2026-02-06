@@ -41,3 +41,35 @@
 - Run mode:
   - Stage A hidden
   - Stage B visible
+
+### FE-MEET-AI-OVL-005 - Action items via overlay
+
+#### Action items section
+- The "Aufgabenpunkte" area shows:
+  - current action item list
+  - button "Aufgabenpunkt hinzufuegen"
+- Inline task/action-item form is removed from the page content.
+
+#### Overlay behavior
+- Clicking "Aufgabenpunkt hinzufuegen" opens the existing template dialog overlay.
+- Overlay content reuses the shared `app-task-create-form` component used in the Aufgaben tab.
+- Available fields in the overlay form:
+  - Titel
+  - Zustaendig (optional)
+  - Prioritaet
+  - Beschreibung (optional)
+  - Faellig bis (optional)
+- Form buttons:
+  - Primary: "Aufgabenpunkt hinzufuegen"
+  - Secondary: "Abbrechen"
+
+#### Submit/cancel behavior
+- On submit:
+  - a new action item draft is appended to the list in the run-meeting form
+  - overlay closes
+- On cancel:
+  - overlay closes
+  - no item is added
+
+#### Labeling rules
+- Action-item list shows human-readable assignee labels (name), not raw IDs.

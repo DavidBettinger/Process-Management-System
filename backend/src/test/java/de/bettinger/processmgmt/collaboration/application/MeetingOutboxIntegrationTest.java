@@ -43,7 +43,7 @@ class MeetingOutboxIntegrationTest {
 		).getId();
 
 		List<MeetingActionItemCommand> actionItems = List.of(
-				new MeetingActionItemCommand("AI-1", "Follow up", "u-2", null)
+				new MeetingActionItemCommand("AI-1", "Follow up", "u-2", null, 3, "Prepare follow-up notes")
 		);
 		meetingCommandService.holdMeeting(
 				tenantId,

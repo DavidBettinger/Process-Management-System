@@ -98,19 +98,20 @@ public class MeetingCommandService {
 	private UUID createTaskFromActionItem(MeetingEntity meeting, MeetingActionItemCommand command) {
 		UUID taskId = UUID.randomUUID();
 		String normalizedAssigneeId = normalizeAssigneeId(command.assigneeId());
+		int priority = resolvePriority(command.priority());
+		String description = normalizeDescription(command.description());
 		de.bettinger.processmgmt.collaboration.domain.task.TaskState state =
 				normalizedAssigneeId == null
 						? de.bettinger.processmgmt.collaboration.domain.task.TaskState.OPEN
 						: de.bettinger.processmgmt.collaboration.domain.task.TaskState.ASSIGNED;
-		// TODO: allow meeting action items to specify priority; default to medium for now.
 		TaskEntity task = new TaskEntity(
 				taskId,
 				meeting.getCaseId(),
 				meeting.getId(),
 				command.title(),
-				"",
+				description,
 				command.dueDate(),
-				de.bettinger.processmgmt.collaboration.domain.task.Task.DEFAULT_PRIORITY,
+				priority,
 				normalizedAssigneeId,
 				state,
 				null,
@@ -169,5 +170,19 @@ public class MeetingCommandService {
 		}
 		String normalized = assigneeId.trim();
 		return normalized.isEmpty() ? null : normalized;
+	}
+
+	private int resolvePriority(Integer priority) {
+		if (priority == null) {
+			return de.bettinger.processmgmt.collaboration.domain.task.Task.DEFAULT_PRIORITY;
+		}
+		return priority;
+	}
+
+	private String normalizeDescription(String description) {
+		if (description == null) {
+			return "";
+		}
+		return description.trim();
 	}
 }

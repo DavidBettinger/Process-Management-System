@@ -2,6 +2,8 @@ package de.bettinger.processmgmt.collaboration.api;
 
 import de.bettinger.processmgmt.collaboration.domain.meeting.MeetingStatus;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -38,7 +40,14 @@ public final class MeetingDtos {
 	) {
 	}
 
-	public record ActionItemRequest(@NotBlank String key, @NotBlank String title, String assigneeId, LocalDate dueDate) {
+	public record ActionItemRequest(
+			@NotBlank String key,
+			@NotBlank String title,
+			String assigneeId,
+			LocalDate dueDate,
+			@Min(1) @Max(5) Integer priority,
+			@Size(max = 10_000) String description
+	) {
 	}
 
 	public record HoldMeetingResponse(UUID meetingId, List<UUID> createdTaskIds) {

@@ -4,27 +4,10 @@
       <h3 class="text-lg font-semibold text-slate-900">Aufgabenpunkte</h3>
       <p class="text-sm text-slate-600">Erstelle Aufgaben, die aus dem Termin entstehen.</p>
     </div>
+    <button appTwButton="primary" size="sm" type="button" (click)="openCreateDialog()">
+      Aufgabenpunkt hinzufuegen
+    </button>
   </header>
-
-  <app-tw-card [className]="'space-y-4 bg-slate-50/60 border-slate-200/70'">
-    <app-tw-field label="Verantwortlich (optional)">
-      <app-stakeholder-select
-        class="w-full"
-        [stakeholders]="stakeholders"
-        [selectedId]="selectedAssigneeId"
-        [disabled]="stakeholders.length === 0"
-        [placeholder]="'Bitte waehlen'"
-        (selectedIdChange)="selectedAssigneeId = $event"
-      />
-    </app-tw-field>
-
-    <app-task-create-form
-      [showHeader]="false"
-      [useFormTag]="false"
-      [submitLabel]="'Aufgabenpunkt hinzufuegen'"
-      (create)="handleCreate($event)"
-    />
-  </app-tw-card>
 
   @if (items.length === 0) {
     <div class="rounded-xl border border-dashed border-slate-200 px-4 py-3 text-sm text-slate-600">
@@ -58,4 +41,17 @@
       }
     </ul>
   }
+
+  <ng-template #actionItemDialog>
+    <app-task-create-form
+      [showHeader]="false"
+      [showAssignee]="true"
+      [stakeholders]="stakeholders"
+      [submitLabel]="'Aufgabenpunkt hinzufuegen'"
+      [showCancel]="true"
+      [cancelLabel]="'Abbrechen'"
+      (create)="handleCreate($event)"
+      (cancel)="closeCreateDialog()"
+    />
+  </ng-template>
 </section>

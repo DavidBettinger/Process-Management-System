@@ -586,8 +586,22 @@ Request:
   "participantIds": ["u-101","u-201"],
   "minutesText": "We discussed next steps...",
   "actionItems": [
-    { "key": "ai-1", "title": "Draft concept v1", "assigneeId": "u-201", "dueDate": "2026-02-10" },
-    { "key": "ai-2", "title": "Collect existing policies", "assigneeId": null, "dueDate": null }
+    {
+      "key": "ai-1",
+      "title": "Draft concept v1",
+      "assigneeId": "u-201",
+      "dueDate": "2026-02-10",
+      "priority": 2,
+      "description": "Create first draft and collect feedback."
+    },
+    {
+      "key": "ai-2",
+      "title": "Collect existing policies",
+      "assigneeId": null,
+      "dueDate": null,
+      "priority": 3,
+      "description": null
+    }
   ]
 }
 ```
@@ -599,6 +613,9 @@ Idempotency rule:
 •	actionItems[].key must be stable per meeting. If repeated, do not create duplicates.
 Behavior:
 •	If `actionItems[].assigneeId` is provided, the created task starts in `ASSIGNED`.
+•	Action-item tasks are created as regular tasks linked via `tasks.originMeetingId` (Option A).
+•	`actionItems[].priority` defaults to `3` if omitted.
+•	`actionItems[].description` is optional and stored in the created task.
 
 Tasks
 

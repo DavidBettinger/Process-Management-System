@@ -19,6 +19,7 @@
       (pointerup)="onPointerUp($event)"
       (pointerleave)="onPointerUp($event)"
       (pointercancel)="onPointerCancel($event)"
+      (wheel)="onWheel($event)"
     >
       <g [attr.transform]="panTransform()" data-testid="timeline-pan-layer">
         <line

@@ -76,9 +76,16 @@ interface PanPointer {
   clientY: number;
 }
 
+interface ZoomInput {
+  deltaY: number;
+  focusX: number;
+  focusY: number;
+}
+
 export interface PanState {
   translationX: number;
   translationY: number;
+  zoom: number;
   dragging: boolean;
   pointerId: number | null;
   dragStartClientX: number;
@@ -96,6 +103,10 @@ const STAKEHOLDER_WIDTH = 210;
 const STAKEHOLDER_HEIGHT = 46;
 const MEETING_RADIUS = 11;
 const DEFAULT_HEIGHT = 470;
+export const ZOOM_MIN = 0.5;
+export const ZOOM_MAX = 2.5;
+const WHEEL_ZOOM_IN_FACTOR = 1.1;
+const WHEEL_ZOOM_OUT_FACTOR = 1 / WHEEL_ZOOM_IN_FACTOR;
 
 @Component({
   selector: 'app-timeline-graph',
@@ -136,6 +147,24 @@ export class TimelineGraphComponent {
 
   onPointerCancel(event: PointerEvent): void {
     this.panState.update((state) => endPan(state, toPanPointer(event)));
+  }
+
+  onWheel(event: WheelEvent): void {
+    const target = event.currentTarget;
+    if (!(target instanceof SVGElement)) {
+      return;
+    }
+    const bounds = target.getBoundingClientRect();
+    const focusX = event.clientX - bounds.left;
+    const focusY = event.clientY - bounds.top;
+    this.panState.update((state) =>
+      zoomPan(state, {
+        deltaY: event.deltaY,
+        focusX,
+        focusY
+      })
+    );
+    event.preventDefault();
   }
 }
 
@@ -455,6 +484,7 @@ const clamp = (value: number, min: number, max: number): number => Math.min(Math
 export const initialPanState = (): PanState => ({
   translationX: 0,
   translationY: 0,
+  zoom: 1,
   dragging: false,
   pointerId: null,
   dragStartClientX: 0,
@@ -501,7 +531,28 @@ export const endPan = (state: PanState, pointer?: PanPointer): PanState => {
   };
 };
 
-export const toPanTransform = (state: PanState): string => `translate(${state.translationX},${state.translationY})`;
+export const zoomPan = (state: PanState, input: ZoomInput): PanState => {
+  const factor = input.deltaY < 0 ? WHEEL_ZOOM_IN_FACTOR : WHEEL_ZOOM_OUT_FACTOR;
+  const nextZoom = clamp(state.zoom * factor, ZOOM_MIN, ZOOM_MAX);
+  if (Math.abs(nextZoom - state.zoom) < 0.000001) {
+    return state;
+  }
+
+  const worldFocusX = (input.focusX - state.translationX) / state.zoom;
+  const worldFocusY = (input.focusY - state.translationY) / state.zoom;
+  const nextTranslationX = input.focusX - worldFocusX * nextZoom;
+  const nextTranslationY = input.focusY - worldFocusY * nextZoom;
+
+  return {
+    ...state,
+    zoom: nextZoom,
+    translationX: nextTranslationX,
+    translationY: nextTranslationY
+  };
+};
+
+export const toPanTransform = (state: PanState): string =>
+  `translate(${state.translationX},${state.translationY}) scale(${state.zoom})`;
 
 const toPanPointer = (event: PointerEvent): PanPointer => ({
   pointerId: Number.isFinite(event.pointerId) ? event.pointerId : 1,

@@ -8,7 +8,10 @@ import {
   initialPanState,
   movePan,
   startPan,
-  TimelineGraphComponent
+  TimelineGraphComponent,
+  zoomPan,
+  ZOOM_MAX,
+  ZOOM_MIN
 } from './timeline-graph.component';
 
 describe('TimelineGraphComponent', () => {
@@ -134,20 +137,20 @@ describe('TimelineGraphComponent', () => {
     const root = fixture.nativeElement as HTMLElement;
     const svg = root.querySelector('[data-testid="timeline-graph-svg"]') as SVGElement;
     const panLayer = root.querySelector('[data-testid="timeline-pan-layer"]') as SVGGElement;
-    expect(panLayer.getAttribute('transform')).toBe('translate(0,0)');
+    expect(panLayer.getAttribute('transform')).toBe('translate(0,0) scale(1)');
 
     dispatchPointerEvent(svg, 'pointerdown', 100, 120, 1);
     dispatchPointerEvent(svg, 'pointermove', 160, 170, 1);
     fixture.detectChanges();
 
-    expect(panLayer.getAttribute('transform')).toBe('translate(60,50)');
+    expect(panLayer.getAttribute('transform')).toBe('translate(60,50) scale(1)');
     expect(root.querySelector('.cursor-grabbing')).not.toBeNull();
 
     dispatchPointerEvent(svg, 'pointerup', 160, 170, 1);
     dispatchPointerEvent(svg, 'pointermove', 200, 210, 1);
     fixture.detectChanges();
 
-    expect(panLayer.getAttribute('transform')).toBe('translate(60,50)');
+    expect(panLayer.getAttribute('transform')).toBe('translate(60,50) scale(1)');
     expect(root.querySelector('.cursor-grab')).not.toBeNull();
   });
 
@@ -168,6 +171,53 @@ describe('TimelineGraphComponent', () => {
     expect(ignoredMove.translationX).toBe(25);
     expect(ignoredMove.translationY).toBe(30);
   });
+
+  it('zoom reducer clamps zoom and keeps focus point stable', () => {
+    const state = initialPanState();
+    const focusX = 240;
+    const focusY = 180;
+
+    const zoomedIn = zoomPan(state, { deltaY: -120, focusX, focusY });
+    expect(zoomedIn.zoom).toBeGreaterThan(1);
+
+    const worldXBefore = (focusX - state.translationX) / state.zoom;
+    const worldYBefore = (focusY - state.translationY) / state.zoom;
+    const worldXAfter = (focusX - zoomedIn.translationX) / zoomedIn.zoom;
+    const worldYAfter = (focusY - zoomedIn.translationY) / zoomedIn.zoom;
+    expect(worldXAfter).toBeCloseTo(worldXBefore, 8);
+    expect(worldYAfter).toBeCloseTo(worldYBefore, 8);
+
+    const atMax = { ...zoomedIn, zoom: ZOOM_MAX };
+    const maxClamped = zoomPan(atMax, { deltaY: -120, focusX, focusY });
+    expect(maxClamped.zoom).toBe(ZOOM_MAX);
+
+    const atMin = { ...zoomedIn, zoom: ZOOM_MIN };
+    const minClamped = zoomPan(atMin, { deltaY: 120, focusX, focusY });
+    expect(minClamped.zoom).toBe(ZOOM_MIN);
+  });
+
+  it('updates transform on mouse wheel zoom', () => {
+    TestBed.configureTestingModule({
+      imports: [TimelineGraphComponent]
+    });
+
+    const fixture = TestBed.createComponent(TimelineGraphComponent);
+    fixture.componentRef.setInput('graphDto', graphDtoFixture);
+    fixture.componentRef.setInput('renderModel', renderModelFixture);
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement as HTMLElement;
+    const svg = root.querySelector('[data-testid="timeline-graph-svg"]') as SVGElement;
+    const panLayer = root.querySelector('[data-testid="timeline-pan-layer"]') as SVGGElement;
+    expect(panLayer.getAttribute('transform')).toBe('translate(0,0) scale(1)');
+
+    dispatchWheelEvent(svg, -120, 260, 180);
+    fixture.detectChanges();
+
+    const transformAfterZoomIn = panLayer.getAttribute('transform') ?? '';
+    expect(transformAfterZoomIn).toContain('scale(');
+    expect(transformAfterZoomIn).not.toBe('translate(0,0) scale(1)');
+  });
 });
 
 const dispatchPointerEvent = (
@@ -181,5 +231,13 @@ const dispatchPointerEvent = (
   Object.defineProperty(event, 'clientX', { value: clientX });
   Object.defineProperty(event, 'clientY', { value: clientY });
   Object.defineProperty(event, 'pointerId', { value: pointerId });
+  element.dispatchEvent(event);
+};
+
+const dispatchWheelEvent = (element: Element, deltaY: number, clientX: number, clientY: number): void => {
+  const event = new Event('wheel', { bubbles: true, cancelable: true }) as WheelEvent;
+  Object.defineProperty(event, 'deltaY', { value: deltaY });
+  Object.defineProperty(event, 'clientX', { value: clientX });
+  Object.defineProperty(event, 'clientY', { value: clientY });
   element.dispatchEvent(event);
 };

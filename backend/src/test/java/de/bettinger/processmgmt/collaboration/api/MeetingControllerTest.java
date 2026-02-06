@@ -49,7 +49,9 @@ class MeetingControllerTest {
 			{
 			  "scheduledAt": "2026-02-01T10:00:00Z",
 			  "locationId": "%s",
-			  "participantIds": ["u-1"]
+			  "participantIds": ["u-1"],
+			  "title": "Kickoff",
+			  "description": "Wir besprechen die ersten Schritte."
 			}
 			""".formatted(locationId);
 
@@ -60,7 +62,33 @@ class MeetingControllerTest {
 						.content(payload))
 					.andExpect(status().isCreated())
 					.andExpect(jsonPath("$.locationId").value(locationId.toString()))
-					.andExpect(jsonPath("$.status").value("SCHEDULED"));
+					.andExpect(jsonPath("$.status").value("SCHEDULED"))
+					.andExpect(jsonPath("$.title").value("Kickoff"))
+					.andExpect(jsonPath("$.description").value("Wir besprechen die ersten Schritte."));
+	}
+
+	@Test
+	void rejectsMissingTitle() throws Exception {
+		String tenantId = "tenant-1";
+		UUID locationId = seedLocation(tenantId, "Kita Sonnenblume");
+		UUID caseId = UUID.randomUUID();
+
+		String payload = """
+			{
+			  "scheduledAt": "2026-02-01T10:00:00Z",
+			  "locationId": "%s",
+			  "participantIds": ["u-1"],
+			  "title": " "
+			}
+			""".formatted(locationId);
+
+		mockMvc.perform(post("/api/cases/{caseId}/meetings", caseId)
+						.header(DevAuthFilter.USER_HEADER, "u-1")
+						.header(DevAuthFilter.TENANT_HEADER, tenantId)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(payload))
+					.andExpect(status().isBadRequest())
+					.andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
 	}
 
 	@Test
@@ -73,7 +101,8 @@ class MeetingControllerTest {
 			{
 			  "scheduledAt": "2026-02-01T10:00:00Z",
 			  "locationId": "%s",
-			  "participantIds": ["u-1"]
+			  "participantIds": ["u-1"],
+			  "title": "Kickoff"
 			}
 			""".formatted(locationId);
 
@@ -95,6 +124,8 @@ class MeetingControllerTest {
 				tenantId,
 				caseId,
 				locationId,
+				"Kickoff",
+				"Kurze Beschreibung",
 				Instant.parse("2026-02-01T10:00:00Z"),
 				java.util.List.of("u-1")
 		);
@@ -106,7 +137,9 @@ class MeetingControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.items").isArray())
 				.andExpect(jsonPath("$.items[0].locationId").value(locationId.toString()))
-				.andExpect(jsonPath("$.items[0].status").value("SCHEDULED"));
+				.andExpect(jsonPath("$.items[0].status").value("SCHEDULED"))
+				.andExpect(jsonPath("$.items[0].title").value("Kickoff"))
+				.andExpect(jsonPath("$.items[0].description").value("Kurze Beschreibung"));
 	}
 
 	private UUID seedLocation(String tenantId, String label) {

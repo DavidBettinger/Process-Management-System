@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -18,11 +19,14 @@ public final class MeetingDtos {
 	public record ScheduleMeetingRequest(
 			@NotNull Instant scheduledAt,
 			@NotNull UUID locationId,
-			@NotEmpty List<String> participantIds
+			@NotEmpty List<String> participantIds,
+			@NotBlank @Size(max = 200) String title,
+			@Size(max = 10_000) String description
 	) {
 	}
 
-	public record ScheduleMeetingResponse(UUID id, MeetingStatus status, UUID locationId) {
+	public record ScheduleMeetingResponse(UUID id, MeetingStatus status, UUID locationId, String title,
+										  String description) {
 	}
 
 	public record HoldMeetingRequest(
@@ -40,8 +44,8 @@ public final class MeetingDtos {
 	public record HoldMeetingResponse(UUID meetingId, List<UUID> createdTaskIds) {
 	}
 
-	public record MeetingSummaryResponse(UUID id, MeetingStatus status, UUID locationId, Instant scheduledAt,
-										 Instant heldAt) {
+	public record MeetingSummaryResponse(UUID id, MeetingStatus status, UUID locationId, String title,
+										 String description, Instant scheduledAt, Instant heldAt) {
 	}
 
 	public record MeetingsResponse(List<MeetingSummaryResponse> items) {

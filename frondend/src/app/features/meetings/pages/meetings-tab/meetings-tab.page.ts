@@ -65,6 +65,8 @@ export class MeetingsTabPageComponent implements OnInit {
   readonly requiredMessage = requiredMessage;
 
   readonly scheduleForm = this.formBuilder.group({
+    title: ['', [Validators.required, Validators.maxLength(200)]],
+    description: ['', [Validators.maxLength(10000)]],
     scheduledAt: ['', [Validators.required]],
     locationId: ['', [Validators.required]]
   });
@@ -137,7 +139,9 @@ export class MeetingsTabPageComponent implements OnInit {
       .scheduleMeeting({
         scheduledAt: toIsoDateTime(value.scheduledAt ?? ''),
         locationId: value.locationId ?? '',
-        participantIds
+        participantIds,
+        title: value.title ?? '',
+        description: value.description?.trim() ? value.description.trim() : null
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
@@ -149,6 +153,31 @@ export class MeetingsTabPageComponent implements OnInit {
 
   isScheduleInvalid(controlName: string): boolean {
     return isControlInvalid(this.scheduleForm, controlName);
+  }
+
+  scheduleTitleError(): string | null {
+    if (!this.isScheduleInvalid('title')) {
+      return null;
+    }
+    const control = this.scheduleForm.controls.title;
+    if (control.hasError('required')) {
+      return requiredMessage('Titel');
+    }
+    if (control.hasError('maxlength')) {
+      return 'Maximal 200 Zeichen.';
+    }
+    return 'Ungueltige Eingabe.';
+  }
+
+  scheduleDescriptionError(): string | null {
+    if (!this.isScheduleInvalid('description')) {
+      return null;
+    }
+    const control = this.scheduleForm.controls.description;
+    if (control.hasError('maxlength')) {
+      return 'Maximal 10000 Zeichen.';
+    }
+    return 'Ungueltige Eingabe.';
   }
 
   handleHold(payload: HoldMeetingPayload): void {
@@ -220,7 +249,7 @@ export class MeetingsTabPageComponent implements OnInit {
   }
 
   private resetScheduleForm(): void {
-    this.scheduleForm.reset({ scheduledAt: '', locationId: '' });
+    this.scheduleForm.reset({ title: '', description: '', scheduledAt: '', locationId: '' });
     this.scheduleParticipants = [''];
     this.scheduleParticipantsError = null;
   }

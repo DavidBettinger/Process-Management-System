@@ -62,7 +62,12 @@ export class MeetingsStore {
       this.meetingsState.update((current) => ({ ...current, status: 'loading', error: undefined }));
       return this.meetingsApi.scheduleMeeting(caseId, req).pipe(
         tap((meeting) => {
-          const meetingWithSchedule = { ...meeting, scheduledAt: req.scheduledAt };
+          const meetingWithSchedule = {
+            ...meeting,
+            scheduledAt: req.scheduledAt,
+            title: meeting.title ?? req.title,
+            description: meeting.description ?? req.description ?? null
+          };
           this.meetingsState.update((current) => ({
             ...current,
             status: 'success',

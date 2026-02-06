@@ -23,7 +23,9 @@ describe('MeetingsApi', () => {
     const payload: ScheduleMeetingRequest = {
       scheduledAt: '2026-01-02T09:00:00Z',
       locationId: 'location-1',
-      participantIds: ['u-1']
+      participantIds: ['u-1'],
+      title: 'Kickoff',
+      description: 'Beschreibung'
     };
 
     api.scheduleMeeting('case-1', payload).subscribe();
@@ -31,7 +33,13 @@ describe('MeetingsApi', () => {
     const req = httpMock.expectOne('/api/cases/case-1/meetings');
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual(payload);
-    req.flush({ id: 'm-1', status: 'SCHEDULED', locationId: 'location-1' });
+    req.flush({
+      id: 'm-1',
+      status: 'SCHEDULED',
+      locationId: 'location-1',
+      title: 'Kickoff',
+      description: 'Beschreibung'
+    });
   });
 
   it('holds a meeting', () => {
@@ -58,7 +66,14 @@ describe('MeetingsApi', () => {
     expect(req.request.method).toBe('GET');
     req.flush({
       items: [
-        { id: 'm-1', status: 'SCHEDULED', locationId: 'location-1', scheduledAt: '2026-01-02T09:00:00Z' }
+        {
+          id: 'm-1',
+          status: 'SCHEDULED',
+          locationId: 'location-1',
+          title: 'Kickoff',
+          description: 'Beschreibung',
+          scheduledAt: '2026-01-02T09:00:00Z'
+        }
       ]
     });
   });

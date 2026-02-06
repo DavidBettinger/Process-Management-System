@@ -225,6 +225,10 @@ describe('MeetingsTabPageComponent', () => {
     fixture.detectChanges();
 
     let dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+    const titleInput = dialog.querySelector('#meeting-title') as HTMLInputElement;
+    titleInput.value = 'Kickoff';
+    titleInput.dispatchEvent(new Event('input'));
+
     const scheduledInput = dialog.querySelector('#meeting-scheduled-at') as HTMLInputElement;
     scheduledInput.value = '2026-02-01T10:00';
     scheduledInput.dispatchEvent(new Event('input'));
@@ -247,8 +251,10 @@ describe('MeetingsTabPageComponent', () => {
     fixture.detectChanges();
 
     dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+    const reopenedTitle = dialog.querySelector('#meeting-title') as HTMLInputElement;
     const reopenedScheduled = dialog.querySelector('#meeting-scheduled-at') as HTMLInputElement;
     const reopenedLocation = dialog.querySelector('#meeting-location') as HTMLSelectElement;
+    expect(reopenedTitle.value).toBe('');
     expect(reopenedScheduled.value).toBe('');
     expect(reopenedLocation.value).toBe('');
   });
@@ -296,6 +302,14 @@ describe('MeetingsTabPageComponent', () => {
     fixture.detectChanges();
 
     const dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+    const titleInput = dialog.querySelector('#meeting-title') as HTMLInputElement;
+    titleInput.value = 'Kickoff';
+    titleInput.dispatchEvent(new Event('input'));
+
+    const descriptionInput = dialog.querySelector('#meeting-description') as HTMLTextAreaElement;
+    descriptionInput.value = 'Beschreibung';
+    descriptionInput.dispatchEvent(new Event('input'));
+
     const scheduledInput = dialog.querySelector('#meeting-scheduled-at') as HTMLInputElement;
     scheduledInput.value = '2026-02-01T10:00';
     scheduledInput.dispatchEvent(new Event('input'));
@@ -320,7 +334,9 @@ describe('MeetingsTabPageComponent', () => {
       {
         scheduledAt: expectedDate,
         locationId: 'loc-1',
-        participantIds: ['s-1']
+        participantIds: ['s-1'],
+        title: 'Kickoff',
+        description: 'Beschreibung'
       }
     ]);
   });

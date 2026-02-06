@@ -90,7 +90,7 @@ A process management app for **Kita consulting** (Fachberatung) to document and 
 - CaseStakeholder
     - stakeholderId (userId), roleInCase
 - Meeting
-    - id, caseId, status, scheduledAt, heldAt, locationId, participants[], minutesText
+    - id, caseId, title, description?, status, scheduledAt, heldAt, locationId, participants[], minutesText
 - Task
     - id, caseId, originMeetingId?, title, description, dueDate?
     - assigneeId?

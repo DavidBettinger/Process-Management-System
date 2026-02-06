@@ -63,6 +63,8 @@ class TimelineControllerIntegrationTest {
 				tenantId,
 				caseId,
 				locationId,
+				"Kickoff",
+				"Timeline test meeting",
 				Instant.now(),
 				List.of("u-1")
 		).getId();

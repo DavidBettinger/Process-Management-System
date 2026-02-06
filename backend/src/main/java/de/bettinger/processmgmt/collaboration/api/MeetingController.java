@@ -45,6 +45,8 @@ public class MeetingController {
 						meeting.getId(),
 						meeting.getStatus(),
 						meeting.getLocationId(),
+						meeting.getTitle(),
+						meeting.getDescription(),
 						meeting.getScheduledAt(),
 						meeting.getHeldAt()
 				))
@@ -62,11 +64,19 @@ public class MeetingController {
 				tenantId,
 				caseId,
 				request.locationId(),
+				request.title(),
+				request.description(),
 				request.scheduledAt(),
 				request.participantIds()
 		);
 		return ResponseEntity.status(HttpStatus.CREATED)
-				.body(new ScheduleMeetingResponse(meeting.getId(), meeting.getStatus(), meeting.getLocationId()));
+				.body(new ScheduleMeetingResponse(
+						meeting.getId(),
+						meeting.getStatus(),
+						meeting.getLocationId(),
+						meeting.getTitle(),
+						meeting.getDescription()
+				));
 	}
 
 	@PostMapping("/{meetingId}/hold")

@@ -142,9 +142,10 @@ export class MeetingHoldFormComponent implements OnChanges {
       : meeting.status === 'HELD'
         ? 'Durchgefuehrt'
         : 'Abgesagt';
+    const titleLabel = meeting.title?.trim() ? `${meeting.title.trim()} · ` : '';
     const dateLabel = this.formatDate(meeting.heldAt ?? meeting.scheduledAt ?? null);
     const locationLabel = this.locationLabel(meeting.locationId);
-    return `${dateLabel} · ${locationLabel} (${statusLabel})`;
+    return `${titleLabel}${dateLabel} · ${locationLabel} (${statusLabel})`;
   }
 
   locationLabel(locationId: string): string {

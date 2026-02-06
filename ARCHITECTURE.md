@@ -211,6 +211,8 @@ Fields:
 {
   "id": "f8c25b59-5c5b-4d78-9d9c-57cb9d0f3cdb",
   "caseId": "2b1e6d57-8b52-41a8-a2d3-7c1f1a9f1d16",
+  "title": "Kickoff",
+  "description": "We align on goals and next steps.",
   "status": "HELD",
   "scheduledAt": "2026-02-01T10:00:00Z",
   "heldAt": "2026-02-01T10:00:00Z",
@@ -221,6 +223,8 @@ Fields:
 ```
 Fields:
 - `locationId` (UUID string, required)
+- `title` (string, required, max length 200)
+- `description` (string, optional, max length 10,000)
 - UI identification rule:
   - Display label: `heldAt || scheduledAt` + resolved `Location.label`
 
@@ -536,6 +540,8 @@ Response 200:
   "items": [
     {
       "id": "uuid",
+      "title": "Kickoff",
+      "description": "We align on goals and next steps.",
       "status": "SCHEDULED",
       "scheduledAt": "2026-02-01T10:00:00Z",
       "heldAt": null,
@@ -550,6 +556,8 @@ POST /api/cases/{caseId}/meetings
 Request:
 ```json
 {
+  "title": "Kickoff",
+  "description": "We align on goals and next steps.",
   "scheduledAt": "2026-02-01T10:00:00Z",
   "locationId": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8",
   "participantIds": ["u-101","u-201"]
@@ -557,7 +565,13 @@ Request:
 ```
 Response 201:
 ```json
-{ "id": "uuid", "status": "SCHEDULED", "locationId": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8" }
+{
+  "id": "uuid",
+  "status": "SCHEDULED",
+  "locationId": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8",
+  "title": "Kickoff",
+  "description": "We align on goals and next steps."
+}
 ```
 
 #### Hold meeting (store minutes + create tasks)

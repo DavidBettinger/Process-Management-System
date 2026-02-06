@@ -44,6 +44,10 @@
                 </app-tw-badge>
                 <span>{{ meetingDateLabel(meeting) }}</span>
               </div>
+              <p class="text-sm font-semibold text-slate-900">{{ meeting.title }}</p>
+              @if (meeting.description) {
+                <p class="text-xs text-slate-600">{{ meeting.description }}</p>
+              }
               <p class="text-sm text-slate-700">Standort: {{ locationLabel(meeting.locationId) }}</p>
             </app-tw-card>
           }
@@ -69,6 +73,33 @@
 
   <ng-template #scheduleDialog>
     <form class="space-y-4" [formGroup]="scheduleForm" (ngSubmit)="submitSchedule()">
+      <app-tw-field
+        label="Titel"
+        forId="meeting-title"
+        [required]="true"
+        [error]="scheduleTitleError()"
+      >
+        <input
+          id="meeting-title"
+          type="text"
+          formControlName="title"
+          class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+        />
+      </app-tw-field>
+
+      <app-tw-field
+        label="Beschreibung (optional)"
+        forId="meeting-description"
+        [error]="scheduleDescriptionError()"
+      >
+        <textarea
+          id="meeting-description"
+          rows="3"
+          formControlName="description"
+          class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+        ></textarea>
+      </app-tw-field>
+
       <app-tw-field
         label="Geplant am"
         forId="meeting-scheduled-at"

@@ -28,6 +28,8 @@ class CollaborationPersistenceTest {
 				UUID.randomUUID(),
 				UUID.randomUUID(),
 				MeetingStatus.SCHEDULED,
+				"Kickoff",
+				"Description",
 				Instant.now(),
 				null,
 				null

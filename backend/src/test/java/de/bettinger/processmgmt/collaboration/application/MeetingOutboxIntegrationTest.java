@@ -36,6 +36,8 @@ class MeetingOutboxIntegrationTest {
 				tenantId,
 				caseId,
 				locationId,
+				"Kickoff",
+				null,
 				Instant.now(),
 				List.of("u-1")
 		).getId();

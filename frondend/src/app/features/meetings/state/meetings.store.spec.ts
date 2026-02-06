@@ -6,11 +6,19 @@ import { HoldMeetingRequest } from '../../../core/models/meeting.model';
 describe('MeetingsStore', () => {
   const createApi = (overrides?: Partial<MeetingsApi>): MeetingsApi => {
     return {
-      scheduleMeeting: () => of({ id: 'm-1', status: 'SCHEDULED', locationId: 'location-1' }),
+      scheduleMeeting: () =>
+        of({ id: 'm-1', status: 'SCHEDULED', locationId: 'location-1', title: 'Kickoff', description: null }),
       getMeetings: () =>
         of({
           items: [
-            { id: 'm-1', status: 'SCHEDULED', locationId: 'location-1', scheduledAt: '2026-01-01T10:00:00Z' }
+            {
+              id: 'm-1',
+              status: 'SCHEDULED',
+              locationId: 'location-1',
+              title: 'Kickoff',
+              description: null,
+              scheduledAt: '2026-01-01T10:00:00Z'
+            }
           ]
         }),
       holdMeeting: () => of({ meetingId: 'm-1', createdTaskIds: [] }),
@@ -25,7 +33,9 @@ describe('MeetingsStore', () => {
     store.scheduleMeeting({
       scheduledAt: '2026-01-01T10:00:00Z',
       locationId: 'location-1',
-      participantIds: ['u-1']
+      participantIds: ['u-1'],
+      title: 'Kickoff',
+      description: null
     }).subscribe();
 
     expect(store.meetings().length).toBe(1);
@@ -57,7 +67,9 @@ describe('MeetingsStore', () => {
     store.scheduleMeeting({
       scheduledAt: '2026-01-01T10:00:00Z',
       locationId: 'location-1',
-      participantIds: ['u-1']
+      participantIds: ['u-1'],
+      title: 'Kickoff',
+      description: null
     }).subscribe();
 
     expect(store.status()).toBe('error');

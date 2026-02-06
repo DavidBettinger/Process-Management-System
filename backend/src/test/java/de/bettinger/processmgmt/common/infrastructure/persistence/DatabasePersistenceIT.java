@@ -21,6 +21,10 @@ class DatabasePersistenceIT {
 
 	@Test
 	void persistsDataAcrossContextRestart() {
+		String previousProfiles = System.getProperty("spring.profiles.active");
+		String previousDdlAuto = System.getProperty("spring.jpa.hibernate.ddl-auto");
+		System.setProperty("spring.profiles.active", "dev");
+		System.setProperty("spring.jpa.hibernate.ddl-auto", "none");
 		String dbPath = tempDir.resolve("app-db").toAbsolutePath().toString();
 		Map<String, Object> properties = Map.of(
 				"spring.datasource.url",
@@ -37,25 +41,38 @@ class DatabasePersistenceIT {
 
 		UUID stakeholderId = UUID.randomUUID();
 
-		try (ConfigurableApplicationContext context = new SpringApplicationBuilder(ProcessManagementApplication.class)
-				.properties(properties)
-				.run()) {
-			StakeholderRepository repository = context.getBean(StakeholderRepository.class);
-			repository.save(new StakeholderEntity(
-					stakeholderId,
-					"tenant-001",
-					"Maria",
-					"Becker",
-					StakeholderRole.CONSULTANT,
-					Instant.parse("2026-01-30T10:00:00Z")
-			));
-		}
+		try {
+			try (ConfigurableApplicationContext context = new SpringApplicationBuilder(ProcessManagementApplication.class)
+					.properties(properties)
+					.run()) {
+				StakeholderRepository repository = context.getBean(StakeholderRepository.class);
+				repository.save(new StakeholderEntity(
+						stakeholderId,
+						"tenant-001",
+						"Maria",
+						"Becker",
+						StakeholderRole.CONSULTANT,
+						Instant.parse("2026-01-30T10:00:00Z")
+				));
+			}
 
-		try (ConfigurableApplicationContext context = new SpringApplicationBuilder(ProcessManagementApplication.class)
-				.properties(properties)
-				.run()) {
-			StakeholderRepository repository = context.getBean(StakeholderRepository.class);
-			assertThat(repository.findById(stakeholderId)).isPresent();
+			try (ConfigurableApplicationContext context = new SpringApplicationBuilder(ProcessManagementApplication.class)
+					.properties(properties)
+					.run()) {
+				StakeholderRepository repository = context.getBean(StakeholderRepository.class);
+				assertThat(repository.findById(stakeholderId)).isPresent();
+			}
+		} finally {
+			restoreSystemProperty("spring.profiles.active", previousProfiles);
+			restoreSystemProperty("spring.jpa.hibernate.ddl-auto", previousDdlAuto);
+		}
+	}
+
+	private static void restoreSystemProperty(String key, String value) {
+		if (value == null) {
+			System.clearProperty(key);
+		} else {
+			System.setProperty(key, value);
 		}
 	}
 }

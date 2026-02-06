@@ -37,6 +37,8 @@ class MeetingActionItemTaskCreationTest {
 				tenantId,
 				caseId,
 				locationId,
+				"Kickoff",
+				"Action item run",
 				Instant.now(),
 				List.of("u-1")
 		);

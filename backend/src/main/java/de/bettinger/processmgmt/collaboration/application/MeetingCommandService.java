@@ -36,14 +36,16 @@ public class MeetingCommandService {
 	}
 
 	@Transactional
-	public MeetingEntity scheduleMeeting(String tenantId, UUID caseId, UUID locationId, Instant scheduledAt,
-										 List<String> participantIds) {
+	public MeetingEntity scheduleMeeting(String tenantId, UUID caseId, UUID locationId, String title,
+										 String description, Instant scheduledAt, List<String> participantIds) {
 		validateLocation(tenantId, locationId);
 		MeetingEntity entity = new MeetingEntity(
 				UUID.randomUUID(),
 				caseId,
 				locationId,
 				MeetingStatus.SCHEDULED,
+				title,
+				description,
 				scheduledAt,
 				null,
 				null

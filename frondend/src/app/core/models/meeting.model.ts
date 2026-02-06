@@ -4,18 +4,24 @@ export interface ScheduleMeetingRequest {
   scheduledAt: string;
   locationId: string;
   participantIds: string[];
+  title: string;
+  description?: string | null;
 }
 
 export interface ScheduleMeetingResponse {
   id: string;
   status: MeetingStatus;
   locationId: string;
+  title: string;
+  description?: string | null;
 }
 
 export interface Meeting {
   id: string;
   status: MeetingStatus;
   locationId: string;
+  title: string;
+  description?: string | null;
   scheduledAt?: string | null;
   heldAt?: string | null;
 }

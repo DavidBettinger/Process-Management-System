@@ -38,6 +38,12 @@ public class MeetingEntity {
 	@Column(name = "status", nullable = false)
 	private MeetingStatus status;
 
+	@Column(name = "title", nullable = false, length = 200)
+	private String title;
+
+	@Column(name = "description")
+	private String description;
+
 	@Column(name = "scheduled_at")
 	private Instant scheduledAt;
 
@@ -60,12 +66,14 @@ public class MeetingEntity {
 	protected MeetingEntity() {
 	}
 
-	public MeetingEntity(UUID id, UUID caseId, UUID locationId, MeetingStatus status, Instant scheduledAt, Instant heldAt,
-						 String minutesText) {
+	public MeetingEntity(UUID id, UUID caseId, UUID locationId, MeetingStatus status, String title, String description,
+						 Instant scheduledAt, Instant heldAt, String minutesText) {
 		this.id = id;
 		this.caseId = caseId;
 		this.locationId = locationId;
 		this.status = status;
+		this.title = title;
+		this.description = description;
 		this.scheduledAt = scheduledAt;
 		this.heldAt = heldAt;
 		this.minutesText = minutesText;

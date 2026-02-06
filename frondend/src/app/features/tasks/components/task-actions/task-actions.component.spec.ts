@@ -72,4 +72,46 @@ describe('TaskActionsComponent', () => {
     const buttons = Array.from(fixture.nativeElement.querySelectorAll('button')) as HTMLButtonElement[];
     expect(buttons.every((button) => button.disabled)).toBe(true);
   });
+
+  it('preselects the current assignee in the dropdown', () => {
+    TestBed.configureTestingModule({
+      imports: [TaskActionsComponent]
+    });
+
+    const fixture = TestBed.createComponent(TaskActionsComponent);
+    fixture.componentInstance.task = {
+      id: 'task-1',
+      title: 'Konzept',
+      description: null,
+      priority: 3,
+      state: 'ASSIGNED',
+      assigneeId: 's-1'
+    };
+    fixture.componentInstance.stakeholders = [
+      { id: 's-1', firstName: 'Maria', lastName: 'Becker', role: 'CONSULTANT' }
+    ];
+    fixture.detectChanges();
+
+    const assigneeSelect = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
+    expect(assigneeSelect.value).toBe('s-1');
+  });
+
+  it('shows loading placeholder and disables assign when stakeholders are not ready', () => {
+    TestBed.configureTestingModule({
+      imports: [TaskActionsComponent]
+    });
+
+    const fixture = TestBed.createComponent(TaskActionsComponent);
+    fixture.componentInstance.task = buildTask('OPEN');
+    fixture.componentInstance.stakeholdersReady = false;
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Beteiligte werden geladen');
+
+    const assignButton = Array.from(compiled.querySelectorAll('button')).find((btn) =>
+      btn.textContent?.includes('Zuweisen')
+    ) as HTMLButtonElement;
+    expect(assignButton.disabled).toBe(true);
+  });
 });

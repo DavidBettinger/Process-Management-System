@@ -18,6 +18,14 @@ export class StakeholderSelectComponent {
 
   @Output() selectedIdChange = new EventEmitter<string | null>();
 
+  get selectedValue(): string {
+    if (!this.selectedId) {
+      return '';
+    }
+    const exists = this.stakeholders.some((stakeholder) => stakeholder.id === this.selectedId);
+    return exists ? this.selectedId : '';
+  }
+
   onSelectionChange(event: Event): void {
     const target = event.target as HTMLSelectElement | null;
     if (!target) {

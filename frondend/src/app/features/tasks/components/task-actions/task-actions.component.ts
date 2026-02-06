@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Task, TaskResolutionKind } from '../../../../core/models/task.model';
 import { Stakeholder } from '../../../../core/models/stakeholder.model';
@@ -34,9 +34,17 @@ interface ResolvePayload {
   imports: [CommonModule, ReactiveFormsModule, StakeholderSelectComponent, TwButtonDirective],
   templateUrl: './task-actions.component.html'
 })
-export class TaskActionsComponent {
+export class TaskActionsComponent implements OnChanges {
   private readonly formBuilder = inject(FormBuilder);
-  @Input({ required: true }) task!: Task;
+  private taskValue!: Task;
+  @Input({ required: true })
+  set task(value: Task) {
+    this.taskValue = value;
+    this.syncAssigneeSelection(value);
+  }
+  get task(): Task {
+    return this.taskValue;
+  }
   @Input() busy = false;
   @Input() stakeholders: Stakeholder[] = [];
   @Input() stakeholdersReady = true;
@@ -161,5 +169,17 @@ export class TaskActionsComponent {
       reason: value.reason ?? ''
     });
     this.resolveForm.reset({ kind: 'COMPLETED', reason: '' });
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['stakeholders'] && this.taskValue) {
+      this.syncAssigneeSelection(this.taskValue);
+    }
+  }
+
+  private syncAssigneeSelection(task: Task): void {
+    const assigneeId = task.assigneeId ?? null;
+    const hasMatch = !!assigneeId && this.stakeholders.some((stakeholder) => stakeholder.id === assigneeId);
+    this.assignForm.controls.assigneeId.setValue(hasMatch ? assigneeId : '', { emitEvent: false });
   }
 }

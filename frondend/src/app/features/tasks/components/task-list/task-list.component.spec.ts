@@ -174,4 +174,56 @@ describe('TaskListComponent', () => {
     expect(details.length).toBe(1);
     expect(details[0]?.textContent).toContain('Detail A');
   });
+
+  it('keeps only one task expanded at a time', () => {
+    TestBed.configureTestingModule({
+      imports: [TaskListComponent, HttpClientTestingModule],
+      providers: [
+        { provide: LabelResolverService, useClass: LabelResolverServiceStub },
+        { provide: TaskAttachmentsStore, useClass: TaskAttachmentsStoreStub },
+        { provide: TaskRemindersStore, useClass: TaskRemindersStoreStub },
+        { provide: ConfirmDialogService, useClass: ConfirmDialogServiceStub },
+        { provide: ToastService, useClass: ToastServiceStub }
+      ]
+    });
+
+    const fixture = TestBed.createComponent(TaskListComponent);
+    fixture.componentInstance.tasks = [
+      {
+        id: 'task-1',
+        title: 'Erste Aufgabe',
+        description: 'Detail A',
+        priority: 2,
+        state: 'OPEN',
+        assigneeId: null
+      },
+      {
+        id: 'task-2',
+        title: 'Zweite Aufgabe',
+        description: 'Detail B',
+        priority: 1,
+        state: 'ASSIGNED',
+        assigneeId: 's-1'
+      }
+    ];
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const summaryButtons = Array.from(compiled.querySelectorAll('button')).filter((button) =>
+      button.textContent?.includes('Aufgabe')
+    ) as HTMLButtonElement[];
+
+    summaryButtons[0].click();
+    fixture.detectChanges();
+    expect(compiled.querySelectorAll('[data-testid="task-details"]').length).toBe(1);
+    expect(compiled.textContent).toContain('Detail A');
+
+    summaryButtons[1].click();
+    fixture.detectChanges();
+
+    const details = compiled.querySelectorAll('[data-testid="task-details"]');
+    expect(details.length).toBe(1);
+    expect(details[0]?.textContent).toContain('Detail B');
+    expect(details[0]?.textContent).not.toContain('Detail A');
+  });
 });

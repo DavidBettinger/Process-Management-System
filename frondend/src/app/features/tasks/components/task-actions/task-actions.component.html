@@ -10,11 +10,15 @@
         <app-stakeholder-select
           class="w-full"
           [stakeholders]="stakeholders"
-          [selectedId]="assignForm.controls.assigneeId.value"
+          [selectedId]="stakeholdersReady ? assignForm.controls.assigneeId.value : null"
           [disabled]="!stakeholdersReady"
           [required]="true"
+          [placeholder]="stakeholdersReady ? 'Bitte waehlen' : 'Beteiligte werden geladen'"
           (selectedIdChange)="assignForm.controls.assigneeId.setValue($event ?? '')"
         />
+        @if (!stakeholdersReady) {
+          <p class="text-xs text-slate-500">Beteiligte werden geladen...</p>
+        }
         <button
           appTwButton="ghost"
           size="sm"

@@ -47,6 +47,36 @@ describe('StakeholderSelectComponent', () => {
     expect(emitted).toEqual(['s-2']);
   });
 
+  it('preselects matching stakeholder id', () => {
+    TestBed.configureTestingModule({
+      imports: [StakeholderSelectComponent]
+    });
+
+    const fixture = TestBed.createComponent(StakeholderSelectComponent);
+    const component = fixture.componentInstance;
+    component.stakeholders = stakeholders;
+    component.selectedId = 's-2';
+    fixture.detectChanges();
+
+    const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
+    expect(select.value).toBe('s-2');
+  });
+
+  it('does not auto-select first option when selected id is unknown', () => {
+    TestBed.configureTestingModule({
+      imports: [StakeholderSelectComponent]
+    });
+
+    const fixture = TestBed.createComponent(StakeholderSelectComponent);
+    const component = fixture.componentInstance;
+    component.stakeholders = stakeholders;
+    component.selectedId = 'unknown-id';
+    fixture.detectChanges();
+
+    const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
+    expect(select.value).toBe('');
+  });
+
   it('shows empty state when no stakeholders exist', () => {
     TestBed.configureTestingModule({
       imports: [StakeholderSelectComponent]

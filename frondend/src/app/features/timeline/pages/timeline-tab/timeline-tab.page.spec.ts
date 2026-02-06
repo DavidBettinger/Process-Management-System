@@ -47,7 +47,7 @@ class TimelineGraphStoreStub {
         title: 'Kickoff',
         dateLabel: '20.02.2026 11:06',
         locationLabel: 'Kita Langballig',
-        participantLabels: ['Anna L. — CONSULTANT']
+        participantLabels: ['Anna L. — Beratung']
       });
     } else if (nodeType === 'task') {
       this.selectedDetails.set({
@@ -56,14 +56,14 @@ class TimelineGraphStoreStub {
         title: 'Konzeptentwurf vorbereiten',
         statusLabel: 'Offen',
         priorityLabel: 'P2',
-        assigneeLabel: 'Anna L. — CONSULTANT'
+        assigneeLabel: 'Anna L. — Beratung'
       });
     } else {
       this.selectedDetails.set({
         type: 'stakeholder',
         nodeId,
         fullName: 'Anna L.',
-        roleLabel: 'CONSULTANT',
+        roleLabel: 'Beratung',
         relatedMeetingLabel: 'Kickoff (20.02.2026 11:06)'
       });
     }
@@ -222,7 +222,7 @@ describe('TimelineTabPageComponent', () => {
           type: 'stakeholder',
           stakeholderId: 'st-1',
           meetingId: 'meeting-1',
-          label: 'Anna L. — CONSULTANT'
+          label: 'Anna L. — Beratung'
         }
       ],
       edges: []
@@ -253,6 +253,6 @@ describe('TimelineTabPageComponent', () => {
     expect(compiled.querySelector('[data-testid="timeline-details-task"]')).not.toBeNull();
     expect(compiled.textContent).toContain('Konzeptentwurf vorbereiten');
     expect(compiled.textContent).toContain('P2');
-    expect(compiled.textContent).toContain('Anna L. — CONSULTANT');
+    expect(compiled.textContent).toContain('Anna L. — Beratung');
   });
 });

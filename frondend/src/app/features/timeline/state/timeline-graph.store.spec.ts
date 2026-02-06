@@ -64,8 +64,8 @@ describe('TimelineGraphStore', () => {
     const labels = renderModel.nodes.map((node) => node.label);
     expect(labels).toContain('Kickoff — Kita Langballig');
     expect(labels).toContain('Konzeptentwurf vorbereiten');
-    expect(labels).toContain('Anna L. — CONSULTANT');
-    expect(labels).toContain('Ben M. — DIRECTOR');
+    expect(labels).toContain('Anna L. — Beratung');
+    expect(labels).toContain('Ben M. — Leitung');
     expect(labels.every((label) => !label.includes('meeting-1'))).toBe(true);
     expect(labels.every((label) => !label.includes('task-1'))).toBe(true);
     expect(labels.every((label) => !label.includes('st-1'))).toBe(true);
@@ -92,7 +92,7 @@ describe('TimelineGraphStore', () => {
       title: 'Kickoff',
       dateLabel: '20.02.2026 11:06',
       locationLabel: 'Kita Langballig',
-      participantLabels: ['Anna L. — CONSULTANT', 'Ben M. — DIRECTOR']
+      participantLabels: ['Anna L. — Beratung', 'Ben M. — Leitung']
     });
 
     store.selectNode('meeting:meeting-1:task:task-1', 'task');
@@ -102,7 +102,7 @@ describe('TimelineGraphStore', () => {
       title: 'Konzeptentwurf vorbereiten',
       statusLabel: 'Offen',
       priorityLabel: 'P2',
-      assigneeLabel: 'Anna L. — CONSULTANT'
+      assigneeLabel: 'Anna L. — Beratung'
     });
 
     store.selectNode('meeting:meeting-1:stakeholder:st-2', 'stakeholder');
@@ -110,7 +110,7 @@ describe('TimelineGraphStore', () => {
       type: 'stakeholder',
       nodeId: 'meeting:meeting-1:stakeholder:st-2',
       fullName: 'Ben M.',
-      roleLabel: 'DIRECTOR',
+      roleLabel: 'Leitung',
       relatedMeetingLabel: 'Kickoff (20.02.2026 11:06)'
     });
 

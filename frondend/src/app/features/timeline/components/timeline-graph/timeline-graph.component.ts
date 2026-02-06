@@ -11,6 +11,7 @@ import {
   TimelineGraphTaskNode
 } from '../../../../core/models/timeline-graph.model';
 import { TaskState } from '../../../../core/models/task.model';
+import { toStakeholderRoleLabel } from '../../../../shared/labels/stakeholder-role-label';
 
 interface Point {
   x: number;
@@ -569,7 +570,7 @@ const buildStakeholderLabel = (
 ): string => {
   const fullName = `${firstName ?? ''} ${lastName ?? ''}`.trim();
   const nameLabel = fullName || 'Unbekannt';
-  return `${nameLabel} — ${role ?? 'Rolle offen'}`;
+  return `${nameLabel} — ${toStakeholderRoleLabel(role)}`;
 };
 
 export const getMeetingNodeClasses = (

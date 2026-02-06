@@ -115,6 +115,21 @@ describe('TimelineGraphComponent', () => {
     expect(compiled.querySelector('[data-testid="today-marker-line"]')).not.toBeNull();
   });
 
+  it('renders stakeholder role labels in German', () => {
+    TestBed.configureTestingModule({
+      imports: [TimelineGraphComponent]
+    });
+
+    const fixture = TestBed.createComponent(TimelineGraphComponent);
+    fixture.componentRef.setInput('graphDto', graphDtoFixture);
+    fixture.componentRef.setInput('renderModel', renderModelFixture);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Anna L. — Beratung');
+    expect(compiled.textContent).not.toContain('Anna L. — CONSULTANT');
+  });
+
   it('does not render raw ids', () => {
     TestBed.configureTestingModule({
       imports: [TimelineGraphComponent]

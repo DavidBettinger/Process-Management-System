@@ -15,6 +15,7 @@ import {
   TimelineGraphTaskNode
 } from '../../../core/models/timeline-graph.model';
 import { LoadStatus, StoreError, toStoreError } from '../../../core/state/state.types';
+import { toStakeholderRoleLabel } from '../../../shared/labels/stakeholder-role-label';
 
 interface TimelineGraphStoreState {
   status: LoadStatus;
@@ -249,7 +250,7 @@ const buildStakeholderLabel = (stakeholder?: TimelineGraphStakeholder): string =
   }
   const fullName = `${stakeholder.firstName} ${stakeholder.lastName}`.trim();
   const nameLabel = fullName || 'Unbekannt';
-  return `${nameLabel} — ${stakeholder.role}`;
+  return `${nameLabel} — ${toStakeholderRoleLabel(stakeholder.role)}`;
 };
 
 const toMeetingNodeId = (meetingId: string): string => `meeting:${meetingId}`;
@@ -327,7 +328,7 @@ const buildSelectionDetails = (
     type: 'stakeholder',
     nodeId: stakeholderNode.id,
     fullName: toFullName(stakeholder.firstName, stakeholder.lastName),
-    roleLabel: stakeholder.role,
+    roleLabel: toStakeholderRoleLabel(stakeholder.role),
     relatedMeetingLabel: `${meeting.title?.trim() || 'Termin'} (${formatDateTimeLabel(
       meeting.performedAt ?? meeting.plannedAt
     )})`
@@ -370,7 +371,7 @@ const toStakeholderDisplayLabel = (stakeholder?: TimelineGraphStakeholder): stri
   if (!stakeholder) {
     return 'Unbekannt';
   }
-  return `${toFullName(stakeholder.firstName, stakeholder.lastName)} — ${stakeholder.role}`;
+  return `${toFullName(stakeholder.firstName, stakeholder.lastName)} — ${toStakeholderRoleLabel(stakeholder.role)}`;
 };
 
 const formatDateTimeLabel = (value: string | null | undefined): string => {

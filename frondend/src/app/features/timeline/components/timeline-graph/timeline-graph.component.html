@@ -68,10 +68,11 @@
           <path
             [attr.d]="edge.path"
             fill="none"
-            [attr.stroke]="edge.type === 'assignment' ? '#f59e0b' : '#94a3b8'"
-            [attr.stroke-width]="edge.type === 'assignment' ? 2 : 1.5"
+            [attr.data-testid]="'timeline-edge-' + edge.id"
+            [attr.stroke]="edgeStroke(edge)"
+            [attr.stroke-width]="edgeStrokeWidth(edge)"
             [attr.stroke-dasharray]="edge.type === 'participation' ? '4 4' : null"
-            opacity="0.95"
+            [attr.opacity]="edgeOpacity(edge)"
           />
         }
 
@@ -129,8 +130,8 @@
               height="46"
               rx="12"
               fill="#ffffff"
-              [attr.stroke]="isStakeholderSelected(stakeholder.id) ? '#1d4ed8' : '#dbeafe'"
-              [attr.stroke-width]="isStakeholderSelected(stakeholder.id) ? 2.5 : 1"
+              [attr.stroke]="stakeholderStroke(stakeholder.id)"
+              [attr.stroke-width]="stakeholderStrokeWidth(stakeholder.id)"
             />
             <text x="12" y="28" fill="#1e3a8a" class="text-xs font-medium">
               {{ truncate(stakeholder.label, 34) }}
@@ -153,7 +154,7 @@
               height="38"
               rx="10"
               [attr.class]="meetingCardClasses(meeting)"
-              [attr.stroke-width]="isMeetingSelected(meeting.id) ? 2.2 : 1.2"
+              [attr.stroke-width]="meetingStrokeWidth(meeting.id)"
             />
             <text
               x="0"

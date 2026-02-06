@@ -1,7 +1,7 @@
 import { of, throwError } from 'rxjs';
 import { AnalyticsApi } from '../../../core/api/analytics.api';
 import { TimelineGraphResponse } from '../../../core/models/timeline-graph.model';
-import { TimelineGraphStore, mapTimelineGraphToRenderModel } from './timeline-graph.store';
+import { TimelineGraphStore, computeSelectionHighlight, mapTimelineGraphToRenderModel } from './timeline-graph.store';
 
 describe('TimelineGraphStore', () => {
   const graphDtoFixture: TimelineGraphResponse = {
@@ -133,5 +133,67 @@ describe('TimelineGraphStore', () => {
     failedStore.loadTimelineGraph().subscribe();
     expect(failedStore.status()).toBe('error');
     expect(failedStore.error()?.message).toBe('Fehler');
+  });
+
+  it('highlights meeting selection with connected tasks, stakeholders, and edges', () => {
+    const renderModel = mapTimelineGraphToRenderModel(graphDtoFixture);
+    const highlight = computeSelectionHighlight(renderModel, 'meeting:meeting-1');
+
+    expect(new Set(highlight.highlightedNodeIds)).toEqual(
+      new Set([
+        'meeting:meeting-1',
+        'meeting:meeting-1:task:task-1',
+        'meeting:meeting-1:stakeholder:st-1',
+        'meeting:meeting-1:stakeholder:st-2'
+      ])
+    );
+    expect(new Set(highlight.highlightedEdgeIds)).toEqual(
+      new Set([
+        'edge:meeting:meeting-1:task:task-1:created-from',
+        'edge:meeting:meeting-1:stakeholder:st-1:participation',
+        'edge:meeting:meeting-1:stakeholder:st-2:participation'
+      ])
+    );
+    expect(highlight.contextMeetingId).toBe('meeting-1');
+  });
+
+  it('highlights task selection with its meeting and direct edges', () => {
+    const renderModel = mapTimelineGraphToRenderModel(graphDtoFixture);
+    const highlight = computeSelectionHighlight(renderModel, 'meeting:meeting-1:task:task-1');
+
+    expect(new Set(highlight.highlightedNodeIds)).toEqual(
+      new Set([
+        'meeting:meeting-1:task:task-1',
+        'meeting:meeting-1',
+        'meeting:meeting-1:stakeholder:st-1'
+      ])
+    );
+    expect(new Set(highlight.highlightedEdgeIds)).toEqual(
+      new Set([
+        'edge:meeting:meeting-1:task:task-1:created-from',
+        'edge:task:task-1:stakeholder:st-1:assignment'
+      ])
+    );
+    expect(highlight.contextMeetingId).toBe('meeting-1');
+  });
+
+  it('highlights stakeholder selection with its meeting and direct edges', () => {
+    const renderModel = mapTimelineGraphToRenderModel(graphDtoFixture);
+    const highlight = computeSelectionHighlight(renderModel, 'meeting:meeting-1:stakeholder:st-1');
+
+    expect(new Set(highlight.highlightedNodeIds)).toEqual(
+      new Set([
+        'meeting:meeting-1:stakeholder:st-1',
+        'meeting:meeting-1',
+        'meeting:meeting-1:task:task-1'
+      ])
+    );
+    expect(new Set(highlight.highlightedEdgeIds)).toEqual(
+      new Set([
+        'edge:meeting:meeting-1:stakeholder:st-1:participation',
+        'edge:task:task-1:stakeholder:st-1:assignment'
+      ])
+    );
+    expect(highlight.contextMeetingId).toBe('meeting-1');
   });
 });

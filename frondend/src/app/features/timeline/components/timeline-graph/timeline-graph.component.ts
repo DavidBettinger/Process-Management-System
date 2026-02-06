@@ -12,6 +12,7 @@ import {
 } from '../../../../core/models/timeline-graph.model';
 import { TaskState } from '../../../../core/models/task.model';
 import { toStakeholderRoleLabel } from '../../../../shared/labels/stakeholder-role-label';
+import { computeSelectionHighlight } from '../../state/timeline-graph.store';
 
 interface Point {
   x: number;
@@ -224,12 +225,30 @@ export class TimelineGraphComponent {
 
   meetingCircleClasses(meeting: LayoutMeetingNode): string {
     const base = getMeetingNodeClasses(meeting.status).circle;
-    return this.isMeetingSelected(meeting.id) ? `${base} !fill-orange-600` : base;
+    if (this.isMeetingSelected(meeting.id)) {
+      return `${base} !fill-indigo-700`;
+    }
+    if (this.isMeetingContext(meeting.id)) {
+      return `${base} !fill-indigo-600`;
+    }
+    if (this.isNeighborNode(meeting.id)) {
+      return `${base} !fill-indigo-500`;
+    }
+    return base;
   }
 
   meetingCardClasses(meeting: LayoutMeetingNode): string {
     const base = getMeetingNodeClasses(meeting.status).card;
-    return this.isMeetingSelected(meeting.id) ? `${base} !stroke-orange-300` : base;
+    if (this.isMeetingSelected(meeting.id)) {
+      return `${base} !stroke-indigo-600`;
+    }
+    if (this.isMeetingContext(meeting.id)) {
+      return `${base} !stroke-indigo-500`;
+    }
+    if (this.isNeighborNode(meeting.id)) {
+      return `${base} !stroke-indigo-300`;
+    }
+    return base;
   }
 
   meetingLabelClasses(meeting: LayoutMeetingNode): string {
@@ -238,7 +257,13 @@ export class TimelineGraphComponent {
 
   taskCardClasses(task: LayoutTaskNode): string {
     const base = getTaskNodeClasses(task.state, task.isOverdue).card;
-    return this.isTaskSelected(task.id) ? `${base} !stroke-slate-900` : base;
+    if (this.isTaskSelected(task.id)) {
+      return `${base} !stroke-indigo-600`;
+    }
+    if (this.isNeighborNode(task.id)) {
+      return `${base} !stroke-indigo-300`;
+    }
+    return base;
   }
 
   taskTitleClasses(task: LayoutTaskNode): string {
@@ -267,6 +292,87 @@ export class TimelineGraphComponent {
 
   isStakeholderSelected(nodeId: string): boolean {
     return this.selectedNodeType === 'stakeholder' && this.selectedNodeId === nodeId;
+  }
+
+  stakeholderStroke(nodeId: string): string {
+    if (this.isStakeholderSelected(nodeId)) {
+      return '#4f46e5';
+    }
+    if (this.isNeighborNode(nodeId)) {
+      return '#a5b4fc';
+    }
+    return '#dbeafe';
+  }
+
+  stakeholderStrokeWidth(nodeId: string): number {
+    if (this.isStakeholderSelected(nodeId)) {
+      return 2.5;
+    }
+    if (this.isNeighborNode(nodeId)) {
+      return 2;
+    }
+    return 1;
+  }
+
+  meetingStrokeWidth(nodeId: string): number {
+    if (this.isMeetingSelected(nodeId)) {
+      return 2.6;
+    }
+    if (this.isMeetingContext(nodeId) || this.isNeighborNode(nodeId)) {
+      return 2.2;
+    }
+    return 1.2;
+  }
+
+  edgeStroke(edge: LayoutEdge): string {
+    if (this.isEdgeHighlighted(edge.id)) {
+      return '#4f46e5';
+    }
+    if (edge.type === 'assignment') {
+      return '#f59e0b';
+    }
+    return '#94a3b8';
+  }
+
+  edgeStrokeWidth(edge: LayoutEdge): number {
+    if (this.isEdgeHighlighted(edge.id)) {
+      return 2.8;
+    }
+    return edge.type === 'assignment' ? 2 : 1.5;
+  }
+
+  edgeOpacity(edge: LayoutEdge): number {
+    if (!this.selectedNodeId) {
+      return 0.95;
+    }
+    return this.isEdgeHighlighted(edge.id) ? 1 : 0.3;
+  }
+
+  private isEdgeHighlighted(edgeId: string): boolean {
+    return this.currentSelectionHighlight().highlightedEdgeIds.includes(edgeId);
+  }
+
+  private isNeighborNode(nodeId: string): boolean {
+    const selectedId = this.selectedNodeId;
+    if (!selectedId || selectedId === nodeId || this.isMeetingContext(nodeId)) {
+      return false;
+    }
+    return this.currentSelectionHighlight().highlightedNodeIds.includes(nodeId);
+  }
+
+  private isMeetingContext(nodeId: string): boolean {
+    const contextMeetingId = this.currentSelectionHighlight().contextMeetingId;
+    if (!contextMeetingId) {
+      return false;
+    }
+    if (this.isMeetingSelected(nodeId)) {
+      return false;
+    }
+    return nodeId === `meeting:${contextMeetingId}`;
+  }
+
+  private currentSelectionHighlight() {
+    return computeSelectionHighlight(this.renderModel(), this.selectedNodeId);
   }
 
   private emitNodeSelected(nodeId: string, nodeType: TimelineGraphNodeType, event: MouseEvent): void {

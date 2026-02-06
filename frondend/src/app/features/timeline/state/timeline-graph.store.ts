@@ -54,6 +54,12 @@ export interface TimelineGraphStakeholderSelectionDetails extends TimelineGraphS
   relatedMeetingLabel: string;
 }
 
+export interface TimelineGraphSelectionHighlight {
+  highlightedNodeIds: string[];
+  highlightedEdgeIds: string[];
+  contextMeetingId: string | null;
+}
+
 export type TimelineGraphSelectionDetails =
   | TimelineGraphMeetingSelectionDetails
   | TimelineGraphTaskSelectionDetails
@@ -207,6 +213,55 @@ export const mapTimelineGraphToRenderModel = (graphDto: TimelineGraphResponse): 
   };
 };
 
+export const computeSelectionHighlight = (
+  model: TimelineGraphRenderModel,
+  selectedNodeId: string | null
+): TimelineGraphSelectionHighlight => {
+  if (!selectedNodeId) {
+    return {
+      highlightedNodeIds: [],
+      highlightedEdgeIds: [],
+      contextMeetingId: null
+    };
+  }
+
+  const selectedNodeExists = model.nodes.some((node) => node.id === selectedNodeId);
+  if (!selectedNodeExists) {
+    return {
+      highlightedNodeIds: [],
+      highlightedEdgeIds: [],
+      contextMeetingId: null
+    };
+  }
+
+  const highlightedEdgeIds = model.edges
+    .filter((edge) => edge.sourceId === selectedNodeId || edge.targetId === selectedNodeId)
+    .map((edge) => edge.id);
+
+  const highlightedNodeSet = new Set<string>([selectedNodeId]);
+  for (const edge of model.edges) {
+    if (edge.sourceId === selectedNodeId || edge.targetId === selectedNodeId) {
+      highlightedNodeSet.add(edge.sourceId);
+      highlightedNodeSet.add(edge.targetId);
+    }
+  }
+
+  const contextMeetingId = deriveContextMeetingId(selectedNodeId);
+  if (contextMeetingId) {
+    highlightedNodeSet.add(`meeting:${contextMeetingId}`);
+  }
+
+  const highlightedNodeIds = model.nodes
+    .map((node) => node.id)
+    .filter((nodeId) => highlightedNodeSet.has(nodeId));
+
+  return {
+    highlightedNodeIds,
+    highlightedEdgeIds,
+    contextMeetingId
+  };
+};
+
 const groupTasksByMeetingId = (
   tasks: TimelineGraphTask[],
   meetingIds: Set<string>
@@ -231,6 +286,20 @@ const buildStakeholderById = (
     map.set(stakeholder.id, stakeholder);
   }
   return map;
+};
+
+const deriveContextMeetingId = (nodeId: string): string | null => {
+  const meetingNodeMatch = /^meeting:([^:]+)$/.exec(nodeId);
+  if (meetingNodeMatch) {
+    return meetingNodeMatch[1] ?? null;
+  }
+
+  const scopedNodeMatch = /^meeting:([^:]+):(task|stakeholder):.+$/.exec(nodeId);
+  if (scopedNodeMatch) {
+    return scopedNodeMatch[1] ?? null;
+  }
+
+  return null;
 };
 
 const buildMeetingLabel = (meeting: TimelineGraphMeeting): string => {

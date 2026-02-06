@@ -262,7 +262,21 @@ describe('TimelineGraphComponent', () => {
       '[data-testid="timeline-node-task-meeting:meeting-1:task:task-1"]'
     ) as SVGGElement;
     const taskRect = taskNode.querySelector('rect') as SVGRectElement;
-    expect(taskRect.getAttribute('class')).toContain('!stroke-slate-900');
+    expect(taskRect.getAttribute('class')).toContain('!stroke-indigo-600');
+
+    const highlightedCreatedFrom = root.querySelector(
+      '[data-testid="timeline-edge-edge:meeting:meeting-1:task:task-1:created-from"]'
+    ) as SVGPathElement;
+    const highlightedAssignment = root.querySelector(
+      '[data-testid="timeline-edge-edge:task:task-1:stakeholder:st-1:assignment"]'
+    ) as SVGPathElement;
+    const fadedParticipation = root.querySelector(
+      '[data-testid="timeline-edge-edge:meeting:meeting-1:stakeholder:st-1:participation"]'
+    ) as SVGPathElement;
+    expect(highlightedCreatedFrom.getAttribute('stroke')).toBe('#4f46e5');
+    expect(highlightedCreatedFrom.getAttribute('opacity')).toBe('1');
+    expect(highlightedAssignment.getAttribute('stroke')).toBe('#4f46e5');
+    expect(fadedParticipation.getAttribute('opacity')).toBe('0.3');
 
     taskNode.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     fixture.detectChanges();
@@ -271,6 +285,32 @@ describe('TimelineGraphComponent', () => {
       nodeId: 'meeting:meeting-1:task:task-1',
       nodeType: 'task'
     }]);
+  });
+
+  it('highlights the associated meeting when a stakeholder is selected', () => {
+    TestBed.configureTestingModule({
+      imports: [TimelineGraphComponent]
+    });
+
+    const fixture = TestBed.createComponent(TimelineGraphComponent);
+    fixture.componentRef.setInput('graphDto', graphDtoFixture);
+    fixture.componentRef.setInput('renderModel', renderModelFixture);
+    fixture.componentRef.setInput('selectedNodeId', 'meeting:meeting-1:stakeholder:st-1');
+    fixture.componentRef.setInput('selectedNodeType', 'stakeholder');
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement as HTMLElement;
+    const meetingNode = root.querySelector(
+      '[data-testid="timeline-node-meeting-meeting:meeting-1"]'
+    ) as SVGGElement;
+    const meetingRect = meetingNode.querySelector('rect') as SVGRectElement;
+    expect(meetingRect.getAttribute('class')).toContain('!stroke-indigo-500');
+
+    const stakeholderNode = root.querySelector(
+      '[data-testid="timeline-node-stakeholder-meeting:meeting-1:stakeholder:st-1"]'
+    ) as SVGGElement;
+    const stakeholderRect = stakeholderNode.querySelector('rect') as SVGRectElement;
+    expect(stakeholderRect.getAttribute('stroke')).toBe('#4f46e5');
   });
 
   it('keeps configured right padding after the right-most graph node', () => {

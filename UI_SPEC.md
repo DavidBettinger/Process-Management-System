@@ -183,3 +183,66 @@
   - missing location: `Ort offen`
   - missing date: `Datum offen`
   - unknown person: `Unbekannt`
+
+### FE-TL-POLISH-001 - Viewport width and right padding
+
+- The timeline graph width is calculated from the right-most visible graph element plus a fixed right padding.
+- Right padding constant: `GRAPH_RIGHT_PADDING_PX = 240`.
+- Width rule:
+  - `graphWidth = ceil(maxNodeRightEdge + GRAPH_RIGHT_PADDING_PX)`
+- Covered node types for `maxNodeRightEdge`:
+  - meeting labels
+  - task cards
+  - stakeholder cards
+  - timeline axis end
+- Expected behavior:
+  - right-most meeting/task/stakeholder nodes are not clipped
+  - horizontal scroll area includes the extra right margin
+  - the "Heute" marker remains positioned on the same time scale and is not shifted by padding logic
+
+### FE-TL-POLISH-002 - Stakeholder collision avoidance stacking
+
+- Stakeholder nodes are stacked into lanes when rectangles would overlap.
+- Stacking applies to stakeholder nodes in the lower timeline section.
+- Deterministic placement order:
+  - primary sort: `x` ascending
+  - tie-breaker: `id` ascending
+- Collision test uses rectangle intersection of node bounds.
+- Lane placement rule:
+  - keep original `x`
+  - move down by lane step until no collision
+  - lane step: `node.height + STAKEHOLDER_LANE_GAP`
+- Gap constant: `STAKEHOLDER_LANE_GAP = 12`.
+- Graph height is expanded dynamically from the lowest rendered node so stacked lanes are never clipped.
+
+### FE-TL-POLISH-003 - Status-based meeting/task colors + legend
+
+- Meeting status colors:
+  - `PLANNED`: blue palette
+  - `PERFORMED`: emerald palette
+  - fallback/unknown: slate palette
+- Task state colors:
+  - `OPEN`: slate palette
+  - `ASSIGNED`: blue palette
+  - `IN_PROGRESS`: amber palette
+  - `BLOCKED`: rose palette
+  - `RESOLVED`: emerald palette
+  - fallback/unknown: slate palette
+- Status colors are implemented with Tailwind utility class tokens on SVG nodes.
+- Timeline legend includes dedicated entries for all meeting and task status colors.
+
+### FE-TL-POLISH-004 - Overdue task highlighting
+
+- Overdue evaluation:
+  - task has `dueDate`
+  - task state is not `RESOLVED`
+  - parsed due timestamp is strictly earlier than the graph reference time (`now`)
+- Time source:
+  - preferred: DTO `timelineGraph.now` from backend
+  - fallback: client current time
+- Date-only due dates (`YYYY-MM-DD`) are interpreted as end-of-day UTC (`23:59:59.999`) before comparison.
+- Overdue style has priority over normal task status colors.
+  - visual: stronger rose/red border + fill palette
+  - badge: `Ueberfaellig`
+- Legend includes overdue entry:
+  - `Ueberfaellig (hat Vorrang)`

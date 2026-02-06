@@ -10,6 +10,7 @@ import {
   getTaskNodeClasses,
   GRAPH_RIGHT_PADDING_PX,
   initialPanState,
+  isTaskOverdue,
   movePan,
   stackNodesByCollision,
   startPan,
@@ -372,6 +373,7 @@ describe('TimelineGraphComponent', () => {
     expect(getTaskNodeClasses('IN_PROGRESS').card).toContain('stroke-amber-300');
     expect(getTaskNodeClasses('BLOCKED').card).toContain('stroke-rose-300');
     expect(getTaskNodeClasses('RESOLVED').card).toContain('stroke-emerald-300');
+    expect(getTaskNodeClasses('IN_PROGRESS', true).card).toContain('stroke-rose-400');
   });
 
   it('renders status color classes for fixture nodes', () => {
@@ -396,6 +398,61 @@ describe('TimelineGraphComponent', () => {
     const meetingCircle = meetingNode.querySelector('circle') as SVGCircleElement;
     expect(taskRect.getAttribute('class')).toContain('stroke-slate-300');
     expect(meetingCircle.getAttribute('class')).toContain('fill-blue-600');
+  });
+
+  it('marks overdue tasks with badge and overdue class', () => {
+    TestBed.configureTestingModule({
+      imports: [TimelineGraphComponent]
+    });
+
+    const fixture = TestBed.createComponent(TimelineGraphComponent);
+    const overdueGraphDto: TimelineGraphResponse = {
+      ...graphDtoFixture,
+      now: '2026-03-01T12:00:00Z',
+      tasks: [{
+        id: 'task-1',
+        title: 'Konzeptentwurf vorbereiten',
+        state: 'IN_PROGRESS',
+        priority: 2,
+        assigneeId: 'st-1',
+        createdFromMeetingId: 'meeting-1',
+        dueDate: '2026-02-28'
+      }]
+    };
+    const overdueRenderModel: TimelineGraphRenderModel = {
+      ...renderModelFixture,
+      nodes: renderModelFixture.nodes.map((node) =>
+        node.type === 'task'
+          ? { ...node, label: 'Konzeptentwurf vorbereiten' }
+          : node
+      )
+    };
+    fixture.componentRef.setInput('graphDto', overdueGraphDto);
+    fixture.componentRef.setInput('renderModel', overdueRenderModel);
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement as HTMLElement;
+    const taskNode = root.querySelector(
+      '[data-testid="timeline-node-task-meeting:meeting-1:task:task-1"]'
+    ) as SVGGElement;
+    const taskRect = taskNode.querySelector('rect') as SVGRectElement;
+    expect(taskRect.getAttribute('class')).toContain('stroke-rose-400');
+    expect(
+      root.querySelector('[data-testid="timeline-task-overdue-meeting:meeting-1:task:task-1"]')
+    ).not.toBeNull();
+    expect(root.textContent).toContain('Ueberfaellig');
+  });
+
+  it('evaluates overdue helper correctly', () => {
+    expect(
+      isTaskOverdue({ dueDate: '2026-02-05', state: 'IN_PROGRESS' }, '2026-02-06T10:00:00Z')
+    ).toBe(true);
+    expect(
+      isTaskOverdue({ dueDate: '2026-02-05', state: 'RESOLVED' }, '2026-02-06T10:00:00Z')
+    ).toBe(false);
+    expect(
+      isTaskOverdue({ dueDate: null, state: 'IN_PROGRESS' }, '2026-02-06T10:00:00Z')
+    ).toBe(false);
   });
 });
 

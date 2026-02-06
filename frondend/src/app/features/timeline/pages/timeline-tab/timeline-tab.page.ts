@@ -48,7 +48,8 @@ export class TimelineTabPageComponent implements OnInit {
     { key: 'ASSIGNED', label: 'Aufgabe zugewiesen', swatchClass: 'bg-blue-100 border-blue-300' },
     { key: 'IN_PROGRESS', label: 'Aufgabe in Bearbeitung', swatchClass: 'bg-amber-100 border-amber-300' },
     { key: 'BLOCKED', label: 'Aufgabe blockiert', swatchClass: 'bg-rose-100 border-rose-300' },
-    { key: 'RESOLVED', label: 'Aufgabe erledigt', swatchClass: 'bg-emerald-100 border-emerald-300' }
+    { key: 'RESOLVED', label: 'Aufgabe erledigt', swatchClass: 'bg-emerald-100 border-emerald-300' },
+    { key: 'OVERDUE', label: 'Ueberfaellig (hat Vorrang)', swatchClass: 'bg-rose-200 border-rose-400' }
   ];
   readonly isEmpty = computed(
     () => this.status() === 'success' && this.renderModel().nodes.length === 0 && this.renderModel().edges.length === 0

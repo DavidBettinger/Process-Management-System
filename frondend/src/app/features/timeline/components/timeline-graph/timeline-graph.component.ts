@@ -33,6 +33,7 @@ interface LayoutTaskNode {
   height: number;
   title: string;
   state: TaskState | null;
+  isOverdue: boolean;
   statusLabel: string;
   priorityLabel: string;
 }
@@ -235,24 +236,24 @@ export class TimelineGraphComponent {
   }
 
   taskCardClasses(task: LayoutTaskNode): string {
-    const base = getTaskNodeClasses(task.state).card;
+    const base = getTaskNodeClasses(task.state, task.isOverdue).card;
     return this.isTaskSelected(task.id) ? `${base} !stroke-slate-900` : base;
   }
 
   taskTitleClasses(task: LayoutTaskNode): string {
-    return getTaskNodeClasses(task.state).title;
+    return getTaskNodeClasses(task.state, task.isOverdue).title;
   }
 
   taskStatusClasses(task: LayoutTaskNode): string {
-    return getTaskNodeClasses(task.state).status;
+    return getTaskNodeClasses(task.state, task.isOverdue).status;
   }
 
   taskPriorityBadgeClasses(task: LayoutTaskNode): string {
-    return getTaskNodeClasses(task.state).priorityBadge;
+    return getTaskNodeClasses(task.state, task.isOverdue).priorityBadge;
   }
 
   taskPriorityLabelClasses(task: LayoutTaskNode): string {
-    return getTaskNodeClasses(task.state).priorityLabel;
+    return getTaskNodeClasses(task.state, task.isOverdue).priorityLabel;
   }
 
   isMeetingSelected(nodeId: string): boolean {
@@ -359,6 +360,7 @@ export const buildTimelineGraphLayout = (
       const title = (task?.title?.trim() || taskNode.label || 'Aufgabe').trim();
       const statusLabel = stateLabel(task?.state);
       const priorityValue = normalizePriority(task?.priority);
+      const isOverdue = isTaskOverdue(task, nowTime);
       const layoutTask: LayoutTaskNode = {
         id: taskNode.id,
         x,
@@ -367,6 +369,7 @@ export const buildTimelineGraphLayout = (
         height: TASK_HEIGHT,
         title,
         state: task?.state ?? null,
+        isOverdue,
         statusLabel,
         priorityLabel: `P${priorityValue}`
       };
@@ -388,6 +391,7 @@ export const buildTimelineGraphLayout = (
     const title = (task?.title?.trim() || taskNode.label || 'Aufgabe').trim();
     const statusLabel = stateLabel(task?.state);
     const priorityValue = normalizePriority(task?.priority);
+    const isOverdue = isTaskOverdue(task, nowTime);
     const layoutTask: LayoutTaskNode = {
       id: taskNode.id,
       x,
@@ -396,6 +400,7 @@ export const buildTimelineGraphLayout = (
       height: TASK_HEIGHT,
       title,
       state: task?.state ?? null,
+      isOverdue,
       statusLabel,
       priorityLabel: `P${priorityValue}`
     };
@@ -592,7 +597,19 @@ export const getMeetingNodeClasses = (
   }
 };
 
-export const getTaskNodeClasses = (state: TaskState | null | undefined): TaskNodeClasses => {
+export const getTaskNodeClasses = (
+  state: TaskState | null | undefined,
+  isOverdue = false
+): TaskNodeClasses => {
+  if (isOverdue) {
+    return {
+      card: 'fill-rose-100 stroke-rose-400',
+      title: 'fill-rose-950',
+      status: 'fill-rose-800',
+      priorityBadge: 'fill-rose-200 stroke-rose-400',
+      priorityLabel: 'fill-rose-900'
+    };
+  }
   switch (state) {
     case 'OPEN':
       return {
@@ -643,6 +660,47 @@ export const getTaskNodeClasses = (state: TaskState | null | undefined): TaskNod
         priorityLabel: 'fill-slate-700'
       };
   }
+};
+
+export const isTaskOverdue = (
+  task: { dueDate?: string | null; state?: TaskState | null } | null | undefined,
+  nowInput: string | number | Date | null | undefined
+): boolean => {
+  if (!task || !task.dueDate || task.state === 'RESOLVED') {
+    return false;
+  }
+  const dueAt = toDueDateMillis(task.dueDate);
+  const nowAt = toComparableMillis(nowInput);
+  if (dueAt === null || nowAt === null) {
+    return false;
+  }
+  return dueAt < nowAt;
+};
+
+const toDueDateMillis = (dueDate: string): number | null => {
+  const dateOnlyMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dueDate);
+  if (dateOnlyMatch) {
+    const year = Number(dateOnlyMatch[1]);
+    const month = Number(dateOnlyMatch[2]);
+    const day = Number(dateOnlyMatch[3]);
+    if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
+      return null;
+    }
+    return Date.UTC(year, month - 1, day, 23, 59, 59, 999);
+  }
+  const value = new Date(dueDate).getTime();
+  return Number.isNaN(value) ? null : value;
+};
+
+const toComparableMillis = (value: string | number | Date | null | undefined): number | null => {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : null;
+  }
+  const parsed = value instanceof Date ? value.getTime() : new Date(value).getTime();
+  return Number.isNaN(parsed) ? null : parsed;
 };
 
 const formatDateTime = (value: string | null | undefined): string => {

@@ -95,6 +95,14 @@
             <text x="12" y="48" [attr.class]="'text-[11px] ' + taskStatusClasses(task)">
               {{ task.statusLabel }}
             </text>
+            @if (task.isOverdue) {
+              <g transform="translate(12,54)" [attr.data-testid]="'timeline-task-overdue-' + task.id">
+                <rect width="78" height="16" rx="8" class="fill-rose-200 stroke-rose-400" />
+                <text x="39" y="11" text-anchor="middle" class="text-[9px] font-semibold fill-rose-900">
+                  Ueberfaellig
+                </text>
+              </g>
+            }
             <g transform="translate(170,11)">
               <rect width="38" height="20" rx="10" [attr.class]="taskPriorityBadgeClasses(task)" />
               <text

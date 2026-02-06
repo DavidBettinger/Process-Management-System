@@ -39,6 +39,17 @@ export class TimelineTabPageComponent implements OnInit {
     const details = this.selectedDetails();
     return details?.type === 'stakeholder' ? details : null;
   });
+  readonly meetingLegend = [
+    { key: 'PLANNED', label: 'Termin geplant', swatchClass: 'bg-blue-100 border-blue-300' },
+    { key: 'PERFORMED', label: 'Termin durchgefuehrt', swatchClass: 'bg-emerald-100 border-emerald-300' }
+  ];
+  readonly taskLegend = [
+    { key: 'OPEN', label: 'Aufgabe offen', swatchClass: 'bg-slate-100 border-slate-300' },
+    { key: 'ASSIGNED', label: 'Aufgabe zugewiesen', swatchClass: 'bg-blue-100 border-blue-300' },
+    { key: 'IN_PROGRESS', label: 'Aufgabe in Bearbeitung', swatchClass: 'bg-amber-100 border-amber-300' },
+    { key: 'BLOCKED', label: 'Aufgabe blockiert', swatchClass: 'bg-rose-100 border-rose-300' },
+    { key: 'RESOLVED', label: 'Aufgabe erledigt', swatchClass: 'bg-emerald-100 border-emerald-300' }
+  ];
   readonly isEmpty = computed(
     () => this.status() === 'success' && this.renderModel().nodes.length === 0 && this.renderModel().edges.length === 0
   );

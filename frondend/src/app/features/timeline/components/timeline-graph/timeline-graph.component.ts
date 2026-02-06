@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, computed, input, signal } from '@angular/core';
 import {
   TimelineGraphEdge,
+  TimelineGraphMeetingStatus,
   TimelineGraphMeetingNode,
   TimelineGraphNodeType,
   TimelineGraphRenderModel,
@@ -9,6 +10,7 @@ import {
   TimelineGraphStakeholderNode,
   TimelineGraphTaskNode
 } from '../../../../core/models/timeline-graph.model';
+import { TaskState } from '../../../../core/models/task.model';
 
 interface Point {
   x: number;
@@ -19,6 +21,7 @@ interface LayoutMeetingNode {
   id: string;
   x: number;
   y: number;
+  status: TimelineGraphMeetingStatus | null;
   label: string;
 }
 
@@ -29,6 +32,7 @@ interface LayoutTaskNode {
   width: number;
   height: number;
   title: string;
+  state: TaskState | null;
   statusLabel: string;
   priorityLabel: string;
 }
@@ -101,6 +105,20 @@ export interface PanState {
   dragStartClientY: number;
   dragStartTranslationX: number;
   dragStartTranslationY: number;
+}
+
+interface MeetingNodeClasses {
+  circle: string;
+  card: string;
+  label: string;
+}
+
+interface TaskNodeClasses {
+  card: string;
+  title: string;
+  status: string;
+  priorityBadge: string;
+  priorityLabel: string;
 }
 
 const TASK_ROW_Y = 90;
@@ -202,6 +220,41 @@ export class TimelineGraphComponent {
     this.selectionCleared.emit();
   }
 
+  meetingCircleClasses(meeting: LayoutMeetingNode): string {
+    const base = getMeetingNodeClasses(meeting.status).circle;
+    return this.isMeetingSelected(meeting.id) ? `${base} !fill-orange-600` : base;
+  }
+
+  meetingCardClasses(meeting: LayoutMeetingNode): string {
+    const base = getMeetingNodeClasses(meeting.status).card;
+    return this.isMeetingSelected(meeting.id) ? `${base} !stroke-orange-300` : base;
+  }
+
+  meetingLabelClasses(meeting: LayoutMeetingNode): string {
+    return getMeetingNodeClasses(meeting.status).label;
+  }
+
+  taskCardClasses(task: LayoutTaskNode): string {
+    const base = getTaskNodeClasses(task.state).card;
+    return this.isTaskSelected(task.id) ? `${base} !stroke-slate-900` : base;
+  }
+
+  taskTitleClasses(task: LayoutTaskNode): string {
+    return getTaskNodeClasses(task.state).title;
+  }
+
+  taskStatusClasses(task: LayoutTaskNode): string {
+    return getTaskNodeClasses(task.state).status;
+  }
+
+  taskPriorityBadgeClasses(task: LayoutTaskNode): string {
+    return getTaskNodeClasses(task.state).priorityBadge;
+  }
+
+  taskPriorityLabelClasses(task: LayoutTaskNode): string {
+    return getTaskNodeClasses(task.state).priorityLabel;
+  }
+
   isMeetingSelected(nodeId: string): boolean {
     return this.selectedNodeType === 'meeting' && this.selectedNodeId === nodeId;
   }
@@ -286,6 +339,7 @@ export const buildTimelineGraphLayout = (
       id: meetingNode.id,
       x,
       y: AXIS_Y,
+      status: meeting?.status ?? null,
       label
     };
   });
@@ -312,6 +366,7 @@ export const buildTimelineGraphLayout = (
         width: TASK_WIDTH,
         height: TASK_HEIGHT,
         title,
+        state: task?.state ?? null,
         statusLabel,
         priorityLabel: `P${priorityValue}`
       };
@@ -340,6 +395,7 @@ export const buildTimelineGraphLayout = (
       width: TASK_WIDTH,
       height: TASK_HEIGHT,
       title,
+      state: task?.state ?? null,
       statusLabel,
       priorityLabel: `P${priorityValue}`
     };
@@ -509,6 +565,84 @@ const buildStakeholderLabel = (
   const fullName = `${firstName ?? ''} ${lastName ?? ''}`.trim();
   const nameLabel = fullName || 'Unbekannt';
   return `${nameLabel} — ${role ?? 'Rolle offen'}`;
+};
+
+export const getMeetingNodeClasses = (
+  status: TimelineGraphMeetingStatus | null | undefined
+): MeetingNodeClasses => {
+  switch (status) {
+    case 'PLANNED':
+      return {
+        circle: 'fill-blue-600',
+        card: 'fill-blue-50 stroke-blue-300',
+        label: 'fill-blue-900'
+      };
+    case 'PERFORMED':
+      return {
+        circle: 'fill-emerald-600',
+        card: 'fill-emerald-50 stroke-emerald-300',
+        label: 'fill-emerald-900'
+      };
+    default:
+      return {
+        circle: 'fill-slate-700',
+        card: 'fill-slate-50 stroke-slate-300',
+        label: 'fill-slate-800'
+      };
+  }
+};
+
+export const getTaskNodeClasses = (state: TaskState | null | undefined): TaskNodeClasses => {
+  switch (state) {
+    case 'OPEN':
+      return {
+        card: 'fill-slate-50 stroke-slate-300',
+        title: 'fill-slate-900',
+        status: 'fill-slate-600',
+        priorityBadge: 'fill-slate-200 stroke-slate-300',
+        priorityLabel: 'fill-slate-700'
+      };
+    case 'ASSIGNED':
+      return {
+        card: 'fill-blue-50 stroke-blue-300',
+        title: 'fill-blue-900',
+        status: 'fill-blue-700',
+        priorityBadge: 'fill-blue-100 stroke-blue-300',
+        priorityLabel: 'fill-blue-800'
+      };
+    case 'IN_PROGRESS':
+      return {
+        card: 'fill-amber-50 stroke-amber-300',
+        title: 'fill-amber-900',
+        status: 'fill-amber-700',
+        priorityBadge: 'fill-amber-100 stroke-amber-300',
+        priorityLabel: 'fill-amber-800'
+      };
+    case 'BLOCKED':
+      return {
+        card: 'fill-rose-50 stroke-rose-300',
+        title: 'fill-rose-900',
+        status: 'fill-rose-700',
+        priorityBadge: 'fill-rose-100 stroke-rose-300',
+        priorityLabel: 'fill-rose-800'
+      };
+    case 'RESOLVED':
+      return {
+        card: 'fill-emerald-50 stroke-emerald-300',
+        title: 'fill-emerald-900',
+        status: 'fill-emerald-700',
+        priorityBadge: 'fill-emerald-100 stroke-emerald-300',
+        priorityLabel: 'fill-emerald-800'
+      };
+    default:
+      return {
+        card: 'fill-slate-50 stroke-slate-300',
+        title: 'fill-slate-900',
+        status: 'fill-slate-600',
+        priorityBadge: 'fill-slate-200 stroke-slate-300',
+        priorityLabel: 'fill-slate-700'
+      };
+  }
 };
 
 const formatDateTime = (value: string | null | undefined): string => {

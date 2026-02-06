@@ -86,19 +86,23 @@
               width="220"
               height="74"
               rx="14"
-              fill="#ffffff"
-              [attr.stroke]="isTaskSelected(task.id) ? '#0f172a' : '#f1f5f9'"
-              [attr.stroke-width]="isTaskSelected(task.id) ? 2.5 : 1"
+              [attr.class]="taskCardClasses(task)"
+              [attr.stroke-width]="isTaskSelected(task.id) ? 2.5 : 1.3"
             />
-            <text x="12" y="25" fill="#0f172a" class="text-xs font-semibold">
+            <text x="12" y="25" [attr.class]="'text-xs font-semibold ' + taskTitleClasses(task)">
               {{ truncate(task.title, 33) }}
             </text>
-            <text x="12" y="48" fill="#64748b" class="text-[11px]">
+            <text x="12" y="48" [attr.class]="'text-[11px] ' + taskStatusClasses(task)">
               {{ task.statusLabel }}
             </text>
             <g transform="translate(170,11)">
-              <rect width="38" height="20" rx="10" fill="#fee2e2" stroke="#fecaca" />
-              <text x="19" y="14" text-anchor="middle" fill="#9f1239" class="text-[10px] font-semibold">
+              <rect width="38" height="20" rx="10" [attr.class]="taskPriorityBadgeClasses(task)" />
+              <text
+                x="19"
+                y="14"
+                text-anchor="middle"
+                [attr.class]="'text-[10px] font-semibold ' + taskPriorityLabelClasses(task)"
+              >
                 {{ task.priorityLabel }}
               </text>
             </g>
@@ -133,23 +137,21 @@
             [attr.data-testid]="'timeline-node-meeting-' + meeting.id"
             (click)="onMeetingClick(meeting.id, $event)"
           >
-            <circle cx="0" cy="0" r="11" [attr.fill]="isMeetingSelected(meeting.id) ? '#ea580c' : '#0f172a'" />
+            <circle cx="0" cy="0" r="11" [attr.class]="meetingCircleClasses(meeting)" />
             <rect
               x="-110"
               y="18"
               width="220"
               height="38"
               rx="10"
-              fill="#ffffff"
-              [attr.stroke]="isMeetingSelected(meeting.id) ? '#fdba74' : '#cbd5e1'"
-              [attr.stroke-width]="isMeetingSelected(meeting.id) ? 2.2 : 1"
+              [attr.class]="meetingCardClasses(meeting)"
+              [attr.stroke-width]="isMeetingSelected(meeting.id) ? 2.2 : 1.2"
             />
             <text
               x="0"
               y="42"
               text-anchor="middle"
-              fill="#1e293b"
-              class="text-[11px] font-semibold"
+              [attr.class]="'text-[11px] font-semibold ' + meetingLabelClasses(meeting)"
             >
               {{ truncate(meeting.label, 34) }}
             </text>

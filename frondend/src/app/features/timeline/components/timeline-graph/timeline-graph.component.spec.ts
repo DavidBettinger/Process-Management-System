@@ -6,6 +6,8 @@ import {
 import {
   buildTimelineGraphLayout,
   endPan,
+  getMeetingNodeClasses,
+  getTaskNodeClasses,
   GRAPH_RIGHT_PADDING_PX,
   initialPanState,
   movePan,
@@ -244,7 +246,7 @@ describe('TimelineGraphComponent', () => {
       '[data-testid="timeline-node-task-meeting:meeting-1:task:task-1"]'
     ) as SVGGElement;
     const taskRect = taskNode.querySelector('rect') as SVGRectElement;
-    expect(taskRect.getAttribute('stroke')).toBe('#0f172a');
+    expect(taskRect.getAttribute('class')).toContain('!stroke-slate-900');
 
     taskNode.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     fixture.detectChanges();
@@ -359,6 +361,41 @@ describe('TimelineGraphComponent', () => {
     expect((second as { y: number }).y).toBeGreaterThan((first as { y: number }).y);
     expect((second as { y: number }).y - (first as { y: number }).y).toBeGreaterThanOrEqual(46 + STAKEHOLDER_LANE_GAP);
     expect(hasRectangleIntersections(stacked)).toBe(false);
+  });
+
+  it('maps meeting and task states to expected Tailwind class tokens', () => {
+    expect(getMeetingNodeClasses('PLANNED').card).toContain('stroke-blue-300');
+    expect(getMeetingNodeClasses('PERFORMED').card).toContain('stroke-emerald-300');
+
+    expect(getTaskNodeClasses('OPEN').card).toContain('stroke-slate-300');
+    expect(getTaskNodeClasses('ASSIGNED').card).toContain('stroke-blue-300');
+    expect(getTaskNodeClasses('IN_PROGRESS').card).toContain('stroke-amber-300');
+    expect(getTaskNodeClasses('BLOCKED').card).toContain('stroke-rose-300');
+    expect(getTaskNodeClasses('RESOLVED').card).toContain('stroke-emerald-300');
+  });
+
+  it('renders status color classes for fixture nodes', () => {
+    TestBed.configureTestingModule({
+      imports: [TimelineGraphComponent]
+    });
+
+    const fixture = TestBed.createComponent(TimelineGraphComponent);
+    fixture.componentRef.setInput('graphDto', graphDtoFixture);
+    fixture.componentRef.setInput('renderModel', renderModelFixture);
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement as HTMLElement;
+    const taskNode = root.querySelector(
+      '[data-testid="timeline-node-task-meeting:meeting-1:task:task-1"]'
+    ) as SVGGElement;
+    const meetingNode = root.querySelector(
+      '[data-testid="timeline-node-meeting-meeting:meeting-1"]'
+    ) as SVGGElement;
+
+    const taskRect = taskNode.querySelector('rect') as SVGRectElement;
+    const meetingCircle = meetingNode.querySelector('circle') as SVGCircleElement;
+    expect(taskRect.getAttribute('class')).toContain('stroke-slate-300');
+    expect(meetingCircle.getAttribute('class')).toContain('fill-blue-600');
   });
 });
 

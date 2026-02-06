@@ -4,6 +4,13 @@
 
 ### FE-MEET-RUN-003 (Revised) - Two-stage "Termin durchfuehren" flow
 
+### FE-MEET-LIST-EDIT-001 - Planned-only run dropdown
+
+- The "Termin durchfuehren" dropdown includes only meetings with planned status (`SCHEDULED`).
+- Meetings in held/completed states are excluded from selection.
+- If no planned meetings exist, show:
+  - "Keine geplanten Termine vorhanden."
+
 #### Stage A - Selection and Preview
 - Initial state shows only:
   - Meeting selector ("Termin auswaehlen")

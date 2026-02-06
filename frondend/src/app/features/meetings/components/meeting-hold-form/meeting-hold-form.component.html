@@ -29,9 +29,8 @@
         forId="hold-meeting-id"
         [required]="true"
         [error]="isInvalid('meetingId') ? requiredMessage('Termin') : null"
-        [hint]="meetings.length === 0 ? 'Kein Termin vorhanden? Bitte zuerst einen Termin planen.' : undefined"
       >
-        @if (meetings.length > 0) {
+        @if (plannedMeetings().length > 0) {
           <select
             id="hold-meeting-id"
             formControlName="meetingId"
@@ -39,18 +38,12 @@
             (change)="onMeetingSelectionChange(form.controls.meetingId.value)"
           >
             <option value="">Bitte waehlen</option>
-            @for (meeting of meetings; track meeting.id) {
+            @for (meeting of plannedMeetings(); track meeting.id) {
               <option [value]="meeting.id">{{ meetingLabel(meeting) }}</option>
             }
           </select>
         } @else {
-          <input
-            id="hold-meeting-id"
-            type="text"
-            formControlName="meetingId"
-            placeholder="Termin eingeben"
-            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
-          />
+          <p class="text-sm text-slate-600" data-testid="no-planned-meetings">Keine geplanten Termine vorhanden.</p>
         }
       </app-tw-field>
 

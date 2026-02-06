@@ -54,7 +54,7 @@ export class MeetingHoldFormComponent implements OnChanges {
     if (!meetingId) {
       return null;
     }
-    return this.meetings.find((meeting) => meeting.id === meetingId) ?? null;
+    return this.plannedMeetings().find((meeting) => meeting.id === meetingId) ?? null;
   });
 
   readonly form = this.formBuilder.group({
@@ -176,6 +176,10 @@ export class MeetingHoldFormComponent implements OnChanges {
     this.clearResult.emit();
   }
 
+  plannedMeetings(): Meeting[] {
+    return this.meetings.filter((meeting) => meeting.status === 'SCHEDULED');
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['defaultLocationId']) {
       const locationControl = this.form.controls.locationId;
@@ -186,7 +190,7 @@ export class MeetingHoldFormComponent implements OnChanges {
 
     if (changes['meetings']) {
       const selectedMeetingId = this.selectedMeetingId();
-      if (selectedMeetingId && !this.meetings.some((meeting) => meeting.id === selectedMeetingId)) {
+      if (selectedMeetingId && !this.plannedMeetings().some((meeting) => meeting.id === selectedMeetingId)) {
         this.resetState();
       }
     }
@@ -269,7 +273,7 @@ export class MeetingHoldFormComponent implements OnChanges {
   }
 
   private applyMeetingDefaults(meetingId: string): void {
-    const meeting = this.meetings.find((item) => item.id === meetingId);
+    const meeting = this.plannedMeetings().find((item) => item.id === meetingId);
     if (!meeting) {
       return;
     }

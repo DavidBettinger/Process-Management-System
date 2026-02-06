@@ -16,6 +16,16 @@ const meetings: Meeting[] = [
   }
 ];
 
+const heldMeeting: Meeting = {
+  id: 'meeting-2',
+  status: 'HELD',
+  locationId: 'location-1',
+  participantIds: ['u-101'],
+  title: 'Abgeschlossen',
+  description: null,
+  heldAt: '2026-01-10T09:00:00'
+};
+
 const locations: Location[] = [
   {
     id: 'location-1',
@@ -35,14 +45,14 @@ describe('MeetingHoldFormComponent', () => {
     return buttons.find((button) => button.textContent?.includes(text)) as HTMLButtonElement;
   };
 
-  const setup = () => {
+  const setup = (meetingsInput: Meeting[] = meetings) => {
     TestBed.configureTestingModule({
       imports: [MeetingHoldFormComponent]
     });
 
     const fixture = TestBed.createComponent(MeetingHoldFormComponent);
     const component = fixture.componentInstance;
-    component.meetings = meetings;
+    component.meetings = meetingsInput;
     component.locations = locations;
     component.stakeholders = stakeholders;
     component.stakeholdersReady = true;
@@ -67,6 +77,27 @@ describe('MeetingHoldFormComponent', () => {
     expect(runButton.disabled).toBe(true);
     expect(fixture.nativeElement.querySelector('[data-testid="meeting-stage-a-preview"]')).toBeNull();
     expect(fixture.nativeElement.querySelector('[data-testid="meeting-stage-b"]')).toBeNull();
+  });
+
+  it('shows only planned meetings in the dropdown', () => {
+    const { fixture } = setup([...meetings, heldMeeting]);
+
+    const select = fixture.nativeElement.querySelector('#hold-meeting-id') as HTMLSelectElement;
+    const optionLabels = Array.from(select.options).map((option) => option.textContent?.trim() ?? '');
+
+    expect(optionLabels.some((label) => label.includes('Kickoff'))).toBe(true);
+    expect(optionLabels.some((label) => label.includes('Abgeschlossen'))).toBe(false);
+  });
+
+  it('shows empty state text when no planned meetings exist', () => {
+    const { fixture } = setup([heldMeeting]);
+
+    const runButton = findButton(fixture.nativeElement, 'Termin durchfuehren');
+    const emptyState = fixture.nativeElement.querySelector('[data-testid="no-planned-meetings"]') as HTMLElement;
+
+    expect(fixture.nativeElement.querySelector('#hold-meeting-id')).toBeNull();
+    expect(emptyState.textContent).toContain('Keine geplanten Termine vorhanden.');
+    expect(runButton.disabled).toBe(true);
   });
 
   it('shows preview with prefilled datetime, location and participant labels after selection', () => {

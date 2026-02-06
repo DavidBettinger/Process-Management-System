@@ -28,7 +28,105 @@
     }
 
     @if (status() === 'success' && !isEmpty()) {
-      <app-timeline-graph [graphDto]="graphDto()" [renderModel]="renderModel()" />
+      <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
+        <app-timeline-graph
+          [graphDto]="graphDto()"
+          [renderModel]="renderModel()"
+          [selectedNodeId]="selectedNodeId()"
+          [selectedNodeType]="selectedNodeType()"
+          (nodeSelected)="onNodeSelected($event)"
+          (selectionCleared)="clearSelection()"
+        />
+
+        <aside
+          class="h-fit rounded-2xl border border-slate-200 bg-slate-50 p-4"
+          data-testid="timeline-details-panel"
+        >
+          @if (!selectedDetails()) {
+            <p class="text-sm text-slate-600">
+              Knoten auswaehlen, um Termin-, Aufgaben- oder Beteiligten-Details anzuzeigen.
+            </p>
+          }
+
+          @if (meetingDetails(); as meeting) {
+            <div class="space-y-3" data-testid="timeline-details-meeting">
+              <h3 class="text-sm font-semibold text-slate-900">Termin</h3>
+              <dl class="space-y-2 text-sm">
+                <div>
+                  <dt class="font-medium text-slate-700">Titel</dt>
+                  <dd class="text-slate-900">{{ meeting.title }}</dd>
+                </div>
+                <div>
+                  <dt class="font-medium text-slate-700">Datum</dt>
+                  <dd class="text-slate-900">{{ meeting.dateLabel }}</dd>
+                </div>
+                <div>
+                  <dt class="font-medium text-slate-700">Ort</dt>
+                  <dd class="text-slate-900">{{ meeting.locationLabel }}</dd>
+                </div>
+                <div>
+                  <dt class="font-medium text-slate-700">Beteiligte</dt>
+                  <dd class="text-slate-900">
+                    @if (meeting.participantLabels.length > 0) {
+                      <ul class="list-disc space-y-1 pl-5">
+                        @for (participant of meeting.participantLabels; track participant) {
+                          <li>{{ participant }}</li>
+                        }
+                      </ul>
+                    } @else {
+                      <span>Keine Beteiligten hinterlegt</span>
+                    }
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          }
+
+          @if (taskDetails(); as task) {
+            <div class="space-y-3" data-testid="timeline-details-task">
+              <h3 class="text-sm font-semibold text-slate-900">Aufgabe</h3>
+              <dl class="space-y-2 text-sm">
+                <div>
+                  <dt class="font-medium text-slate-700">Titel</dt>
+                  <dd class="text-slate-900">{{ task.title }}</dd>
+                </div>
+                <div>
+                  <dt class="font-medium text-slate-700">Status</dt>
+                  <dd class="text-slate-900">{{ task.statusLabel }}</dd>
+                </div>
+                <div>
+                  <dt class="font-medium text-slate-700">Prioritaet</dt>
+                  <dd class="text-slate-900">{{ task.priorityLabel }}</dd>
+                </div>
+                <div>
+                  <dt class="font-medium text-slate-700">Zustaendig</dt>
+                  <dd class="text-slate-900">{{ task.assigneeLabel }}</dd>
+                </div>
+              </dl>
+            </div>
+          }
+
+          @if (stakeholderDetails(); as stakeholder) {
+            <div class="space-y-3" data-testid="timeline-details-stakeholder">
+              <h3 class="text-sm font-semibold text-slate-900">Beteiligte Person</h3>
+              <dl class="space-y-2 text-sm">
+                <div>
+                  <dt class="font-medium text-slate-700">Name</dt>
+                  <dd class="text-slate-900">{{ stakeholder.fullName }}</dd>
+                </div>
+                <div>
+                  <dt class="font-medium text-slate-700">Rolle</dt>
+                  <dd class="text-slate-900">{{ stakeholder.roleLabel }}</dd>
+                </div>
+                <div>
+                  <dt class="font-medium text-slate-700">Zugeordneter Termin</dt>
+                  <dd class="text-slate-900">{{ stakeholder.relatedMeetingLabel }}</dd>
+                </div>
+              </dl>
+            </div>
+          }
+        </aside>
+      </div>
     }
   </app-tw-card>
 </section>

@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, input, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, computed, input, signal } from '@angular/core';
 import {
   TimelineGraphEdge,
   TimelineGraphMeetingNode,
+  TimelineGraphNodeType,
   TimelineGraphRenderModel,
   TimelineGraphResponse,
   TimelineGraphStakeholderNode,
@@ -117,6 +118,10 @@ const WHEEL_ZOOM_OUT_FACTOR = 1 / WHEEL_ZOOM_IN_FACTOR;
 export class TimelineGraphComponent {
   readonly renderModel = input<TimelineGraphRenderModel>({ nodes: [], edges: [] });
   readonly graphDto = input<TimelineGraphResponse | null>(null);
+  @Input() selectedNodeId: string | null = null;
+  @Input() selectedNodeType: TimelineGraphNodeType | null = null;
+  @Output() nodeSelected = new EventEmitter<{ nodeId: string; nodeType: TimelineGraphNodeType }>();
+  @Output() selectionCleared = new EventEmitter<void>();
   readonly layout = computed(() => buildTimelineGraphLayout(this.renderModel(), this.graphDto()));
   readonly panState = signal<PanState>(initialPanState());
   readonly isDragging = computed(() => this.panState().dragging);
@@ -165,6 +170,39 @@ export class TimelineGraphComponent {
       })
     );
     event.preventDefault();
+  }
+
+  onMeetingClick(nodeId: string, event: MouseEvent): void {
+    this.emitNodeSelected(nodeId, 'meeting', event);
+  }
+
+  onTaskClick(nodeId: string, event: MouseEvent): void {
+    this.emitNodeSelected(nodeId, 'task', event);
+  }
+
+  onStakeholderClick(nodeId: string, event: MouseEvent): void {
+    this.emitNodeSelected(nodeId, 'stakeholder', event);
+  }
+
+  onBackgroundClick(): void {
+    this.selectionCleared.emit();
+  }
+
+  isMeetingSelected(nodeId: string): boolean {
+    return this.selectedNodeType === 'meeting' && this.selectedNodeId === nodeId;
+  }
+
+  isTaskSelected(nodeId: string): boolean {
+    return this.selectedNodeType === 'task' && this.selectedNodeId === nodeId;
+  }
+
+  isStakeholderSelected(nodeId: string): boolean {
+    return this.selectedNodeType === 'stakeholder' && this.selectedNodeId === nodeId;
+  }
+
+  private emitNodeSelected(nodeId: string, nodeType: TimelineGraphNodeType, event: MouseEvent): void {
+    event.stopPropagation();
+    this.nodeSelected.emit({ nodeId, nodeType });
   }
 }
 

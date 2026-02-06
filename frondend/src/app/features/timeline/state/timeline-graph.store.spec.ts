@@ -86,10 +86,38 @@ describe('TimelineGraphStore', () => {
     store.selectNode('meeting:meeting-1', 'meeting');
     expect(store.selectedNodeId()).toBe('meeting:meeting-1');
     expect(store.selectedNodeType()).toBe('meeting');
+    expect(store.selectedDetails()).toEqual({
+      type: 'meeting',
+      nodeId: 'meeting:meeting-1',
+      title: 'Kickoff',
+      dateLabel: '20.02.2026 11:06',
+      locationLabel: 'Kita Langballig',
+      participantLabels: ['Anna L. — CONSULTANT', 'Ben M. — DIRECTOR']
+    });
+
+    store.selectNode('meeting:meeting-1:task:task-1', 'task');
+    expect(store.selectedDetails()).toEqual({
+      type: 'task',
+      nodeId: 'meeting:meeting-1:task:task-1',
+      title: 'Konzeptentwurf vorbereiten',
+      statusLabel: 'Offen',
+      priorityLabel: 'P2',
+      assigneeLabel: 'Anna L. — CONSULTANT'
+    });
+
+    store.selectNode('meeting:meeting-1:stakeholder:st-2', 'stakeholder');
+    expect(store.selectedDetails()).toEqual({
+      type: 'stakeholder',
+      nodeId: 'meeting:meeting-1:stakeholder:st-2',
+      fullName: 'Ben M.',
+      roleLabel: 'DIRECTOR',
+      relatedMeetingLabel: 'Kickoff (20.02.2026 11:06)'
+    });
 
     store.clearSelection();
     expect(store.selectedNodeId()).toBeNull();
     expect(store.selectedNodeType()).toBeNull();
+    expect(store.selectedDetails()).toBeNull();
   });
 
   it('sets missing-case-id and api errors', () => {

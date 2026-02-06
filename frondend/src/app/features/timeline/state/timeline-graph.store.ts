@@ -25,6 +25,39 @@ interface TimelineGraphStoreState {
   error?: StoreError;
 }
 
+interface TimelineGraphSelectionBase {
+  type: TimelineGraphNodeType;
+  nodeId: string;
+}
+
+export interface TimelineGraphMeetingSelectionDetails extends TimelineGraphSelectionBase {
+  type: 'meeting';
+  title: string;
+  dateLabel: string;
+  locationLabel: string;
+  participantLabels: string[];
+}
+
+export interface TimelineGraphTaskSelectionDetails extends TimelineGraphSelectionBase {
+  type: 'task';
+  title: string;
+  statusLabel: string;
+  priorityLabel: string;
+  assigneeLabel: string;
+}
+
+export interface TimelineGraphStakeholderSelectionDetails extends TimelineGraphSelectionBase {
+  type: 'stakeholder';
+  fullName: string;
+  roleLabel: string;
+  relatedMeetingLabel: string;
+}
+
+export type TimelineGraphSelectionDetails =
+  | TimelineGraphMeetingSelectionDetails
+  | TimelineGraphTaskSelectionDetails
+  | TimelineGraphStakeholderSelectionDetails;
+
 @Injectable({ providedIn: 'root' })
 export class TimelineGraphStore {
   readonly caseId = signal<string | null>(null);
@@ -37,6 +70,14 @@ export class TimelineGraphStore {
   readonly renderModel = computed(() => this.state().renderModel);
   readonly selectedNodeId = computed(() => this.state().selectedNodeId);
   readonly selectedNodeType = computed(() => this.state().selectedNodeType);
+  readonly selectedDetails = computed(() =>
+    buildSelectionDetails(
+      this.graphDto(),
+      this.renderModel(),
+      this.selectedNodeId(),
+      this.selectedNodeType()
+    )
+  );
 
   constructor(private readonly analyticsApi: AnalyticsApi) {}
 
@@ -223,6 +264,132 @@ const missingCaseIdError = (): StoreError => ({
   code: 'MISSING_CASE_ID',
   message: 'Prozess-ID fehlt'
 });
+
+const buildSelectionDetails = (
+  graphDto: TimelineGraphResponse | null,
+  renderModel: TimelineGraphRenderModel,
+  selectedNodeId: string | null,
+  selectedNodeType: TimelineGraphNodeType | null
+): TimelineGraphSelectionDetails | null => {
+  if (!graphDto || !selectedNodeId || !selectedNodeType) {
+    return null;
+  }
+  const selectedNode = renderModel.nodes.find(
+    (node) => node.id === selectedNodeId && node.type === selectedNodeType
+  );
+  if (!selectedNode) {
+    return null;
+  }
+
+  const stakeholdersById = buildStakeholderById(graphDto.stakeholders);
+
+  if (selectedNode.type === 'meeting') {
+    const meeting = graphDto.meetings.find((item) => item.id === selectedNode.meetingId);
+    if (!meeting) {
+      return null;
+    }
+    return {
+      type: 'meeting',
+      nodeId: selectedNode.id,
+      title: meeting.title?.trim() || 'Termin',
+      dateLabel: formatDateTimeLabel(meeting.performedAt ?? meeting.plannedAt),
+      locationLabel: meeting.locationLabel?.trim() || 'Ort offen',
+      participantLabels: meeting.participantStakeholderIds
+        .map((stakeholderId) => toStakeholderDisplayLabel(stakeholdersById.get(stakeholderId)))
+        .sort((left, right) => left.localeCompare(right))
+    };
+  }
+
+  if (selectedNode.type === 'task') {
+    const task = graphDto.tasks.find((item) => item.id === selectedNode.taskId);
+    if (!task) {
+      return null;
+    }
+    const assignee = task.assigneeId ? stakeholdersById.get(task.assigneeId) : null;
+    return {
+      type: 'task',
+      nodeId: selectedNode.id,
+      title: task.title?.trim() || 'Aufgabe',
+      statusLabel: toTaskStateLabel(task.state),
+      priorityLabel: `P${normalizePriority(task.priority)}`,
+      assigneeLabel: assignee ? toStakeholderDisplayLabel(assignee) : 'Nicht zugewiesen'
+    };
+  }
+
+  const stakeholderNode = selectedNode;
+  const stakeholder = stakeholdersById.get(stakeholderNode.stakeholderId);
+  const meeting = graphDto.meetings.find((item) => item.id === stakeholderNode.meetingId);
+  if (!stakeholder || !meeting) {
+    return null;
+  }
+
+  return {
+    type: 'stakeholder',
+    nodeId: stakeholderNode.id,
+    fullName: toFullName(stakeholder.firstName, stakeholder.lastName),
+    roleLabel: stakeholder.role,
+    relatedMeetingLabel: `${meeting.title?.trim() || 'Termin'} (${formatDateTimeLabel(
+      meeting.performedAt ?? meeting.plannedAt
+    )})`
+  };
+};
+
+const toTaskStateLabel = (state: string | null | undefined): string => {
+  if (!state) {
+    return 'Status offen';
+  }
+  switch (state) {
+    case 'OPEN':
+      return 'Offen';
+    case 'ASSIGNED':
+      return 'Zugewiesen';
+    case 'IN_PROGRESS':
+      return 'In Bearbeitung';
+    case 'BLOCKED':
+      return 'Blockiert';
+    case 'RESOLVED':
+      return 'Erledigt';
+    default:
+      return state;
+  }
+};
+
+const normalizePriority = (priority: number | null | undefined): number => {
+  if (!Number.isFinite(priority)) {
+    return 3;
+  }
+  return Math.min(Math.max(Math.trunc(priority as number), 1), 5);
+};
+
+const toFullName = (firstName: string | null | undefined, lastName: string | null | undefined): string => {
+  const fullName = `${firstName ?? ''} ${lastName ?? ''}`.trim();
+  return fullName || 'Unbekannt';
+};
+
+const toStakeholderDisplayLabel = (stakeholder?: TimelineGraphStakeholder): string => {
+  if (!stakeholder) {
+    return 'Unbekannt';
+  }
+  return `${toFullName(stakeholder.firstName, stakeholder.lastName)} — ${stakeholder.role}`;
+};
+
+const formatDateTimeLabel = (value: string | null | undefined): string => {
+  if (!value) {
+    return 'Datum offen';
+  }
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return 'Datum offen';
+  }
+  const day = pad2(parsed.getUTCDate());
+  const month = pad2(parsed.getUTCMonth() + 1);
+  const year = parsed.getUTCFullYear();
+  const hour = pad2(parsed.getUTCHours());
+  const minute = pad2(parsed.getUTCMinutes());
+  return `${day}.${month}.${year} ${hour}:${minute}`;
+};
+
+const pad2 = (value: number): string => value.toString().padStart(2, '0');
 
 const initialState = (): TimelineGraphStoreState => ({
   status: 'idle',

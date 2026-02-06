@@ -20,6 +20,7 @@
       (pointerleave)="onPointerUp($event)"
       (pointercancel)="onPointerCancel($event)"
       (wheel)="onWheel($event)"
+      (click)="onBackgroundClick()"
     >
       <g [attr.transform]="panTransform()" data-testid="timeline-pan-layer">
         <line
@@ -75,8 +76,20 @@
         }
 
         @for (task of layout().tasks; track task.id) {
-          <g [attr.transform]="'translate(' + task.x + ',' + task.y + ')'">
-            <rect width="220" height="74" rx="14" fill="#ffffff" stroke="#f1f5f9" />
+          <g
+            [attr.transform]="'translate(' + task.x + ',' + task.y + ')'"
+            class="cursor-pointer"
+            [attr.data-testid]="'timeline-node-task-' + task.id"
+            (click)="onTaskClick(task.id, $event)"
+          >
+            <rect
+              width="220"
+              height="74"
+              rx="14"
+              fill="#ffffff"
+              [attr.stroke]="isTaskSelected(task.id) ? '#0f172a' : '#f1f5f9'"
+              [attr.stroke-width]="isTaskSelected(task.id) ? 2.5 : 1"
+            />
             <text x="12" y="25" fill="#0f172a" class="text-xs font-semibold">
               {{ truncate(task.title, 33) }}
             </text>
@@ -93,8 +106,20 @@
         }
 
         @for (stakeholder of layout().stakeholders; track stakeholder.id) {
-          <g [attr.transform]="'translate(' + stakeholder.x + ',' + stakeholder.y + ')'">
-            <rect width="210" height="46" rx="12" fill="#ffffff" stroke="#dbeafe" />
+          <g
+            [attr.transform]="'translate(' + stakeholder.x + ',' + stakeholder.y + ')'"
+            class="cursor-pointer"
+            [attr.data-testid]="'timeline-node-stakeholder-' + stakeholder.id"
+            (click)="onStakeholderClick(stakeholder.id, $event)"
+          >
+            <rect
+              width="210"
+              height="46"
+              rx="12"
+              fill="#ffffff"
+              [attr.stroke]="isStakeholderSelected(stakeholder.id) ? '#1d4ed8' : '#dbeafe'"
+              [attr.stroke-width]="isStakeholderSelected(stakeholder.id) ? 2.5 : 1"
+            />
             <text x="12" y="28" fill="#1e3a8a" class="text-xs font-medium">
               {{ truncate(stakeholder.label, 34) }}
             </text>
@@ -102,9 +127,23 @@
         }
 
         @for (meeting of layout().meetings; track meeting.id) {
-          <g [attr.transform]="'translate(' + meeting.x + ',' + meeting.y + ')'">
-            <circle cx="0" cy="0" r="11" fill="#0f172a" />
-            <rect x="-110" y="18" width="220" height="38" rx="10" fill="#ffffff" stroke="#cbd5e1" />
+          <g
+            [attr.transform]="'translate(' + meeting.x + ',' + meeting.y + ')'"
+            class="cursor-pointer"
+            [attr.data-testid]="'timeline-node-meeting-' + meeting.id"
+            (click)="onMeetingClick(meeting.id, $event)"
+          >
+            <circle cx="0" cy="0" r="11" [attr.fill]="isMeetingSelected(meeting.id) ? '#ea580c' : '#0f172a'" />
+            <rect
+              x="-110"
+              y="18"
+              width="220"
+              height="38"
+              rx="10"
+              fill="#ffffff"
+              [attr.stroke]="isMeetingSelected(meeting.id) ? '#fdba74' : '#cbd5e1'"
+              [attr.stroke-width]="isMeetingSelected(meeting.id) ? 2.2 : 1"
+            />
             <text
               x="0"
               y="42"

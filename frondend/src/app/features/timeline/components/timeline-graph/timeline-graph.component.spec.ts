@@ -218,6 +218,38 @@ describe('TimelineGraphComponent', () => {
     expect(transformAfterZoomIn).toContain('scale(');
     expect(transformAfterZoomIn).not.toBe('translate(0,0) scale(1)');
   });
+
+  it('emits selected node and applies selected styling', () => {
+    TestBed.configureTestingModule({
+      imports: [TimelineGraphComponent]
+    });
+
+    const fixture = TestBed.createComponent(TimelineGraphComponent);
+    fixture.componentRef.setInput('graphDto', graphDtoFixture);
+    fixture.componentRef.setInput('renderModel', renderModelFixture);
+    fixture.componentRef.setInput('selectedNodeId', 'meeting:meeting-1:task:task-1');
+    fixture.componentRef.setInput('selectedNodeType', 'task');
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    const selectedEvents: Array<{ nodeId: string; nodeType: string }> = [];
+    component.nodeSelected.subscribe((event) => selectedEvents.push(event));
+
+    const root = fixture.nativeElement as HTMLElement;
+    const taskNode = root.querySelector(
+      '[data-testid="timeline-node-task-meeting:meeting-1:task:task-1"]'
+    ) as SVGGElement;
+    const taskRect = taskNode.querySelector('rect') as SVGRectElement;
+    expect(taskRect.getAttribute('stroke')).toBe('#0f172a');
+
+    taskNode.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(selectedEvents).toEqual([{
+      nodeId: 'meeting:meeting-1:task:task-1',
+      nodeType: 'task'
+    }]);
+  });
 });
 
 const dispatchPointerEvent = (

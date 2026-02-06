@@ -6,6 +6,7 @@ import { TimelineGraphStore } from '../../state/timeline-graph.store';
 import { TimelineGraphComponent } from '../../components/timeline-graph/timeline-graph.component';
 import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
 import { TwCardComponent } from '../../../../shared/ui/tw/tw-card.component';
+import { TimelineGraphNodeType } from '../../../../core/models/timeline-graph.model';
 
 @Component({
   selector: 'app-timeline-tab-page',
@@ -23,6 +24,21 @@ export class TimelineTabPageComponent implements OnInit {
   readonly isLoading = this.timelineGraphStore.isLoading;
   readonly graphDto = this.timelineGraphStore.graphDto;
   readonly renderModel = this.timelineGraphStore.renderModel;
+  readonly selectedNodeId = this.timelineGraphStore.selectedNodeId;
+  readonly selectedNodeType = this.timelineGraphStore.selectedNodeType;
+  readonly selectedDetails = this.timelineGraphStore.selectedDetails;
+  readonly meetingDetails = computed(() => {
+    const details = this.selectedDetails();
+    return details?.type === 'meeting' ? details : null;
+  });
+  readonly taskDetails = computed(() => {
+    const details = this.selectedDetails();
+    return details?.type === 'task' ? details : null;
+  });
+  readonly stakeholderDetails = computed(() => {
+    const details = this.selectedDetails();
+    return details?.type === 'stakeholder' ? details : null;
+  });
   readonly isEmpty = computed(
     () => this.status() === 'success' && this.renderModel().nodes.length === 0 && this.renderModel().edges.length === 0
   );
@@ -40,5 +56,13 @@ export class TimelineTabPageComponent implements OnInit {
 
   retry(): void {
     this.timelineGraphStore.loadTimelineGraph().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+  }
+
+  onNodeSelected(selection: { nodeId: string; nodeType: TimelineGraphNodeType }): void {
+    this.timelineGraphStore.selectNode(selection.nodeId, selection.nodeType);
+  }
+
+  clearSelection(): void {
+    this.timelineGraphStore.clearSelection();
   }
 }

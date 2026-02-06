@@ -1,7 +1,7 @@
 <section class="space-y-6">
   <header class="space-y-2">
     <h2 class="text-xl font-semibold text-slate-900">Zeitlinie</h2>
-    <p class="text-sm text-slate-600">Alle Aktivitaeten fuer diesen Prozess in zeitlicher Reihenfolge.</p>
+    <p class="text-sm text-slate-600">Graphische Sicht auf Termine, Aufgaben und Beteiligte entlang der Zeitachse.</p>
   </header>
 
   <app-tw-card [className]="'space-y-4'">
@@ -14,7 +14,7 @@
 
     @if (status() === 'error') {
       <div class="space-y-2">
-        <p class="text-sm font-semibold text-slate-900">Zeitlinie konnte nicht geladen werden</p>
+        <p class="text-sm font-semibold text-slate-900">Zeitlinien-Graph konnte nicht geladen werden</p>
         <p class="text-sm text-slate-600">{{ error()?.message ?? 'Unbekannter Fehler' }}</p>
         <button appTwButton="ghost" size="sm" type="button" (click)="retry()">Erneut versuchen</button>
       </div>
@@ -23,12 +23,12 @@
     @if (isEmpty()) {
       <div class="space-y-2">
         <p class="text-sm font-semibold text-slate-900">Noch keine Eintraege vorhanden</p>
-        <p class="text-sm text-slate-600">Termine und Aufgaben erscheinen hier, sobald sie erstellt wurden.</p>
+        <p class="text-sm text-slate-600">Termine, Aufgaben und Beteiligte erscheinen hier, sobald Daten vorliegen.</p>
       </div>
     }
 
-    @if (status() === 'success' && entries().length > 0) {
-      <app-timeline-list [entries]="entries()" />
+    @if (status() === 'success' && !isEmpty()) {
+      <app-timeline-graph [graphDto]="graphDto()" [renderModel]="renderModel()" />
     }
   </app-tw-card>
 </section>

@@ -2,60 +2,43 @@ import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, OnInit, computed, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { TimelineStore } from '../../state/timeline.store';
-import { TimelineListComponent } from '../../components/timeline-list/timeline-list.component';
-import { TasksStore } from '../../../tasks/state/tasks.store';
-import { StakeholdersStore } from '../../../stakeholders/state/stakeholders.store';
-import { LocationsStore } from '../../../locations/state/locations.store';
+import { TimelineGraphStore } from '../../state/timeline-graph.store';
+import { TimelineGraphComponent } from '../../components/timeline-graph/timeline-graph.component';
 import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
 import { TwCardComponent } from '../../../../shared/ui/tw/tw-card.component';
 
 @Component({
   selector: 'app-timeline-tab-page',
   standalone: true,
-  imports: [CommonModule, TimelineListComponent, TwButtonDirective, TwCardComponent],
+  imports: [CommonModule, TimelineGraphComponent, TwButtonDirective, TwCardComponent],
   templateUrl: './timeline-tab.page.html'
 })
 export class TimelineTabPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
-  readonly timelineStore = inject(TimelineStore);
-  readonly tasksStore = inject(TasksStore);
-  readonly stakeholdersStore = inject(StakeholdersStore);
-  readonly locationsStore = inject(LocationsStore);
+  readonly timelineGraphStore = inject(TimelineGraphStore);
 
-  readonly timeline = this.timelineStore.timeline;
-  readonly status = this.timelineStore.status;
-  readonly error = this.timelineStore.error;
-  readonly isLoading = this.timelineStore.isLoading;
-  readonly isEmpty = this.timelineStore.isEmpty;
-
-  readonly entries = computed(() => {
-    const list = this.timeline()?.entries ?? [];
-    return [...list].sort((a, b) => toTime(a.occurredAt) - toTime(b.occurredAt));
-  });
+  readonly status = this.timelineGraphStore.status;
+  readonly error = this.timelineGraphStore.error;
+  readonly isLoading = this.timelineGraphStore.isLoading;
+  readonly graphDto = this.timelineGraphStore.graphDto;
+  readonly renderModel = this.timelineGraphStore.renderModel;
+  readonly isEmpty = computed(
+    () => this.status() === 'success' && this.renderModel().nodes.length === 0 && this.renderModel().edges.length === 0
+  );
 
   ngOnInit(): void {
     const parentRoute = this.route.parent ?? this.route;
     parentRoute.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const caseId = params.get('caseId');
       if (caseId) {
-        this.timelineStore.setCaseId(caseId);
-        this.tasksStore.setCaseId(caseId);
-        this.tasksStore.loadTasks().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+        this.timelineGraphStore.setCaseId(caseId);
+        this.timelineGraphStore.loadTimelineGraph().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
       }
-      this.timelineStore.loadTimeline().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
     });
-    this.stakeholdersStore.loadStakeholders().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
-    this.locationsStore.loadLocations().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
   retry(): void {
-    this.timelineStore.loadTimeline().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+    this.timelineGraphStore.loadTimelineGraph().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 }
-
-const toTime = (value: string): number => {
-  const parsed = new Date(value).getTime();
-  return Number.isNaN(parsed) ? Number.MAX_SAFE_INTEGER : parsed;
-};

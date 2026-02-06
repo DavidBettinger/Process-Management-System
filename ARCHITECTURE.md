@@ -831,6 +831,66 @@ Response:
 }
 ```
 
+Timeline Graph (single-call read model for timeline tab)
+GET /api/cases/{caseId}/timeline-graph
+Response:
+```json
+{
+  "caseId": "case-uuid",
+  "generatedAt": "2026-02-06T12:00:00Z",
+  "now": "2026-02-06T12:00:00Z",
+  "meetings": [
+    {
+      "id": "meeting-uuid",
+      "status": "PLANNED",
+      "plannedAt": "2026-02-20T11:06:00Z",
+      "performedAt": null,
+      "title": "Kickoff",
+      "locationLabel": "Kita Langballig",
+      "participantStakeholderIds": ["st-1", "st-2"]
+    }
+  ],
+  "stakeholders": [
+    { "id": "st-1", "firstName": "Anna", "lastName": "L.", "role": "LEITUNG" }
+  ],
+  "tasks": [
+    {
+      "id": "task-uuid",
+      "title": "Konzeptentwurf vorbereiten",
+      "state": "OPEN",
+      "priority": 2,
+      "assigneeId": "st-1",
+      "createdFromMeetingId": "meeting-uuid",
+      "dueDate": "2026-02-28"
+    }
+  ]
+}
+```
+
+Semantics and rules:
+•	This endpoint is a dedicated graph read model for the Timeline tab and returns all required nodes in one call.
+•	Meetings included: planned + performed meetings only; canceled/aborted meetings are excluded.
+•	Meeting status mapping for this read model:
+•	  domain `SCHEDULED` -> graph `PLANNED`
+•	  domain `HELD` -> graph `PERFORMED`
+•	Meeting timestamp used for graph X-axis (`graphAt`) is derived as:
+•	  if `performedAt != null`, use `performedAt`
+•	  else use `plannedAt`
+•	Stakeholders in `stakeholders[]` are only those referenced by:
+•	  `meetings[].participantStakeholderIds`
+•	  `tasks[].assigneeId` (when not null)
+•	Tasks in `tasks[]` are all tasks belonging to the case.
+•	`createdFromMeetingId` is nullable:
+•	  if non-null, it references a meeting in `meetings[]`
+•	  if null, the task is returned as an unlinked task ("ohne Termin" bucket on UI side)
+•	Sorting:
+•	  `meetings[]` sorted by derived `graphAt` ascending (oldest -> newest)
+•	  `tasks[]` sorted by linked meeting `graphAt` ascending; unlinked tasks come last
+•	  tie-breaker for equal timestamps: task id ascending
+•	`generatedAt` is the server timestamp when the DTO is built.
+•	`now` is the server "current time" used by the frontend to render the "Heute" marker.
+•	For consistency with existing task APIs that still expose `originMeetingId`, `createdFromMeetingId` has the same semantic meaning in this read model.
+
 Edge Cases & Validation
 1) Location not found:
    - Creating a Kita with unknown `locationId` returns 404.

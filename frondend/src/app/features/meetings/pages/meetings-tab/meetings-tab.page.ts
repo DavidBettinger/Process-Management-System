@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnInit, effect, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, TemplateRef, ViewChild, effect, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -16,6 +16,11 @@ import { TwFieldComponent } from '../../../../shared/ui/tw/tw-field.component';
 import { TwBadgeComponent } from '../../../../shared/ui/tw/tw-badge.component';
 import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
 import { isControlInvalid, requiredMessage } from '../../../../shared/forms/form-utils';
+import {
+  ConfirmDialogService,
+  DialogRef,
+  TemplateDialogContext
+} from '../../../../shared/ui/confirm-dialog/confirm-dialog.service';
 
 @Component({
   selector: 'app-meetings-tab-page',
@@ -33,9 +38,13 @@ import { isControlInvalid, requiredMessage } from '../../../../shared/forms/form
   templateUrl: './meetings-tab.page.html'
 })
 export class MeetingsTabPageComponent implements OnInit {
+  @ViewChild('scheduleDialog') private scheduleDialog?: TemplateRef<TemplateDialogContext>;
+  private scheduleDialogRef: DialogRef | null = null;
+
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly formBuilder = inject(FormBuilder);
+  private readonly confirmDialog = inject(ConfirmDialogService);
   readonly meetingsStore = inject(MeetingsStore);
   readonly locationsStore = inject(LocationsStore);
   readonly kitasStore = inject(KitasStore);
@@ -86,6 +95,28 @@ export class MeetingsTabPageComponent implements OnInit {
     this.stakeholdersStore.loadStakeholders().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
+  openScheduleDialog(): void {
+    if (this.scheduleDialogRef || !this.scheduleDialog) {
+      return;
+    }
+    const dialogRef = this.confirmDialog.openTemplate({
+      title: 'Termin planen',
+      template: this.scheduleDialog,
+      panelClass: 'max-w-2xl'
+    });
+    this.scheduleDialogRef = dialogRef;
+    dialogRef.afterClosed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      if (this.scheduleDialogRef === dialogRef) {
+        this.scheduleDialogRef = null;
+      }
+      this.resetScheduleForm();
+    });
+  }
+
+  closeScheduleDialog(): void {
+    this.scheduleDialogRef?.close();
+  }
+
   submitSchedule(): void {
     this.scheduleParticipantsError = null;
     if (this.scheduleForm.invalid) {
@@ -111,8 +142,7 @@ export class MeetingsTabPageComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         if (this.meetingsStore.status() !== 'error') {
-          this.scheduleForm.reset({ scheduledAt: '', locationId: '' });
-          this.scheduleParticipants = [''];
+          this.closeScheduleDialog();
         }
       });
   }
@@ -187,6 +217,12 @@ export class MeetingsTabPageComponent implements OnInit {
     }
     const kita = this.kitasStore.kitas().find((item) => item.id === caseData.kitaId);
     return kita?.locationId ?? null;
+  }
+
+  private resetScheduleForm(): void {
+    this.scheduleForm.reset({ scheduledAt: '', locationId: '' });
+    this.scheduleParticipants = [''];
+    this.scheduleParticipantsError = null;
   }
 }
 

@@ -20,109 +20,7 @@
         <p class="text-sm text-slate-600">Lege einen Termin fuer diesen Prozess an.</p>
       </header>
 
-      <form class="space-y-4" [formGroup]="scheduleForm" (ngSubmit)="submitSchedule()">
-        <app-tw-field
-          label="Geplant am"
-          forId="meeting-scheduled-at"
-          [required]="true"
-          [error]="isScheduleInvalid('scheduledAt') ? requiredMessage('Geplant am') : null"
-        >
-          <input
-            id="meeting-scheduled-at"
-            type="datetime-local"
-            formControlName="scheduledAt"
-            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
-          />
-        </app-tw-field>
-
-        <app-tw-field
-          label="Standort"
-          forId="meeting-location"
-          [required]="true"
-          [error]="isScheduleInvalid('locationId') ? requiredMessage('Standort') : null"
-        >
-          <select
-            id="meeting-location"
-            formControlName="locationId"
-            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
-          >
-            <option value="">Bitte waehlen</option>
-            @for (location of locations(); track location.id) {
-              <option [value]="location.id">
-                {{ location.label }} · {{ location.address.city }}
-              </option>
-            }
-          </select>
-        </app-tw-field>
-
-        @if (locationsStatus() === 'error') {
-          <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-            <p class="font-semibold">Standorte konnten nicht geladen werden</p>
-            <p class="mt-1 text-sm">{{ locationsError()?.message ?? 'Unbekannter Fehler' }}</p>
-            <button
-              appTwButton="ghost"
-              size="sm"
-              type="button"
-              class="mt-3"
-              (click)="retryLocations()"
-            >
-              Erneut versuchen
-            </button>
-          </div>
-        }
-
-        <div class="space-y-3">
-          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <p class="text-sm font-semibold text-slate-900">Teilnehmende</p>
-            <button appTwButton="ghost" size="sm" type="button" (click)="addScheduleParticipant()">
-              Teilnehmende hinzufuegen
-            </button>
-          </div>
-          @for (participantId of scheduleParticipants; track $index; let i = $index) {
-            <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-              <app-stakeholder-select
-                class="w-full"
-                [stakeholders]="stakeholders()"
-                [selectedId]="participantId || null"
-                [disabled]="stakeholdersStatus() !== 'success'"
-                [required]="true"
-                (selectedIdChange)="updateScheduleParticipant(i, $event)"
-              />
-              <button
-                appTwButton="ghost"
-                size="sm"
-                type="button"
-                (click)="removeScheduleParticipant(i)"
-                [disabled]="scheduleParticipants.length === 1"
-              >
-                Entfernen
-              </button>
-            </div>
-          }
-          @if (scheduleParticipantsError) {
-            <p class="text-xs font-medium text-rose-600">{{ scheduleParticipantsError }}</p>
-          }
-          @if (stakeholdersStatus() === 'loading') {
-            <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-600">
-              Beteiligte werden geladen
-            </div>
-          }
-          @if (stakeholdersStatus() === 'error') {
-            <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700">
-              <p>Beteiligte konnten nicht geladen werden</p>
-              <p class="mt-1 text-xs font-normal">{{ stakeholdersError()?.message ?? 'Unbekannter Fehler' }}</p>
-            </div>
-          }
-        </div>
-
-        <button
-          appTwButton="primary"
-          type="submit"
-          [disabled]="isLoading() || stakeholdersStatus() !== 'success'"
-        >
-          Termin planen
-        </button>
-      </form>
+      <button appTwButton="primary" type="button" (click)="openScheduleDialog()">Termin planen</button>
 
       @if (meetings().length === 0) {
         <div class="rounded-xl border border-dashed border-slate-200 px-4 py-3 text-sm text-slate-600">
@@ -168,4 +66,103 @@
       />
     </app-tw-card>
   </div>
+
+  <ng-template #scheduleDialog>
+    <form class="space-y-4" [formGroup]="scheduleForm" (ngSubmit)="submitSchedule()">
+      <app-tw-field
+        label="Geplant am"
+        forId="meeting-scheduled-at"
+        [required]="true"
+        [error]="isScheduleInvalid('scheduledAt') ? requiredMessage('Geplant am') : null"
+      >
+        <input
+          id="meeting-scheduled-at"
+          type="datetime-local"
+          formControlName="scheduledAt"
+          class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+        />
+      </app-tw-field>
+
+      <app-tw-field
+        label="Standort"
+        forId="meeting-location"
+        [required]="true"
+        [error]="isScheduleInvalid('locationId') ? requiredMessage('Standort') : null"
+      >
+        <select
+          id="meeting-location"
+          formControlName="locationId"
+          class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+        >
+          <option value="">Bitte waehlen</option>
+          @for (location of locations(); track location.id) {
+            <option [value]="location.id">
+              {{ location.label }} · {{ location.address.city }}
+            </option>
+          }
+        </select>
+      </app-tw-field>
+
+      @if (locationsStatus() === 'error') {
+        <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          <p class="font-semibold">Standorte konnten nicht geladen werden</p>
+          <p class="mt-1 text-sm">{{ locationsError()?.message ?? 'Unbekannter Fehler' }}</p>
+          <button appTwButton="ghost" size="sm" type="button" class="mt-3" (click)="retryLocations()">
+            Erneut versuchen
+          </button>
+        </div>
+      }
+
+      <div class="space-y-3">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p class="text-sm font-semibold text-slate-900">Teilnehmende</p>
+          <button appTwButton="ghost" size="sm" type="button" (click)="addScheduleParticipant()">
+            Teilnehmende hinzufuegen
+          </button>
+        </div>
+        @for (participantId of scheduleParticipants; track $index; let i = $index) {
+          <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+            <app-stakeholder-select
+              class="w-full"
+              [stakeholders]="stakeholders()"
+              [selectedId]="participantId || null"
+              [disabled]="stakeholdersStatus() !== 'success'"
+              [required]="true"
+              (selectedIdChange)="updateScheduleParticipant(i, $event)"
+            />
+            <button
+              appTwButton="ghost"
+              size="sm"
+              type="button"
+              (click)="removeScheduleParticipant(i)"
+              [disabled]="scheduleParticipants.length === 1"
+            >
+              Entfernen
+            </button>
+          </div>
+        }
+        @if (scheduleParticipantsError) {
+          <p class="text-xs font-medium text-rose-600">{{ scheduleParticipantsError }}</p>
+        }
+        @if (stakeholdersStatus() === 'loading') {
+          <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-600">
+            Beteiligte werden geladen
+          </div>
+        }
+        @if (stakeholdersStatus() === 'error') {
+          <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700">
+            <p>Beteiligte konnten nicht geladen werden</p>
+            <p class="mt-1 text-xs font-normal">{{ stakeholdersError()?.message ?? 'Unbekannter Fehler' }}</p>
+          </div>
+        }
+      </div>
+
+      <div class="flex flex-wrap justify-end gap-3">
+        <button appTwButton="ghost" type="button" (click)="closeScheduleDialog()">Abbrechen</button>
+        <button appTwButton="primary" type="submit" [disabled]="isLoading() || stakeholdersStatus() !== 'success'">
+          Termin planen
+        </button>
+      </div>
+    </form>
+  </ng-template>
 </section>

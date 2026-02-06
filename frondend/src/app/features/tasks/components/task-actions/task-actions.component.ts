@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Task, TaskResolutionKind } from '../../../../core/models/task.model';
 import { Stakeholder } from '../../../../core/models/stakeholder.model';
@@ -34,9 +34,10 @@ interface ResolvePayload {
   imports: [CommonModule, ReactiveFormsModule, StakeholderSelectComponent, TwButtonDirective],
   templateUrl: './task-actions.component.html'
 })
-export class TaskActionsComponent implements OnChanges {
+export class TaskActionsComponent {
   private readonly formBuilder = inject(FormBuilder);
   private taskValue!: Task;
+  private stakeholdersValue: Stakeholder[] = [];
   @Input({ required: true })
   set task(value: Task) {
     this.taskValue = value;
@@ -46,7 +47,16 @@ export class TaskActionsComponent implements OnChanges {
     return this.taskValue;
   }
   @Input() busy = false;
-  @Input() stakeholders: Stakeholder[] = [];
+  @Input()
+  set stakeholders(value: Stakeholder[]) {
+    this.stakeholdersValue = value ?? [];
+    if (this.taskValue) {
+      this.syncAssigneeSelection(this.taskValue);
+    }
+  }
+  get stakeholders(): Stakeholder[] {
+    return this.stakeholdersValue;
+  }
   @Input() stakeholdersReady = true;
 
   @Output() assign = new EventEmitter<AssignPayload>();
@@ -171,15 +181,10 @@ export class TaskActionsComponent implements OnChanges {
     this.resolveForm.reset({ kind: 'COMPLETED', reason: '' });
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['stakeholders'] && this.taskValue) {
-      this.syncAssigneeSelection(this.taskValue);
-    }
-  }
-
   private syncAssigneeSelection(task: Task): void {
     const assigneeId = task.assigneeId ?? null;
-    const hasMatch = !!assigneeId && this.stakeholders.some((stakeholder) => stakeholder.id === assigneeId);
+    const hasMatch =
+      !!assigneeId && this.stakeholdersValue.some((stakeholder) => stakeholder.id === assigneeId);
     this.assignForm.controls.assigneeId.setValue(hasMatch ? assigneeId : '', { emitEvent: false });
   }
 }

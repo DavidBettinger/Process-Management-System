@@ -124,6 +124,11 @@ We are NOT doing full event sourcing in MVP 1.
 - status (NEW, PUBLISHED) [optional in MVP]
 - traceId [optional]
 
+### Local Dev Database (H2)
+- Dev profile uses a file-based H2 database so data survives restarts.
+- DB file location: `./data/app-db` (relative to the backend working directory).
+- Test profile uses in-memory H2 for fast, hermetic tests.
+
 ## 5) APIs (MVP 1)
 
 ### Data Contracts (DTOs)

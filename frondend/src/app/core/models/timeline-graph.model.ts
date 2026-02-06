@@ -39,4 +39,49 @@ export interface TimelineGraphResponse {
   tasks: TimelineGraphTask[];
 }
 
+export type TimelineGraphNodeType = 'meeting' | 'task' | 'stakeholder';
+export type TimelineGraphEdgeType = 'created-from' | 'participation' | 'assignment';
+
+export interface TimelineGraphNodeBase {
+  id: string;
+  type: TimelineGraphNodeType;
+  label: string;
+}
+
+export interface TimelineGraphMeetingNode extends TimelineGraphNodeBase {
+  type: 'meeting';
+  meetingId: string;
+  graphAt?: string | null;
+}
+
+export interface TimelineGraphTaskNode extends TimelineGraphNodeBase {
+  type: 'task';
+  taskId: string;
+  meetingId?: string | null;
+  assigneeId?: string | null;
+}
+
+export interface TimelineGraphStakeholderNode extends TimelineGraphNodeBase {
+  type: 'stakeholder';
+  stakeholderId: string;
+  meetingId: string;
+}
+
+export type TimelineGraphNode =
+  | TimelineGraphMeetingNode
+  | TimelineGraphTaskNode
+  | TimelineGraphStakeholderNode;
+
+export interface TimelineGraphEdge {
+  id: string;
+  type: TimelineGraphEdgeType;
+  sourceId: string;
+  targetId: string;
+}
+
+export interface TimelineGraphRenderModel {
+  nodes: TimelineGraphNode[];
+  edges: TimelineGraphEdge[];
+}
+
 export type CaseTimelineGraph = TimelineGraphResponse;

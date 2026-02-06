@@ -3,7 +3,13 @@ import {
   TimelineGraphRenderModel,
   TimelineGraphResponse
 } from '../../../../core/models/timeline-graph.model';
-import { TimelineGraphComponent } from './timeline-graph.component';
+import {
+  endPan,
+  initialPanState,
+  movePan,
+  startPan,
+  TimelineGraphComponent
+} from './timeline-graph.component';
 
 describe('TimelineGraphComponent', () => {
   const graphDtoFixture: TimelineGraphResponse = {
@@ -114,4 +120,66 @@ describe('TimelineGraphComponent', () => {
     expect(text).not.toContain('task-1');
     expect(text).not.toContain('st-1');
   });
+
+  it('updates pan transform on pointer drag', () => {
+    TestBed.configureTestingModule({
+      imports: [TimelineGraphComponent]
+    });
+
+    const fixture = TestBed.createComponent(TimelineGraphComponent);
+    fixture.componentRef.setInput('graphDto', graphDtoFixture);
+    fixture.componentRef.setInput('renderModel', renderModelFixture);
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement as HTMLElement;
+    const svg = root.querySelector('[data-testid="timeline-graph-svg"]') as SVGElement;
+    const panLayer = root.querySelector('[data-testid="timeline-pan-layer"]') as SVGGElement;
+    expect(panLayer.getAttribute('transform')).toBe('translate(0,0)');
+
+    dispatchPointerEvent(svg, 'pointerdown', 100, 120, 1);
+    dispatchPointerEvent(svg, 'pointermove', 160, 170, 1);
+    fixture.detectChanges();
+
+    expect(panLayer.getAttribute('transform')).toBe('translate(60,50)');
+    expect(root.querySelector('.cursor-grabbing')).not.toBeNull();
+
+    dispatchPointerEvent(svg, 'pointerup', 160, 170, 1);
+    dispatchPointerEvent(svg, 'pointermove', 200, 210, 1);
+    fixture.detectChanges();
+
+    expect(panLayer.getAttribute('transform')).toBe('translate(60,50)');
+    expect(root.querySelector('.cursor-grab')).not.toBeNull();
+  });
+
+  it('pan reducer starts, moves, and stops dragging', () => {
+    const started = startPan(initialPanState(), { pointerId: 4, clientX: 10, clientY: 20 });
+    expect(started.dragging).toBe(true);
+    expect(started.translationX).toBe(0);
+    expect(started.translationY).toBe(0);
+
+    const moved = movePan(started, { pointerId: 4, clientX: 35, clientY: 50 });
+    expect(moved.translationX).toBe(25);
+    expect(moved.translationY).toBe(30);
+
+    const ended = endPan(moved, { pointerId: 4, clientX: 35, clientY: 50 });
+    expect(ended.dragging).toBe(false);
+
+    const ignoredMove = movePan(ended, { pointerId: 4, clientX: 60, clientY: 90 });
+    expect(ignoredMove.translationX).toBe(25);
+    expect(ignoredMove.translationY).toBe(30);
+  });
 });
+
+const dispatchPointerEvent = (
+  element: Element,
+  type: string,
+  clientX: number,
+  clientY: number,
+  pointerId: number
+): void => {
+  const event = new Event(type, { bubbles: true, cancelable: true }) as PointerEvent;
+  Object.defineProperty(event, 'clientX', { value: clientX });
+  Object.defineProperty(event, 'clientY', { value: clientY });
+  Object.defineProperty(event, 'pointerId', { value: pointerId });
+  element.dispatchEvent(event);
+};

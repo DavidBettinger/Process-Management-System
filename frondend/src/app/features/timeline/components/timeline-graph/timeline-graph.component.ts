@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, input, signal } from '@angular/core';
 import {
   TimelineGraphEdge,
   TimelineGraphMeetingNode,
@@ -70,6 +70,23 @@ interface NodeBox {
   height: number;
 }
 
+interface PanPointer {
+  pointerId: number;
+  clientX: number;
+  clientY: number;
+}
+
+export interface PanState {
+  translationX: number;
+  translationY: number;
+  dragging: boolean;
+  pointerId: number | null;
+  dragStartClientX: number;
+  dragStartClientY: number;
+  dragStartTranslationX: number;
+  dragStartTranslationY: number;
+}
+
 const TASK_ROW_Y = 90;
 const AXIS_Y = 250;
 const STAKEHOLDER_ROW_Y = 335;
@@ -90,12 +107,35 @@ export class TimelineGraphComponent {
   readonly renderModel = input<TimelineGraphRenderModel>({ nodes: [], edges: [] });
   readonly graphDto = input<TimelineGraphResponse | null>(null);
   readonly layout = computed(() => buildTimelineGraphLayout(this.renderModel(), this.graphDto()));
+  readonly panState = signal<PanState>(initialPanState());
+  readonly isDragging = computed(() => this.panState().dragging);
+  readonly panTransform = computed(() => toPanTransform(this.panState()));
 
   truncate(label: string, maxLength: number): string {
     if (!label || label.length <= maxLength) {
       return label;
     }
     return `${label.slice(0, Math.max(0, maxLength - 3))}...`;
+  }
+
+  onPointerDown(event: PointerEvent): void {
+    this.panState.update((state) => startPan(state, toPanPointer(event)));
+    event.preventDefault();
+  }
+
+  onPointerMove(event: PointerEvent): void {
+    this.panState.update((state) => movePan(state, toPanPointer(event)));
+    if (this.isDragging()) {
+      event.preventDefault();
+    }
+  }
+
+  onPointerUp(event: PointerEvent): void {
+    this.panState.update((state) => endPan(state, toPanPointer(event)));
+  }
+
+  onPointerCancel(event: PointerEvent): void {
+    this.panState.update((state) => endPan(state, toPanPointer(event)));
   }
 }
 
@@ -411,3 +451,60 @@ const normalizePriority = (priority: number | null | undefined): number => {
 };
 
 const clamp = (value: number, min: number, max: number): number => Math.min(Math.max(value, min), max);
+
+export const initialPanState = (): PanState => ({
+  translationX: 0,
+  translationY: 0,
+  dragging: false,
+  pointerId: null,
+  dragStartClientX: 0,
+  dragStartClientY: 0,
+  dragStartTranslationX: 0,
+  dragStartTranslationY: 0
+});
+
+export const startPan = (state: PanState, pointer: PanPointer): PanState => ({
+  ...state,
+  dragging: true,
+  pointerId: pointer.pointerId,
+  dragStartClientX: pointer.clientX,
+  dragStartClientY: pointer.clientY,
+  dragStartTranslationX: state.translationX,
+  dragStartTranslationY: state.translationY
+});
+
+export const movePan = (state: PanState, pointer: PanPointer): PanState => {
+  if (!state.dragging) {
+    return state;
+  }
+  if (state.pointerId !== null && pointer.pointerId !== state.pointerId) {
+    return state;
+  }
+  return {
+    ...state,
+    translationX: state.dragStartTranslationX + (pointer.clientX - state.dragStartClientX),
+    translationY: state.dragStartTranslationY + (pointer.clientY - state.dragStartClientY)
+  };
+};
+
+export const endPan = (state: PanState, pointer?: PanPointer): PanState => {
+  if (!state.dragging) {
+    return state;
+  }
+  if (pointer && state.pointerId !== null && pointer.pointerId !== state.pointerId) {
+    return state;
+  }
+  return {
+    ...state,
+    dragging: false,
+    pointerId: null
+  };
+};
+
+export const toPanTransform = (state: PanState): string => `translate(${state.translationX},${state.translationY})`;
+
+const toPanPointer = (event: PointerEvent): PanPointer => ({
+  pointerId: Number.isFinite(event.pointerId) ? event.pointerId : 1,
+  clientX: Number.isFinite(event.clientX) ? event.clientX : 0,
+  clientY: Number.isFinite(event.clientY) ? event.clientY : 0
+});

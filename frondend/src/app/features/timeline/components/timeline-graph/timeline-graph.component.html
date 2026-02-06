@@ -1,4 +1,10 @@
-<div class="overflow-x-auto rounded-2xl border border-slate-200 bg-slate-50 p-4">
+<!--suppress HtmlUnknownAttribute -->
+<div
+  class="overflow-x-auto rounded-2xl border border-slate-200 bg-slate-50 p-4 touch-none"
+  [class.cursor-grab]="layout().hasContent && !isDragging()"
+  [class.cursor-grabbing]="layout().hasContent && isDragging()"
+  [class.select-none]="isDragging()"
+>
   @if (layout().hasContent) {
     <svg
       [attr.width]="layout().width"
@@ -8,101 +14,108 @@
       role="img"
       aria-label="Zeitlinien-Graph"
       data-testid="timeline-graph-svg"
+      (pointerdown)="onPointerDown($event)"
+      (pointermove)="onPointerMove($event)"
+      (pointerup)="onPointerUp($event)"
+      (pointerleave)="onPointerUp($event)"
+      (pointercancel)="onPointerCancel($event)"
     >
-      <line
-        [attr.x1]="layout().axisStartX"
-        [attr.y1]="layout().axisY"
-        [attr.x2]="layout().axisEndX"
-        [attr.y2]="layout().axisY"
-        stroke="#94a3b8"
-        stroke-width="2"
-      />
-
-      <line
-        [attr.x1]="layout().nowX"
-        [attr.y1]="52"
-        [attr.x2]="layout().nowX"
-        [attr.y2]="420"
-        stroke="#f97316"
-        stroke-width="2"
-        stroke-dasharray="5 5"
-        data-testid="today-marker-line"
-      />
-      <text
-        [attr.x]="layout().nowX + 8"
-        y="42"
-        fill="#c2410c"
-        class="text-xs font-semibold"
-        data-testid="today-marker-label"
-      >
-        Heute
-      </text>
-
-      @if (layout().unlinkedBucketX !== null) {
-        <text
-          [attr.x]="layout().unlinkedBucketX"
-          y="58"
-          text-anchor="middle"
-          fill="#475569"
-          class="text-xs font-semibold"
-        >
-          Ohne Termin
-        </text>
-      }
-
-      @for (edge of layout().edges; track edge.id) {
-        <path
-          [attr.d]="edge.path"
-          fill="none"
-          [attr.stroke]="edge.type === 'assignment' ? '#f59e0b' : '#94a3b8'"
-          [attr.stroke-width]="edge.type === 'assignment' ? 2 : 1.5"
-          [attr.stroke-dasharray]="edge.type === 'participation' ? '4 4' : null"
-          opacity="0.95"
+      <g [attr.transform]="panTransform()" data-testid="timeline-pan-layer">
+        <line
+          [attr.x1]="layout().axisStartX"
+          [attr.y1]="layout().axisY"
+          [attr.x2]="layout().axisEndX"
+          [attr.y2]="layout().axisY"
+          stroke="#94a3b8"
+          stroke-width="2"
         />
-      }
 
-      @for (task of layout().tasks; track task.id) {
-        <g [attr.transform]="'translate(' + task.x + ',' + task.y + ')'">
-          <rect width="220" height="74" rx="14" fill="#ffffff" stroke="#f1f5f9" />
-          <text x="12" y="25" fill="#0f172a" class="text-xs font-semibold">
-            {{ truncate(task.title, 33) }}
+        <line
+          [attr.x1]="layout().nowX"
+          [attr.y1]="52"
+          [attr.x2]="layout().nowX"
+          [attr.y2]="420"
+          stroke="#f97316"
+          stroke-width="2"
+          stroke-dasharray="5 5"
+          data-testid="today-marker-line"
+        />
+        <text
+          [attr.x]="layout().nowX + 8"
+          y="42"
+          fill="#c2410c"
+          class="text-xs font-semibold"
+          data-testid="today-marker-label"
+        >
+          Heute
+        </text>
+
+        @if (layout().unlinkedBucketX !== null) {
+          <text
+            [attr.x]="layout().unlinkedBucketX"
+            y="58"
+            text-anchor="middle"
+            fill="#475569"
+            class="text-xs font-semibold"
+          >
+            Ohne Termin
           </text>
-          <text x="12" y="48" fill="#64748b" class="text-[11px]">
-            {{ task.statusLabel }}
-          </text>
-          <g transform="translate(170,11)">
-            <rect width="38" height="20" rx="10" fill="#fee2e2" stroke="#fecaca" />
-            <text x="19" y="14" text-anchor="middle" fill="#9f1239" class="text-[10px] font-semibold">
-              {{ task.priorityLabel }}
+        }
+
+        @for (edge of layout().edges; track edge.id) {
+          <path
+            [attr.d]="edge.path"
+            fill="none"
+            [attr.stroke]="edge.type === 'assignment' ? '#f59e0b' : '#94a3b8'"
+            [attr.stroke-width]="edge.type === 'assignment' ? 2 : 1.5"
+            [attr.stroke-dasharray]="edge.type === 'participation' ? '4 4' : null"
+            opacity="0.95"
+          />
+        }
+
+        @for (task of layout().tasks; track task.id) {
+          <g [attr.transform]="'translate(' + task.x + ',' + task.y + ')'">
+            <rect width="220" height="74" rx="14" fill="#ffffff" stroke="#f1f5f9" />
+            <text x="12" y="25" fill="#0f172a" class="text-xs font-semibold">
+              {{ truncate(task.title, 33) }}
+            </text>
+            <text x="12" y="48" fill="#64748b" class="text-[11px]">
+              {{ task.statusLabel }}
+            </text>
+            <g transform="translate(170,11)">
+              <rect width="38" height="20" rx="10" fill="#fee2e2" stroke="#fecaca" />
+              <text x="19" y="14" text-anchor="middle" fill="#9f1239" class="text-[10px] font-semibold">
+                {{ task.priorityLabel }}
+              </text>
+            </g>
+          </g>
+        }
+
+        @for (stakeholder of layout().stakeholders; track stakeholder.id) {
+          <g [attr.transform]="'translate(' + stakeholder.x + ',' + stakeholder.y + ')'">
+            <rect width="210" height="46" rx="12" fill="#ffffff" stroke="#dbeafe" />
+            <text x="12" y="28" fill="#1e3a8a" class="text-xs font-medium">
+              {{ truncate(stakeholder.label, 34) }}
             </text>
           </g>
-        </g>
-      }
+        }
 
-      @for (stakeholder of layout().stakeholders; track stakeholder.id) {
-        <g [attr.transform]="'translate(' + stakeholder.x + ',' + stakeholder.y + ')'">
-          <rect width="210" height="46" rx="12" fill="#ffffff" stroke="#dbeafe" />
-          <text x="12" y="28" fill="#1e3a8a" class="text-xs font-medium">
-            {{ truncate(stakeholder.label, 34) }}
-          </text>
-        </g>
-      }
-
-      @for (meeting of layout().meetings; track meeting.id) {
-        <g [attr.transform]="'translate(' + meeting.x + ',' + meeting.y + ')'">
-          <circle cx="0" cy="0" r="11" fill="#0f172a" />
-          <rect x="-110" y="18" width="220" height="38" rx="10" fill="#ffffff" stroke="#cbd5e1" />
-          <text
-            x="0"
-            y="42"
-            text-anchor="middle"
-            fill="#1e293b"
-            class="text-[11px] font-semibold"
-          >
-            {{ truncate(meeting.label, 34) }}
-          </text>
-        </g>
-      }
+        @for (meeting of layout().meetings; track meeting.id) {
+          <g [attr.transform]="'translate(' + meeting.x + ',' + meeting.y + ')'">
+            <circle cx="0" cy="0" r="11" fill="#0f172a" />
+            <rect x="-110" y="18" width="220" height="38" rx="10" fill="#ffffff" stroke="#cbd5e1" />
+            <text
+              x="0"
+              y="42"
+              text-anchor="middle"
+              fill="#1e293b"
+              class="text-[11px] font-semibold"
+            >
+              {{ truncate(meeting.label, 34) }}
+            </text>
+          </g>
+        }
+      </g>
     </svg>
   } @else {
     <div class="rounded-xl border border-slate-200 bg-white px-4 py-6 text-sm font-medium text-slate-600">

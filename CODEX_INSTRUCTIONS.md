@@ -10,6 +10,7 @@
 - Backend: Java 21, Spring Boot, Gradle, Checkstyle/Spotless (TODO if not configured yet), prefer records for DTOs.
 - Frontend: Angular (latest LTS), TypeScript strict mode, ESLint + Prettier (TODO if not configured yet).
 - Frontend styling: use Tailwind utility classes; never introduce new component `.css/.scss` files. Prefer shared Tailwind UI primitives in `frondend/src/app/shared/ui/tw` (page, card, field, badge, button directive). If Tailwind utilities are insufficient, use Tailwind config or a single global stylesheet section (no per-component CSS).
+- For Angular SVG templates that use `[attr.*]` bindings (for example `x1`, `y1`, `d`, `transform`), add `<!--suppress HtmlUnknownAttribute -->` at the top of the template to silence IDE false positives. Keep `[attr.*]` bindings; do not rewrite them to `x="{{...}}"`/`y="{{...}}"` because this can trigger Angular `NG8002` compile errors on SVG elements.
 - When changing HTML structure, update or add tests as needed.
 - Frontend app layer (features/** and shared/**) uses RxJS end-to-end: stores return Observables, components subscribe with takeUntilDestroyed(), and async/await is not used.
 - Frontend forms must use the shared helpers in `src/app/shared/forms/form-utils.ts` for required-field errors and invalid-state checks.

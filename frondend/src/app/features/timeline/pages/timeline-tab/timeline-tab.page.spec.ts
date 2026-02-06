@@ -174,7 +174,7 @@ describe('TimelineTabPageComponent', () => {
     expect(compiled.textContent).toContain('Heute');
   });
 
-  it('selects node on click and shows details', () => {
+  it('selects node on click and shows floating overlay details', () => {
     const store = new TimelineGraphStoreStub();
     store.graphDto.set({
       caseId: 'case-1',
@@ -250,9 +250,239 @@ describe('TimelineTabPageComponent', () => {
     fixture.detectChanges();
 
     expect(store.selectNodeCalls).toEqual([{ nodeId: 'meeting:meeting-1:task:task-1', nodeType: 'task' }]);
-    expect(compiled.querySelector('[data-testid="timeline-details-task"]')).not.toBeNull();
+    expect(compiled.querySelector('[data-testid="timeline-floating-overlay-task"]')).not.toBeNull();
     expect(compiled.textContent).toContain('Konzeptentwurf vorbereiten');
     expect(compiled.textContent).toContain('P2');
     expect(compiled.textContent).toContain('Anna L. — Beratung');
+  });
+
+  it('closes floating overlay on escape key', () => {
+    const store = new TimelineGraphStoreStub();
+    store.graphDto.set({
+      caseId: 'case-1',
+      generatedAt: '2026-02-06T12:00:00Z',
+      now: '2026-02-06T12:00:00Z',
+      meetings: [{
+        id: 'meeting-1',
+        status: 'PLANNED',
+        plannedAt: '2026-02-20T11:06:00Z',
+        performedAt: null,
+        title: 'Kickoff',
+        locationLabel: 'Kita Langballig',
+        participantStakeholderIds: ['st-1']
+      }],
+      stakeholders: [{ id: 'st-1', firstName: 'Anna', lastName: 'L.', role: 'CONSULTANT' }],
+      tasks: [{
+        id: 'task-1',
+        title: 'Konzeptentwurf vorbereiten',
+        state: 'OPEN',
+        priority: 2,
+        assigneeId: 'st-1',
+        createdFromMeetingId: 'meeting-1',
+        dueDate: '2026-02-28'
+      }]
+    });
+    store.renderModel.set({
+      nodes: [
+        {
+          id: 'meeting:meeting-1',
+          type: 'meeting',
+          meetingId: 'meeting-1',
+          graphAt: '2026-02-20T11:06:00Z',
+          label: 'Kickoff — Kita Langballig'
+        },
+        {
+          id: 'meeting:meeting-1:task:task-1',
+          type: 'task',
+          taskId: 'task-1',
+          meetingId: 'meeting-1',
+          assigneeId: 'st-1',
+          label: 'Konzeptentwurf vorbereiten'
+        }
+      ],
+      edges: []
+    });
+    store.status.set('success');
+
+    TestBed.configureTestingModule({
+      imports: [TimelineTabPageComponent],
+      providers: [
+        { provide: TimelineGraphStore, useValue: store },
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ caseId: 'case-1' })) } }
+      ]
+    });
+
+    const fixture = TestBed.createComponent(TimelineTabPageComponent);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const taskNode = compiled.querySelector(
+      '[data-testid="timeline-node-task-meeting:meeting-1:task:task-1"]'
+    ) as SVGGElement;
+    taskNode.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(compiled.querySelector('[data-testid="timeline-floating-overlay"]')).not.toBeNull();
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    fixture.detectChanges();
+
+    expect(store.clearSelectionCalls).toBe(1);
+    expect(compiled.querySelector('[data-testid="timeline-floating-overlay"]')).toBeNull();
+  });
+
+  it('closes floating overlay on backdrop click', () => {
+    const store = new TimelineGraphStoreStub();
+    store.graphDto.set({
+      caseId: 'case-1',
+      generatedAt: '2026-02-06T12:00:00Z',
+      now: '2026-02-06T12:00:00Z',
+      meetings: [{
+        id: 'meeting-1',
+        status: 'PLANNED',
+        plannedAt: '2026-02-20T11:06:00Z',
+        performedAt: null,
+        title: 'Kickoff',
+        locationLabel: 'Kita Langballig',
+        participantStakeholderIds: ['st-1']
+      }],
+      stakeholders: [{ id: 'st-1', firstName: 'Anna', lastName: 'L.', role: 'CONSULTANT' }],
+      tasks: [{
+        id: 'task-1',
+        title: 'Konzeptentwurf vorbereiten',
+        state: 'OPEN',
+        priority: 2,
+        assigneeId: 'st-1',
+        createdFromMeetingId: 'meeting-1',
+        dueDate: '2026-02-28'
+      }]
+    });
+    store.renderModel.set({
+      nodes: [
+        {
+          id: 'meeting:meeting-1',
+          type: 'meeting',
+          meetingId: 'meeting-1',
+          graphAt: '2026-02-20T11:06:00Z',
+          label: 'Kickoff — Kita Langballig'
+        },
+        {
+          id: 'meeting:meeting-1:task:task-1',
+          type: 'task',
+          taskId: 'task-1',
+          meetingId: 'meeting-1',
+          assigneeId: 'st-1',
+          label: 'Konzeptentwurf vorbereiten'
+        }
+      ],
+      edges: []
+    });
+    store.status.set('success');
+
+    TestBed.configureTestingModule({
+      imports: [TimelineTabPageComponent],
+      providers: [
+        { provide: TimelineGraphStore, useValue: store },
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ caseId: 'case-1' })) } }
+      ]
+    });
+
+    const fixture = TestBed.createComponent(TimelineTabPageComponent);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const taskNode = compiled.querySelector(
+      '[data-testid="timeline-node-task-meeting:meeting-1:task:task-1"]'
+    ) as SVGGElement;
+    taskNode.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    fixture.detectChanges();
+
+    const backdrop = compiled.querySelector('[data-testid="timeline-floating-overlay-backdrop"]') as HTMLDivElement;
+    expect(backdrop).not.toBeNull();
+    backdrop.click();
+    fixture.detectChanges();
+
+    expect(store.clearSelectionCalls).toBe(1);
+    expect(compiled.querySelector('[data-testid="timeline-floating-overlay"]')).toBeNull();
+  });
+
+  it('remembers dragged overlay position for next open in same app session', () => {
+    const store = new TimelineGraphStoreStub();
+    store.graphDto.set({
+      caseId: 'case-1',
+      generatedAt: '2026-02-06T12:00:00Z',
+      now: '2026-02-06T12:00:00Z',
+      meetings: [{
+        id: 'meeting-1',
+        status: 'PLANNED',
+        plannedAt: '2026-02-20T11:06:00Z',
+        performedAt: null,
+        title: 'Kickoff',
+        locationLabel: 'Kita Langballig',
+        participantStakeholderIds: ['st-1']
+      }],
+      stakeholders: [{ id: 'st-1', firstName: 'Anna', lastName: 'L.', role: 'CONSULTANT' }],
+      tasks: [{
+        id: 'task-1',
+        title: 'Konzeptentwurf vorbereiten',
+        state: 'OPEN',
+        priority: 2,
+        assigneeId: 'st-1',
+        createdFromMeetingId: 'meeting-1',
+        dueDate: '2026-02-28'
+      }]
+    });
+    store.renderModel.set({
+      nodes: [
+        {
+          id: 'meeting:meeting-1',
+          type: 'meeting',
+          meetingId: 'meeting-1',
+          graphAt: '2026-02-20T11:06:00Z',
+          label: 'Kickoff — Kita Langballig'
+        },
+        {
+          id: 'meeting:meeting-1:task:task-1',
+          type: 'task',
+          taskId: 'task-1',
+          meetingId: 'meeting-1',
+          assigneeId: 'st-1',
+          label: 'Konzeptentwurf vorbereiten'
+        }
+      ],
+      edges: []
+    });
+    store.status.set('success');
+
+    TestBed.configureTestingModule({
+      imports: [TimelineTabPageComponent],
+      providers: [
+        { provide: TimelineGraphStore, useValue: store },
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ caseId: 'case-1' })) } }
+      ]
+    });
+
+    const fixture = TestBed.createComponent(TimelineTabPageComponent);
+    fixture.detectChanges();
+
+    const page = fixture.componentInstance;
+    const compiled = fixture.nativeElement as HTMLElement;
+    const taskNode = compiled.querySelector(
+      '[data-testid="timeline-node-task-meeting:meeting-1:task:task-1"]'
+    ) as SVGGElement;
+
+    taskNode.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    fixture.detectChanges();
+
+    page.onOverlayPositionChanged({ left: 420, top: 240 });
+    page.clearSelection();
+    fixture.detectChanges();
+
+    taskNode.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    fixture.detectChanges();
+
+    const overlay = compiled.querySelector('[data-testid="timeline-floating-overlay"]') as HTMLElement;
+    expect(parseInt(overlay.style.left || '0', 10)).toBe(420);
+    expect(parseInt(overlay.style.top || '0', 10)).toBe(240);
   });
 });

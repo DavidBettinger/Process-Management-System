@@ -98,6 +98,15 @@ interface ZoomInput {
   focusY: number;
 }
 
+export interface TimelineGraphNodeSelection {
+  nodeId: string;
+  nodeType: TimelineGraphNodeType;
+  anchor: {
+    x: number;
+    y: number;
+  };
+}
+
 export interface PanState {
   translationX: number;
   translationY: number;
@@ -155,7 +164,7 @@ export class TimelineGraphComponent {
   readonly graphDto = input<TimelineGraphResponse | null>(null);
   @Input() selectedNodeId: string | null = null;
   @Input() selectedNodeType: TimelineGraphNodeType | null = null;
-  @Output() nodeSelected = new EventEmitter<{ nodeId: string; nodeType: TimelineGraphNodeType }>();
+  @Output() nodeSelected = new EventEmitter<TimelineGraphNodeSelection>();
   @Output() selectionCleared = new EventEmitter<void>();
   readonly layout = computed(() => buildTimelineGraphLayout(this.renderModel(), this.graphDto()));
   readonly panState = signal<PanState>(initialPanState());
@@ -377,7 +386,14 @@ export class TimelineGraphComponent {
 
   private emitNodeSelected(nodeId: string, nodeType: TimelineGraphNodeType, event: MouseEvent): void {
     event.stopPropagation();
-    this.nodeSelected.emit({ nodeId, nodeType });
+    this.nodeSelected.emit({
+      nodeId,
+      nodeType,
+      anchor: {
+        x: event.clientX,
+        y: event.clientY
+      }
+    });
   }
 }
 

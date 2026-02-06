@@ -254,7 +254,7 @@ describe('TimelineGraphComponent', () => {
     fixture.detectChanges();
 
     const component = fixture.componentInstance;
-    const selectedEvents: Array<{ nodeId: string; nodeType: string }> = [];
+    const selectedEvents: Array<{ nodeId: string; nodeType: string; anchor: { x: number; y: number } }> = [];
     component.nodeSelected.subscribe((event) => selectedEvents.push(event));
 
     const root = fixture.nativeElement as HTMLElement;
@@ -283,7 +283,8 @@ describe('TimelineGraphComponent', () => {
 
     expect(selectedEvents).toEqual([{
       nodeId: 'meeting:meeting-1:task:task-1',
-      nodeType: 'task'
+      nodeType: 'task',
+      anchor: { x: 0, y: 0 }
     }]);
   });
 

@@ -1,23 +1,32 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnInit, computed, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TimelineGraphStore } from '../../state/timeline-graph.store';
-import { TimelineGraphComponent } from '../../components/timeline-graph/timeline-graph.component';
+import {
+  TimelineGraphComponent,
+  TimelineGraphNodeSelection
+} from '../../components/timeline-graph/timeline-graph.component';
 import { TwButtonDirective } from '../../../../shared/ui/tw/tw-button.directive';
 import { TwCardComponent } from '../../../../shared/ui/tw/tw-card.component';
-import { TimelineGraphNodeType } from '../../../../core/models/timeline-graph.model';
+import { TimelineFloatingOverlayComponent } from '../../components/timeline-floating-overlay/timeline-floating-overlay.component';
+import {
+  TimelineOverlayPosition,
+  TimelineOverlayPositionStore
+} from '../../state/timeline-overlay-position.store';
 
 @Component({
   selector: 'app-timeline-tab-page',
   standalone: true,
-  imports: [CommonModule, TimelineGraphComponent, TwButtonDirective, TwCardComponent],
+  imports: [CommonModule, TimelineGraphComponent, TimelineFloatingOverlayComponent, TwButtonDirective, TwCardComponent],
   templateUrl: './timeline-tab.page.html'
 })
 export class TimelineTabPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   readonly timelineGraphStore = inject(TimelineGraphStore);
+  readonly overlayPositionStore = inject(TimelineOverlayPositionStore);
+  readonly overlayAnchor = signal<{ x: number; y: number } | null>(null);
 
   readonly status = this.timelineGraphStore.status;
   readonly error = this.timelineGraphStore.error;
@@ -27,18 +36,11 @@ export class TimelineTabPageComponent implements OnInit {
   readonly selectedNodeId = this.timelineGraphStore.selectedNodeId;
   readonly selectedNodeType = this.timelineGraphStore.selectedNodeType;
   readonly selectedDetails = this.timelineGraphStore.selectedDetails;
-  readonly meetingDetails = computed(() => {
-    const details = this.selectedDetails();
-    return details?.type === 'meeting' ? details : null;
-  });
-  readonly taskDetails = computed(() => {
-    const details = this.selectedDetails();
-    return details?.type === 'task' ? details : null;
-  });
-  readonly stakeholderDetails = computed(() => {
-    const details = this.selectedDetails();
-    return details?.type === 'stakeholder' ? details : null;
-  });
+  readonly rememberedOverlayPosition = this.overlayPositionStore.position;
+  readonly overlayVisible = computed(
+    () => !!this.selectedDetails() && (this.overlayAnchor() !== null || this.rememberedOverlayPosition() !== null)
+  );
+  readonly overlayAnchorValue = computed(() => this.overlayAnchor() ?? { x: 24, y: 24 });
   readonly meetingLegend = [
     { key: 'PLANNED', label: 'Termin geplant', swatchClass: 'bg-blue-100 border-blue-300' },
     { key: 'PERFORMED', label: 'Termin durchgefuehrt', swatchClass: 'bg-emerald-100 border-emerald-300' }
@@ -60,6 +62,7 @@ export class TimelineTabPageComponent implements OnInit {
     parentRoute.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const caseId = params.get('caseId');
       if (caseId) {
+        this.overlayAnchor.set(null);
         this.timelineGraphStore.setCaseId(caseId);
         this.timelineGraphStore.loadTimelineGraph().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
       }
@@ -70,11 +73,17 @@ export class TimelineTabPageComponent implements OnInit {
     this.timelineGraphStore.loadTimelineGraph().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
-  onNodeSelected(selection: { nodeId: string; nodeType: TimelineGraphNodeType }): void {
+  onNodeSelected(selection: TimelineGraphNodeSelection): void {
+    this.overlayAnchor.set(selection.anchor);
     this.timelineGraphStore.selectNode(selection.nodeId, selection.nodeType);
   }
 
+  onOverlayPositionChanged(position: TimelineOverlayPosition): void {
+    this.overlayPositionStore.setPosition(position);
+  }
+
   clearSelection(): void {
+    this.overlayAnchor.set(null);
     this.timelineGraphStore.clearSelection();
   }
 }

@@ -9,7 +9,9 @@ import {
   GRAPH_RIGHT_PADDING_PX,
   initialPanState,
   movePan,
+  stackNodesByCollision,
   startPan,
+  STAKEHOLDER_LANE_GAP,
   TimelineGraphComponent,
   zoomPan,
   ZOOM_MAX,
@@ -341,6 +343,23 @@ describe('TimelineGraphComponent', () => {
     const expandedWidth = Number(expandedSvg.getAttribute('width'));
     expect(expandedWidth).toBeGreaterThan(initialWidth);
   });
+
+  it('stacks colliding nodes into lower lanes and avoids rectangle intersections', () => {
+    const nodes = [
+      { id: 'stakeholder-a', x: 100, y: 335, width: 210, height: 46, label: 'A' },
+      { id: 'stakeholder-b', x: 120, y: 335, width: 210, height: 46, label: 'B' }
+    ];
+
+    const stacked = stackNodesByCollision(nodes, STAKEHOLDER_LANE_GAP);
+    const first = stacked.find((node) => node.id === 'stakeholder-a');
+    const second = stacked.find((node) => node.id === 'stakeholder-b');
+
+    expect(first).toBeDefined();
+    expect(second).toBeDefined();
+    expect((second as { y: number }).y).toBeGreaterThan((first as { y: number }).y);
+    expect((second as { y: number }).y - (first as { y: number }).y).toBeGreaterThanOrEqual(46 + STAKEHOLDER_LANE_GAP);
+    expect(hasRectangleIntersections(stacked)).toBe(false);
+  });
 });
 
 const dispatchPointerEvent = (
@@ -364,3 +383,25 @@ const dispatchWheelEvent = (element: Element, deltaY: number, clientX: number, c
   Object.defineProperty(event, 'clientY', { value: clientY });
   element.dispatchEvent(event);
 };
+
+const hasRectangleIntersections = (
+  nodes: Array<{ x: number; y: number; width: number; height: number }>
+): boolean => {
+  for (let leftIndex = 0; leftIndex < nodes.length; leftIndex += 1) {
+    for (let rightIndex = leftIndex + 1; rightIndex < nodes.length; rightIndex += 1) {
+      if (rectanglesIntersect(nodes[leftIndex] as { x: number; y: number; width: number; height: number }, nodes[rightIndex] as { x: number; y: number; width: number; height: number })) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
+const rectanglesIntersect = (
+  left: { x: number; y: number; width: number; height: number },
+  right: { x: number; y: number; width: number; height: number }
+): boolean =>
+  left.x < right.x + right.width
+  && left.x + left.width > right.x
+  && left.y < right.y + right.height
+  && left.y + left.height > right.y;

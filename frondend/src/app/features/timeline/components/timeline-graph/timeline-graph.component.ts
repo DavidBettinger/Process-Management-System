@@ -71,6 +71,14 @@ interface NodeBox {
   height: number;
 }
 
+interface CollisionBox {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 interface PanPointer {
   pointerId: number;
   clientX: number;
@@ -102,6 +110,7 @@ const TASK_WIDTH = 220;
 const TASK_HEIGHT = 74;
 const STAKEHOLDER_WIDTH = 210;
 const STAKEHOLDER_HEIGHT = 46;
+export const STAKEHOLDER_LANE_GAP = 12;
 const MEETING_LABEL_WIDTH = 220;
 const MEETING_RADIUS = 11;
 const DEFAULT_HEIGHT = 470;
@@ -345,7 +354,7 @@ export const buildTimelineGraphLayout = (
   });
 
   const stakeholdersByMeetingId = groupBy(stakeholderNodes, (stakeholderNode) => stakeholderNode.meetingId);
-  const positionedStakeholders: LayoutStakeholderNode[] = [];
+  const stakeholderCandidates: LayoutStakeholderNode[] = [];
   for (const meetingNode of meetingsSorted) {
     const position = meetingPositions.get(meetingNode.id);
     if (!position) {
@@ -365,16 +374,19 @@ export const buildTimelineGraphLayout = (
         height: STAKEHOLDER_HEIGHT,
         label
       };
-      positionedStakeholders.push(layoutStakeholder);
-      meetingPositions.set(stakeholderNode.id, {
-        type: 'stakeholder',
-        x: layoutStakeholder.x,
-        y: layoutStakeholder.y,
-        width: layoutStakeholder.width,
-        height: layoutStakeholder.height
-      });
+      stakeholderCandidates.push(layoutStakeholder);
     });
   }
+  const positionedStakeholders = stackNodesByCollision(stakeholderCandidates, STAKEHOLDER_LANE_GAP);
+  positionedStakeholders.forEach((stakeholder) => {
+    meetingPositions.set(stakeholder.id, {
+      type: 'stakeholder',
+      x: stakeholder.x,
+      y: stakeholder.y,
+      width: stakeholder.width,
+      height: stakeholder.height
+    });
+  });
 
   const positionedEdges: LayoutEdge[] = renderModel.edges
     .map((edge) => positionEdge(edge, meetingPositions))
@@ -386,12 +398,18 @@ export const buildTimelineGraphLayout = (
     ...positionedTasks.map((task) => task.x + task.width),
     ...positionedStakeholders.map((stakeholder) => stakeholder.x + stakeholder.width)
   );
+  const contentBottomY = Math.max(
+    AXIS_Y + MEETING_RADIUS + 56,
+    ...positionedTasks.map((task) => task.y + task.height),
+    ...positionedStakeholders.map((stakeholder) => stakeholder.y + stakeholder.height)
+  );
   const width = Math.ceil(maxNodeRightEdge + GRAPH_RIGHT_PADDING_PX);
+  const height = Math.max(DEFAULT_HEIGHT, Math.ceil(contentBottomY + 24));
   const nowX = axisStartX + ((nowTime - minTime) / (maxTime - minTime)) * (axisEndX - axisStartX);
 
   return {
     width,
-    height: DEFAULT_HEIGHT,
+    height,
     axisStartX,
     axisEndX,
     axisY: AXIS_Y,
@@ -404,6 +422,45 @@ export const buildTimelineGraphLayout = (
     unlinkedBucketX: unlinkedBucketX === null ? null : unlinkedBucketX + TASK_WIDTH / 2
   };
 };
+
+export const stackNodesByCollision = <T extends CollisionBox>(
+  nodes: T[],
+  laneGap: number
+): T[] => {
+  const sorted = [...nodes].sort((left, right) => {
+    if (left.x !== right.x) {
+      return left.x - right.x;
+    }
+    return left.id.localeCompare(right.id);
+  });
+  const placed: CollisionBox[] = [];
+  const byId = new Map<string, T>();
+
+  for (const node of sorted) {
+    let lane = 0;
+    for (;;) {
+      const candidate: CollisionBox = {
+        ...node,
+        y: node.y + lane * (node.height + laneGap)
+      };
+      const collides = placed.some((existing) => rectanglesOverlap(existing, candidate));
+      if (!collides) {
+        placed.push(candidate);
+        byId.set(node.id, { ...node, y: candidate.y });
+        break;
+      }
+      lane += 1;
+    }
+  }
+
+  return nodes.map((node) => byId.get(node.id) ?? node);
+};
+
+const rectanglesOverlap = (left: CollisionBox, right: CollisionBox): boolean =>
+  left.x < right.x + right.width
+  && left.x + left.width > right.x
+  && left.y < right.y + right.height
+  && left.y + left.height > right.y;
 
 const positionEdge = (edge: TimelineGraphEdge, nodePositions: Map<string, NodeBox>): LayoutEdge | null => {
   const source = nodePositions.get(edge.sourceId);

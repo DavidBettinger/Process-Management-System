@@ -37,6 +37,7 @@ describe('MeetingsApi', () => {
       id: 'm-1',
       status: 'SCHEDULED',
       locationId: 'location-1',
+      participantIds: ['u-1'],
       title: 'Kickoff',
       description: 'Beschreibung'
     });
@@ -70,6 +71,7 @@ describe('MeetingsApi', () => {
           id: 'm-1',
           status: 'SCHEDULED',
           locationId: 'location-1',
+          participantIds: ['u-1'],
           title: 'Kickoff',
           description: 'Beschreibung',
           scheduledAt: '2026-01-02T09:00:00Z'

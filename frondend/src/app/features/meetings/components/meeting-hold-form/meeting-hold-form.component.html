@@ -4,7 +4,7 @@
     <p class="text-sm text-slate-600">Halte Protokoll fest und lege Aufgabenpunkte an.</p>
   </header>
 
-  @if (holdResult) {
+  @if (holdResult && !showStageB()) {
     <div class="space-y-2 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm text-slate-900">
       <p class="text-sm font-semibold">Termin abgeschlossen</p>
       <p>Erstellte Aufgaben: {{ holdResult.createdTaskIds.length }}</p>
@@ -15,146 +15,166 @@
     </div>
   }
 
-  <form class="space-y-4" [formGroup]="form" (ngSubmit)="submit()">
-    <app-tw-field
-      label="Termin"
-      forId="hold-meeting-id"
-      [required]="true"
-      [error]="isInvalid('meetingId') ? requiredMessage('Termin') : null"
-      [hint]="meetings.length === 0 ? 'Kein Termin vorhanden? Bitte zuerst einen Termin planen.' : undefined"
-    >
-      @if (meetings.length > 0) {
-        <select
-          id="hold-meeting-id"
-          formControlName="meetingId"
-          class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
-          (change)="applyMeetingDefaults(form.controls.meetingId.value)"
-        >
-          <option value="">Bitte waehlen</option>
-          @for (meeting of meetings; track meeting.id) {
-            <option [value]="meeting.id">{{ meetingLabel(meeting) }}</option>
-          }
-        </select>
-      } @else {
-        <input
-          id="hold-meeting-id"
-          type="text"
-          formControlName="meetingId"
-          placeholder="Termin eingeben"
-          class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
-        />
-      }
-    </app-tw-field>
+  @if (!stakeholdersReady && stakeholdersError) {
+    <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700">
+      <p>Beteiligte konnten nicht geladen werden</p>
+      <p class="mt-1 text-xs font-normal">{{ stakeholdersError }}</p>
+    </div>
+  }
 
-    <app-tw-field
-      label="Durchgefuehrt am"
-      forId="hold-held-at"
-      [required]="true"
-      [error]="isInvalid('heldAt') ? requiredMessage('Durchgefuehrt am') : null"
-    >
-      <input
-        id="hold-held-at"
-        type="datetime-local"
-        formControlName="heldAt"
-        class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
-      />
-    </app-tw-field>
-
-    <app-tw-field
-      label="Standort"
-      forId="hold-location"
-      [required]="true"
-      [error]="isInvalid('locationId') ? requiredMessage('Standort') : null"
-      [hint]="locations.length === 0 ? 'Es sind noch keine Standorte vorhanden. Bitte zuerst einen Standort anlegen.' : undefined"
-    >
-      <select
-        id="hold-location"
-        formControlName="locationId"
-        class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+  @if (!showStageB()) {
+    <div class="space-y-4" data-testid="meeting-stage-a-shell" [formGroup]="form">
+      <app-tw-field
+        label="Termin"
+        forId="hold-meeting-id"
+        [required]="true"
+        [error]="isInvalid('meetingId') ? requiredMessage('Termin') : null"
+        [hint]="meetings.length === 0 ? 'Kein Termin vorhanden? Bitte zuerst einen Termin planen.' : undefined"
       >
-        <option value="">Bitte waehlen</option>
-        @for (location of locations; track location.id) {
-          <option [value]="location.id">
-            {{ location.label }} · {{ location.address.city }}
-          </option>
-        }
-      </select>
-    </app-tw-field>
-    <a class="text-sm font-semibold text-slate-900 hover:text-slate-700" routerLink="/locations">
-      Neuen Standort anlegen
-    </a>
-
-    <div class="space-y-3">
-      <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <p class="text-sm font-semibold text-slate-900">Teilnehmende</p>
-        <button appTwButton="ghost" size="sm" type="button" (click)="addParticipant()">
-          Teilnehmende hinzufuegen
-        </button>
-      </div>
-      @for (participantId of participantIds; track $index; let i = $index) {
-        <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-          <app-stakeholder-select
-            class="w-full"
-            [stakeholders]="stakeholders"
-            [selectedId]="participantId || null"
-            [disabled]="!stakeholdersReady"
-            [required]="true"
-            (selectedIdChange)="updateParticipant(i, $event)"
-          />
-          <button
-            appTwButton="ghost"
-            size="sm"
-            type="button"
-            (click)="removeParticipant(i)"
-            [disabled]="participantIds.length === 1"
+        @if (meetings.length > 0) {
+          <select
+            id="hold-meeting-id"
+            formControlName="meetingId"
+            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+            (change)="onMeetingSelectionChange(form.controls.meetingId.value)"
           >
-            Entfernen
-          </button>
+            <option value="">Bitte waehlen</option>
+            @for (meeting of meetings; track meeting.id) {
+              <option [value]="meeting.id">{{ meetingLabel(meeting) }}</option>
+            }
+          </select>
+        } @else {
+          <input
+            id="hold-meeting-id"
+            type="text"
+            formControlName="meetingId"
+            placeholder="Termin eingeben"
+            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+          />
+        }
+      </app-tw-field>
+
+      @if (showStageA()) {
+        <div class="space-y-4" data-testid="meeting-stage-a-preview">
+          <app-tw-field
+            label="Durchgefuehrt am"
+            forId="hold-held-at"
+            [required]="true"
+            [error]="isInvalid('heldAt') ? requiredMessage('Durchgefuehrt am') : null"
+          >
+            <input
+              id="hold-held-at"
+              type="datetime-local"
+              formControlName="heldAt"
+              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+            />
+          </app-tw-field>
+
+          <app-tw-field
+            label="Standort"
+            forId="hold-location-preview"
+            [required]="true"
+            [error]="isInvalid('locationId') ? requiredMessage('Standort') : null"
+          >
+            <p
+              id="hold-location-preview"
+              class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900"
+            >
+              {{ locationPreviewLabel() }}
+            </p>
+          </app-tw-field>
+
+          <div class="space-y-3" data-testid="meeting-preview-participants">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p class="text-sm font-semibold text-slate-900">Teilnehmende</p>
+              <button appTwButton="ghost" size="sm" type="button" (click)="addParticipant()">
+                Teilnehmende hinzufuegen
+              </button>
+            </div>
+
+            @for (participantId of participantIds; track $index; let i = $index) {
+              <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                <app-stakeholder-select
+                  class="w-full"
+                  [stakeholders]="stakeholders"
+                  [selectedId]="participantId || null"
+                  [disabled]="!stakeholdersReady"
+                  [required]="true"
+                  (selectedIdChange)="updateParticipant(i, $event)"
+                />
+                <button
+                  appTwButton="ghost"
+                  size="sm"
+                  type="button"
+                  (click)="removeParticipant(i)"
+                  [disabled]="participantIds.length === 1"
+                >
+                  Entfernen
+                </button>
+              </div>
+            }
+
+            @if (!stakeholdersReady && !stakeholdersError) {
+              <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-600">
+                Beteiligte werden geladen
+              </div>
+            }
+
+            @if (participantsError) {
+              <p class="text-xs font-medium text-rose-600">{{ participantsError }}</p>
+            }
+          </div>
         </div>
       }
+
+      <button
+        appTwButton="primary"
+        type="button"
+        (click)="startRunMode()"
+        [disabled]="!selectedMeetingId()"
+      >
+        Termin durchfuehren
+      </button>
+    </div>
+  }
+
+  @if (showStageB()) {
+    <form class="space-y-4" [formGroup]="form" (ngSubmit)="submit()" data-testid="meeting-stage-b">
+      <app-tw-field
+        label="Protokoll"
+        forId="hold-minutes"
+        [required]="true"
+        [error]="isInvalid('minutesText') ? requiredMessage('Protokoll') : null"
+      >
+        <textarea
+          id="hold-minutes"
+          formControlName="minutesText"
+          rows="4"
+          placeholder="Wichtige Ergebnisse und Beschluesse"
+          class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+        ></textarea>
+      </app-tw-field>
+
+      <app-action-items-editor
+        [items]="actionItems"
+        [stakeholders]="stakeholders"
+        (itemsChange)="updateActionItems($event)"
+      />
+
+      @if (actionItemsError) {
+        <p class="text-xs font-medium text-rose-600">{{ actionItemsError }}</p>
+      }
+
       @if (participantsError) {
         <p class="text-xs font-medium text-rose-600">{{ participantsError }}</p>
       }
-      @if (!stakeholdersReady && !stakeholdersError) {
-        <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-600">
-          Beteiligte werden geladen
-        </div>
-      }
-      @if (!stakeholdersReady && stakeholdersError) {
-        <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700">
-          <p>Beteiligte konnten nicht geladen werden</p>
-          <p class="mt-1 text-xs font-normal">{{ stakeholdersError }}</p>
-        </div>
-      }
-    </div>
 
-    <app-tw-field
-      label="Protokoll"
-      forId="hold-minutes"
-      [required]="true"
-      [error]="isInvalid('minutesText') ? requiredMessage('Protokoll') : null"
-    >
-      <textarea
-        id="hold-minutes"
-        formControlName="minutesText"
-        rows="4"
-        placeholder="Wichtige Ergebnisse und Beschluesse"
-        class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
-      ></textarea>
-    </app-tw-field>
-
-    <app-action-items-editor
-      [items]="actionItems"
-      [stakeholders]="stakeholders"
-      (itemsChange)="updateActionItems($event)"
-    />
-
-    @if (actionItemsError) {
-      <p class="text-xs font-medium text-rose-600">{{ actionItemsError }}</p>
-    }
-
-    <button appTwButton="primary" type="submit" [disabled]="isLoading || !stakeholdersReady">
-      Termin abschliessen
-    </button>
-  </form>
+      <div class="flex flex-wrap items-center justify-end gap-3">
+        <button appTwButton="ghost" type="button" (click)="cancelRunMode()">Termin abbrechen</button>
+        <button appTwButton="primary" type="submit" [disabled]="isLoading || !stakeholdersReady">
+          Termin abschliessen
+        </button>
+      </div>
+    </form>
+  }
 </section>

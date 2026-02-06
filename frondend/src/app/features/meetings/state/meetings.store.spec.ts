@@ -7,7 +7,14 @@ describe('MeetingsStore', () => {
   const createApi = (overrides?: Partial<MeetingsApi>): MeetingsApi => {
     return {
       scheduleMeeting: () =>
-        of({ id: 'm-1', status: 'SCHEDULED', locationId: 'location-1', title: 'Kickoff', description: null }),
+        of({
+          id: 'm-1',
+          status: 'SCHEDULED',
+          locationId: 'location-1',
+          participantIds: ['u-1'],
+          title: 'Kickoff',
+          description: null
+        }),
       getMeetings: () =>
         of({
           items: [
@@ -15,6 +22,7 @@ describe('MeetingsStore', () => {
               id: 'm-1',
               status: 'SCHEDULED',
               locationId: 'location-1',
+              participantIds: ['u-1'],
               title: 'Kickoff',
               description: null,
               scheduledAt: '2026-01-01T10:00:00Z'
@@ -40,6 +48,7 @@ describe('MeetingsStore', () => {
 
     expect(store.meetings().length).toBe(1);
     expect(store.meetings()[0].id).toBe('m-1');
+    expect(store.meetings()[0].participantIds).toEqual(['u-1']);
     expect(store.status()).toBe('success');
   });
 

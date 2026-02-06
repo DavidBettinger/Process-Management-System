@@ -545,7 +545,8 @@ Response 200:
       "status": "SCHEDULED",
       "scheduledAt": "2026-02-01T10:00:00Z",
       "heldAt": null,
-      "locationId": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8"
+      "locationId": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8",
+      "participantIds": ["u-101","u-201"]
     }
   ]
 }
@@ -569,6 +570,7 @@ Response 201:
   "id": "uuid",
   "status": "SCHEDULED",
   "locationId": "b1f3f7c2-2c9f-4f9f-bb33-4e0f2a6f6bf8",
+  "participantIds": ["u-101","u-201"],
   "title": "Kickoff",
   "description": "We align on goals and next steps."
 }

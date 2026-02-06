@@ -12,6 +12,7 @@ import de.bettinger.processmgmt.collaboration.application.MeetingQueryService;
 import de.bettinger.processmgmt.collaboration.infrastructure.persistence.MeetingActionItemEntity;
 import de.bettinger.processmgmt.collaboration.infrastructure.persistence.MeetingEntity;
 import de.bettinger.processmgmt.auth.DevAuthFilter;
+import de.bettinger.processmgmt.collaboration.infrastructure.persistence.MeetingParticipantEntity;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Objects;
@@ -45,6 +46,9 @@ public class MeetingController {
 						meeting.getId(),
 						meeting.getStatus(),
 						meeting.getLocationId(),
+						meeting.getParticipants().stream()
+								.map(MeetingParticipantEntity::getUserId)
+								.toList(),
 						meeting.getTitle(),
 						meeting.getDescription(),
 						meeting.getScheduledAt(),
@@ -74,6 +78,9 @@ public class MeetingController {
 						meeting.getId(),
 						meeting.getStatus(),
 						meeting.getLocationId(),
+						meeting.getParticipants().stream()
+								.map(MeetingParticipantEntity::getUserId)
+								.toList(),
 						meeting.getTitle(),
 						meeting.getDescription()
 				));

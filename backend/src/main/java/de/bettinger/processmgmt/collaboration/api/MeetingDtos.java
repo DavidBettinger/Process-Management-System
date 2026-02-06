@@ -25,8 +25,8 @@ public final class MeetingDtos {
 	) {
 	}
 
-	public record ScheduleMeetingResponse(UUID id, MeetingStatus status, UUID locationId, String title,
-										  String description) {
+	public record ScheduleMeetingResponse(UUID id, MeetingStatus status, UUID locationId, List<String> participantIds,
+										  String title, String description) {
 	}
 
 	public record HoldMeetingRequest(
@@ -44,8 +44,8 @@ public final class MeetingDtos {
 	public record HoldMeetingResponse(UUID meetingId, List<UUID> createdTaskIds) {
 	}
 
-	public record MeetingSummaryResponse(UUID id, MeetingStatus status, UUID locationId, String title,
-										 String description, Instant scheduledAt, Instant heldAt) {
+	public record MeetingSummaryResponse(UUID id, MeetingStatus status, UUID locationId, List<String> participantIds,
+										 String title, String description, Instant scheduledAt, Instant heldAt) {
 	}
 
 	public record MeetingsResponse(List<MeetingSummaryResponse> items) {

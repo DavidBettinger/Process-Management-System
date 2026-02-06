@@ -65,6 +65,7 @@ export class MeetingsStore {
           const meetingWithSchedule = {
             ...meeting,
             scheduledAt: req.scheduledAt,
+            participantIds: meeting.participantIds?.length ? meeting.participantIds : req.participantIds,
             title: meeting.title ?? req.title,
             description: meeting.description ?? req.description ?? null
           };

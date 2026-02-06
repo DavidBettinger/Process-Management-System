@@ -62,6 +62,7 @@ class MeetingControllerTest {
 						.content(payload))
 					.andExpect(status().isCreated())
 					.andExpect(jsonPath("$.locationId").value(locationId.toString()))
+					.andExpect(jsonPath("$.participantIds[0]").value("u-1"))
 					.andExpect(jsonPath("$.status").value("SCHEDULED"))
 					.andExpect(jsonPath("$.title").value("Kickoff"))
 					.andExpect(jsonPath("$.description").value("Wir besprechen die ersten Schritte."));
@@ -137,6 +138,7 @@ class MeetingControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.items").isArray())
 				.andExpect(jsonPath("$.items[0].locationId").value(locationId.toString()))
+				.andExpect(jsonPath("$.items[0].participantIds[0]").value("u-1"))
 				.andExpect(jsonPath("$.items[0].status").value("SCHEDULED"))
 				.andExpect(jsonPath("$.items[0].title").value("Kickoff"))
 				.andExpect(jsonPath("$.items[0].description").value("Kurze Beschreibung"));

@@ -102,8 +102,13 @@ const TASK_WIDTH = 220;
 const TASK_HEIGHT = 74;
 const STAKEHOLDER_WIDTH = 210;
 const STAKEHOLDER_HEIGHT = 46;
+const MEETING_LABEL_WIDTH = 220;
 const MEETING_RADIUS = 11;
 const DEFAULT_HEIGHT = 470;
+const MIN_AXIS_WIDTH = 760;
+const LEFT_PADDING_DEFAULT = 140;
+const LEFT_PADDING_WITH_UNLINKED = 320;
+export const GRAPH_RIGHT_PADDING_PX = 240;
 export const ZOOM_MIN = 0.5;
 export const ZOOM_MAX = 2.5;
 const WHEEL_ZOOM_IN_FACTOR = 1.1;
@@ -217,11 +222,10 @@ export const buildTimelineGraphLayout = (
   );
 
   const unlinkedTaskNodes = taskNodes.filter((task) => !task.meetingId);
-  const leftPadding = unlinkedTaskNodes.length > 0 ? 320 : 140;
-  const axisWidth = Math.max(760, meetingNodes.length * 260);
-  const width = leftPadding + axisWidth + 160;
+  const leftPadding = unlinkedTaskNodes.length > 0 ? LEFT_PADDING_WITH_UNLINKED : LEFT_PADDING_DEFAULT;
+  const axisWidth = Math.max(MIN_AXIS_WIDTH, meetingNodes.length * 260);
   const axisStartX = leftPadding;
-  const axisEndX = width - 120;
+  const axisEndX = axisStartX + axisWidth;
 
   const meetingById = new Map((graphDto?.meetings ?? []).map((meeting) => [meeting.id, meeting]));
   const taskById = new Map((graphDto?.tasks ?? []).map((task) => [task.id, task]));
@@ -376,6 +380,13 @@ export const buildTimelineGraphLayout = (
     .map((edge) => positionEdge(edge, meetingPositions))
     .filter((edge): edge is LayoutEdge => edge !== null);
 
+  const maxNodeRightEdge = Math.max(
+    axisEndX,
+    ...positionedMeetings.map((meeting) => meeting.x + MEETING_LABEL_WIDTH / 2),
+    ...positionedTasks.map((task) => task.x + task.width),
+    ...positionedStakeholders.map((stakeholder) => stakeholder.x + stakeholder.width)
+  );
+  const width = Math.ceil(maxNodeRightEdge + GRAPH_RIGHT_PADDING_PX);
   const nowX = axisStartX + ((nowTime - minTime) / (maxTime - minTime)) * (axisEndX - axisStartX);
 
   return {

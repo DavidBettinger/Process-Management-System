@@ -4,7 +4,9 @@ import {
   TimelineGraphResponse
 } from '../../../../core/models/timeline-graph.model';
 import {
+  buildTimelineGraphLayout,
   endPan,
+  GRAPH_RIGHT_PADDING_PX,
   initialPanState,
   movePan,
   startPan,
@@ -249,6 +251,95 @@ describe('TimelineGraphComponent', () => {
       nodeId: 'meeting:meeting-1:task:task-1',
       nodeType: 'task'
     }]);
+  });
+
+  it('keeps configured right padding after the right-most graph node', () => {
+    const layout = buildTimelineGraphLayout(renderModelFixture, graphDtoFixture);
+    const rightMostEdge = Math.max(
+      layout.axisEndX,
+      ...layout.meetings.map((meeting) => meeting.x + 110),
+      ...layout.tasks.map((task) => task.x + task.width),
+      ...layout.stakeholders.map((stakeholder) => stakeholder.x + stakeholder.width)
+    );
+
+    expect(layout.width - rightMostEdge).toBeGreaterThanOrEqual(GRAPH_RIGHT_PADDING_PX);
+  });
+
+  it('expands svg width when meetings extend further to the right', () => {
+    TestBed.configureTestingModule({
+      imports: [TimelineGraphComponent]
+    });
+
+    const fixture = TestBed.createComponent(TimelineGraphComponent);
+    fixture.componentRef.setInput('graphDto', graphDtoFixture);
+    fixture.componentRef.setInput('renderModel', renderModelFixture);
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement as HTMLElement;
+    const initialSvg = root.querySelector('[data-testid="timeline-graph-svg"]') as SVGElement;
+    const initialWidth = Number(initialSvg.getAttribute('width'));
+
+    const wideGraphDto: TimelineGraphResponse = {
+      ...graphDtoFixture,
+      meetings: [
+        {
+          id: 'meeting-1',
+          status: 'PLANNED',
+          plannedAt: '2026-02-10T10:00:00Z',
+          performedAt: null,
+          title: 'Kickoff',
+          locationLabel: 'Kita Langballig',
+          participantStakeholderIds: []
+        },
+        {
+          id: 'meeting-2',
+          status: 'PLANNED',
+          plannedAt: '2026-02-17T10:00:00Z',
+          performedAt: null,
+          title: 'Termin 2',
+          locationLabel: 'Kita Langballig',
+          participantStakeholderIds: []
+        },
+        {
+          id: 'meeting-3',
+          status: 'PLANNED',
+          plannedAt: '2026-02-24T10:00:00Z',
+          performedAt: null,
+          title: 'Termin 3',
+          locationLabel: 'Kita Langballig',
+          participantStakeholderIds: []
+        },
+        {
+          id: 'meeting-4',
+          status: 'PLANNED',
+          plannedAt: '2026-03-03T10:00:00Z',
+          performedAt: null,
+          title: 'Termin 4',
+          locationLabel: 'Kita Langballig',
+          participantStakeholderIds: []
+        }
+      ],
+      tasks: [],
+      stakeholders: []
+    };
+    const wideRenderModel: TimelineGraphRenderModel = {
+      nodes: wideGraphDto.meetings.map((meeting) => ({
+        id: `meeting:${meeting.id}`,
+        type: 'meeting' as const,
+        meetingId: meeting.id,
+        graphAt: meeting.plannedAt ?? null,
+        label: `${meeting.title} — ${meeting.locationLabel}`
+      })),
+      edges: []
+    };
+
+    fixture.componentRef.setInput('graphDto', wideGraphDto);
+    fixture.componentRef.setInput('renderModel', wideRenderModel);
+    fixture.detectChanges();
+
+    const expandedSvg = root.querySelector('[data-testid="timeline-graph-svg"]') as SVGElement;
+    const expandedWidth = Number(expandedSvg.getAttribute('width'));
+    expect(expandedWidth).toBeGreaterThan(initialWidth);
   });
 });
 

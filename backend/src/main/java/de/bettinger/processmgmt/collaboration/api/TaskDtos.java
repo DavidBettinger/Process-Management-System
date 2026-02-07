@@ -22,11 +22,16 @@ public final class TaskDtos {
 			@NotNull @Min(1) @Max(5) Integer priority,
 			LocalDate dueDate,
 			String assigneeId,
-			UUID createdFromMeetingId
+			UUID createdFromMeetingId,
+			List<UUID> dependsOnTaskIds
 	) {
 	}
 
-	public record CreateTaskResponse(UUID id, TaskState state, UUID createdFromMeetingId) {
+	public record CreateTaskResponse(UUID id, TaskState state, UUID createdFromMeetingId, List<UUID> dependsOnTaskIds,
+									 List<UUID> blockedByTaskIds) {
+	}
+
+	public record UpdateTaskRequest(List<UUID> dependsOnTaskIds) {
 	}
 
 	public record AssignTaskRequest(@NotBlank String assigneeId) {
@@ -45,7 +50,8 @@ public final class TaskDtos {
 	}
 
 	public record TaskSummaryResponse(UUID id, String title, String description, int priority, TaskState state,
-									  String assigneeId, UUID createdFromMeetingId) {
+									  String assigneeId, UUID createdFromMeetingId, List<UUID> dependsOnTaskIds,
+									  List<UUID> blockedByTaskIds) {
 	}
 
 	public record TasksResponse(List<TaskSummaryResponse> items) {

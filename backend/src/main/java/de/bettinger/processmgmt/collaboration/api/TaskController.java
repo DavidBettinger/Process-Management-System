@@ -9,22 +9,27 @@ import de.bettinger.processmgmt.collaboration.api.TaskDtos.ResolveTaskRequest;
 import de.bettinger.processmgmt.collaboration.api.TaskDtos.TaskStatusResponse;
 import de.bettinger.processmgmt.collaboration.api.TaskDtos.TaskSummaryResponse;
 import de.bettinger.processmgmt.collaboration.api.TaskDtos.TasksResponse;
+import de.bettinger.processmgmt.collaboration.api.TaskDtos.UpdateTaskRequest;
 import de.bettinger.processmgmt.collaboration.application.TaskCommandService;
 import de.bettinger.processmgmt.collaboration.application.TaskQueryService;
+import de.bettinger.processmgmt.collaboration.domain.task.TaskState;
 import de.bettinger.processmgmt.collaboration.infrastructure.persistence.TaskEntity;
+import de.bettinger.processmgmt.auth.DevAuthFilter;
 import jakarta.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
-import de.bettinger.processmgmt.auth.DevAuthFilter;
 
 @RestController
 @RequestMapping("/api")
@@ -44,18 +49,37 @@ public class TaskController {
 			@Valid @RequestBody CreateTaskRequest request
 	) {
 		TaskEntity task = taskCommandService.createTask(caseId, request.title(), request.description(),
-				request.priority(), request.dueDate(), request.assigneeId(), request.createdFromMeetingId());
+				request.priority(), request.dueDate(), request.assigneeId(), request.createdFromMeetingId(),
+				request.dependsOnTaskIds());
+		List<UUID> blockedByTaskIds = taskQueryService.blockedByTaskIds(task);
 		return ResponseEntity.status(HttpStatus.CREATED)
-				.body(new CreateTaskResponse(task.getId(), task.getState(), task.getCreatedFromMeetingId()));
+				.body(new CreateTaskResponse(task.getId(), task.getState(), task.getCreatedFromMeetingId(),
+						new ArrayList<>(task.getDependsOnTaskIds()), blockedByTaskIds));
 	}
 
 	@GetMapping("/cases/{caseId}/tasks")
 	public TasksResponse listTasks(@PathVariable UUID caseId) {
-		List<TaskSummaryResponse> items = taskQueryService.listTasks(caseId).stream()
+		List<TaskEntity> tasks = taskQueryService.listTasks(caseId);
+		Map<UUID, TaskState> taskStateById = taskQueryService.taskStateById(tasks);
+		List<TaskSummaryResponse> items = tasks.stream()
 				.map(task -> new TaskSummaryResponse(task.getId(), task.getTitle(), task.getDescription(),
-						task.getPriority(), task.getState(), task.getAssigneeId(), task.getCreatedFromMeetingId()))
+						task.getPriority(), task.getState(), task.getAssigneeId(), task.getCreatedFromMeetingId(),
+						new ArrayList<>(task.getDependsOnTaskIds()),
+						taskQueryService.blockedByTaskIds(task, taskStateById)))
 				.toList();
 		return new TasksResponse(items);
+	}
+
+	@PutMapping("/tasks/{taskId}")
+	public TaskSummaryResponse updateTask(
+			@PathVariable UUID taskId,
+			@Valid @RequestBody UpdateTaskRequest request
+	) {
+		TaskEntity task = taskCommandService.updateTaskDependencies(taskId, request.dependsOnTaskIds());
+		List<UUID> blockedByTaskIds = taskQueryService.blockedByTaskIds(task);
+		return new TaskSummaryResponse(task.getId(), task.getTitle(), task.getDescription(), task.getPriority(),
+				task.getState(), task.getAssigneeId(), task.getCreatedFromMeetingId(),
+				new ArrayList<>(task.getDependsOnTaskIds()), blockedByTaskIds);
 	}
 
 	@PostMapping("/tasks/{taskId}/assign")

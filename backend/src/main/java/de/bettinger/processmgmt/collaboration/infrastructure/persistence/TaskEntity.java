@@ -2,17 +2,24 @@ package de.bettinger.processmgmt.collaboration.infrastructure.persistence;
 
 import de.bettinger.processmgmt.collaboration.domain.task.TaskResolutionKind;
 import de.bettinger.processmgmt.collaboration.domain.task.TaskState;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Getter
@@ -77,6 +84,11 @@ public class TaskEntity {
 	@Column(name = "created_at", nullable = false)
 	private Instant createdAt;
 
+	@ElementCollection(fetch = FetchType.EAGER)
+	@CollectionTable(name = "task_dependencies", joinColumns = @JoinColumn(name = "task_id"))
+	@Column(name = "depends_on_task_id", nullable = false)
+	private final Set<UUID> dependsOnTaskIds = new LinkedHashSet<>();
+
 	protected TaskEntity() {
 	}
 
@@ -132,6 +144,13 @@ public class TaskEntity {
 		this.resolvedAt = task.getResolvedAt();
 		this.lastDeclineReason = task.getLastDeclineReason();
 		this.lastSuggestedAssigneeId = task.getLastSuggestedAssigneeId();
+	}
+
+	public void replaceDependsOnTaskIds(Collection<UUID> dependencyIds) {
+		this.dependsOnTaskIds.clear();
+		if (dependencyIds != null) {
+			this.dependsOnTaskIds.addAll(dependencyIds);
+		}
 	}
 
     public TaskEntity(UUID id, UUID caseId, UUID originMeetingId, String title, String description, LocalDate dueDate,

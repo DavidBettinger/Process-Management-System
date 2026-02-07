@@ -237,14 +237,18 @@ Fields:
   "title": "Draft child protection concept v1",
   "description": "Longer text describing the task...",
   "priority": 2,
-  "state": "ASSIGNED",
+  "state": "BLOCKED",
   "assigneeId": "u-201",
-  "dueDate": "2026-02-10"
+  "dueDate": "2026-02-10",
+  "dependsOnTaskIds": ["task-a", "task-b"],
+  "blockedByTaskIds": ["task-b"]
 }
 ```
 Fields:
 - `priority` (int, required, 1..5)
 - `description` (string, optional, max length 10,000)
+- `dependsOnTaskIds` (string[], optional in write requests, defaults to `[]`)
+- `blockedByTaskIds` (string[], read-only derived field; subset of `dependsOnTaskIds` that are not resolved)
 
 #### TaskAttachment
 ```json
@@ -658,17 +662,51 @@ Request:
   "priority": 3,
   "dueDate": "2026-02-10",
   "assigneeId": "u-201",
-  "createdFromMeetingId": "f8c25b59-5c5b-4d78-9d9c-57cb9d0f3cdb"
+  "createdFromMeetingId": "f8c25b59-5c5b-4d78-9d9c-57cb9d0f3cdb",
+  "dependsOnTaskIds": ["task-a", "task-b"]
 }
 ```
 Response 201:
 ```json
-{ "id": "uuid", "state": "ASSIGNED", "createdFromMeetingId": "f8c25b59-5c5b-4d78-9d9c-57cb9d0f3cdb" }
+{
+  "id": "uuid",
+  "state": "BLOCKED",
+  "createdFromMeetingId": "f8c25b59-5c5b-4d78-9d9c-57cb9d0f3cdb",
+  "dependsOnTaskIds": ["task-a", "task-b"],
+  "blockedByTaskIds": ["task-b"]
+}
 ```
 Behavior:
-•	If `assigneeId` is provided, the task is created with `state = ASSIGNED`.
+•	If `dependsOnTaskIds` contains unresolved prerequisites, the task is created with `state = BLOCKED`.
+•	If all prerequisites are resolved (or `dependsOnTaskIds` is empty), normal assignment rules apply.
+•	If `assigneeId` is provided and no unresolved prerequisites exist, the task is created with `state = ASSIGNED`.
 •	If `assigneeId` is provided, a `TaskAssigned` outbox event is stored.
 •	`createdFromMeetingId` is optional; if omitted, it is `null`.
+
+Update task (title/description/priority/assignee/dependencies)
+PUT /api/tasks/{taskId}
+Request:
+```json
+{
+  "title": "Prepare checklist v2",
+  "description": "Updated long text...",
+  "priority": 2,
+  "dueDate": "2026-02-12",
+  "assigneeId": "u-201",
+  "dependsOnTaskIds": ["task-a", "task-c"]
+}
+```
+Response 200:
+```json
+{
+  "id": "uuid",
+  "state": "BLOCKED",
+  "assigneeId": "u-201",
+  "dependsOnTaskIds": ["task-a", "task-c"],
+  "blockedByTaskIds": ["task-c"]
+}
+```
+
 List tasks
 GET /api/cases/{caseId}/tasks
 Response 200:
@@ -682,11 +720,20 @@ Response 200:
       "priority": 3,
       "state": "OPEN",
       "assigneeId": null,
-      "createdFromMeetingId": null
+      "createdFromMeetingId": null,
+      "dependsOnTaskIds": [],
+      "blockedByTaskIds": []
     }
   ]
 }
 ```
+Dependency validation and transition rules:
+- All `dependsOnTaskIds` must exist and belong to the same `caseId` as the dependent task.
+- A task cannot depend on itself.
+- Circular dependencies are not allowed (direct and indirect).
+- If prerequisites are not all resolved, the dependent task must be in `BLOCKED`.
+- When all prerequisites become resolved, dependent tasks automatically transition from `BLOCKED` to `OPEN` (unless already in a terminal state).
+
 Assign task
 POST /api/tasks/{taskId}/assign
 Request:

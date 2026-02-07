@@ -107,7 +107,8 @@
 
 ### FE-TL-LAYOUT-001 - Graph layout and structure
 
-- The timeline tab renders a graph area plus a details panel on the right.
+- The timeline tab renders a graph area plus a color legend panel on the right (desktop/tablet widths).
+- Node details are shown in a floating overlay near the selected node, not in a fixed side panel.
 - The graph is a two-axis mental model:
   - Horizontal axis (X): time.
   - Vertical grouping (Y): tasks above meetings, stakeholders below meetings.
@@ -134,10 +135,9 @@
 |                                                                                  |
 |                         | Heute                                                   |
 +----------------------------------------------------------------------------------+
-| Details panel (right):                                                           |
-| - Termin: Titel, Datum, Ort, Beteiligte                                          |
-| - Aufgabe: Titel, Status, Prioritaet, Zustaendig                                 |
-| - Beteiligte: Name, Rolle, Zugeordneter Termin                                   |
+| Legend panel (right):                                                            |
+| - Termine: geplant / durchgefuehrt                                               |
+| - Aufgaben: offen / zugewiesen / in Bearbeitung / blockiert / erledigt / overdue|
 +----------------------------------------------------------------------------------+
 ```
 
@@ -161,24 +161,57 @@
 - The "Heute" marker and all nodes/edges are transformed together with the graph layer.
 - No viewport persistence between page reloads/sessions (MVP behavior).
 
-### FE-TL-SEL-004 - Node selection and details panel
+### FE-TL-SEL-004 - Node selection and context highlight
 
-- Clicking a meeting/task/stakeholder node selects it and applies highlighted styling.
+- Clicking a meeting/task/stakeholder node selects it and highlights the related subgraph context.
 - Clicking empty graph background clears selection.
-- Details panel is context-sensitive by selected node type:
+- Subgraph highlighting rules:
+  - highlighted edges = edges directly connected to selected node (1-hop)
+  - highlighted nodes = selected node + directly connected neighbor nodes
+  - non-highlighted edges are faded
+- Meeting context rule:
+  - if selected node is task or stakeholder, the associated meeting node is also highlighted
+  - derived from scoped node ids:
+    - `meeting:{meetingId}:task:{taskId}`
+    - `meeting:{meetingId}:stakeholder:{stakeholderId}`
+- Visual intent:
+  - selected node: strong highlight
+  - connected neighbors: subtle highlight
+  - connected edges: stronger stroke/color than non-connected edges
+
+### FE-TL-OVL-006 - Floating details overlay behavior
+
+- Node details are rendered in a floating overlay near the click anchor.
+- Overlay content is context-sensitive by selected node type:
   - meeting: title, date, location, participants
   - task: title, status, priority, assignee label
   - stakeholder: name, role, related meeting label
-- When nothing is selected, panel shows an instructional empty state.
+- Dismissal rules:
+  - `X` button closes
+  - `ESC` key closes
+  - click outside (backdrop) closes
+- When nothing is selected, a small hint box is shown over the graph.
+- Overlay placement stays within viewport bounds:
+  - near right edge -> flip left
+  - near bottom edge -> flip upward
+- Overlay is draggable via its header.
+- Dragged overlay position is remembered for the current app session (until app/browser session ends) and reused on reopen.
 
 ### FE-TL-LABEL-005 - Label and text rules
 
 - UI labels must always be human-readable and domain-facing.
-- Raw technical IDs (meetingId/taskId/stakeholderId) must never be displayed in graph labels or detail panel text.
+- Raw technical IDs (meetingId/taskId/stakeholderId) must never be displayed in graph labels or overlay text.
 - Required label formats:
   - Meeting node: `DD.MM.YYYY HH:mm — {locationLabel}`
   - Task node: truncated task title + status + priority badge (`P1..P5`)
   - Stakeholder node: `{FirstName} {LastName} — {Role}`
+- Stakeholder role labels in timeline must use German display mapping from shared source:
+  - implementation source: `frondend/src/app/shared/labels/stakeholder-role-label.ts`
+  - `CONSULTANT` -> `Beratung`
+  - `DIRECTOR` -> `Leitung`
+  - `TEAM_MEMBER` -> `Teammitglied`
+  - `SPONSOR` -> `Traeger`
+  - `EXTERNAL` -> `Extern`
 - Fallback labels:
   - missing location: `Ort offen`
   - missing date: `Datum offen`
